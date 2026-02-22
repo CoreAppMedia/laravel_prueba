@@ -49,7 +49,7 @@ class DatabaseSeeder extends Seeder
 
         // Usuarios genéricos para pruebas
         // Debe cumplir con la política fuerte: min 8, may/min, número y símbolo
-        $passwordPlano = 'LigaMX#2026Aa';
+        $passwordPlano = 'Oscar123@';
 
         $rolEscrituraLectura = Rol::where('nombre', 'escritura y lectura')->first();
         $rolLectura = Rol::where('nombre', 'lectura')->first();

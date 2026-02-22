@@ -1,0 +1,39 @@
+@import 'tailwindcss';
+
+:root {
+    /* Palette - Mexican Flag & Dark Theme */
+    --color-mx-green: #006847;
+    --color-mx-white: #FFFFFF;
+    --color-mx-red: #CE1126;
+    --color-bg-dark: #0f172a;
+    /* Slate 900 */
+    --color-bg-card: #1e293b;
+    /* Slate 800 */
+}
+
+
+body {
+    font-family: 'Instrument Sans', sans-serif;
+    background-color: var(--color-bg-dark);
+    color: var(--color-mx-white);
+}
+
+/* Utility Classes */
+.bg-theme-gradient {
+    background: linear-gradient(to right, var(--color-mx-green), #111827, var(--color-mx-red));
+}
+
+.text-gradient-metallic {
+    background: linear-gradient(to right, #ffffff, #9ca3af);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.card-theme {
+    background-color: var(--color-bg-card);
+    border: 1px solid #334155;
+    /* Slate 700 */
+    border-radius: 0.75rem;
+    /* rounded-xl */
+}

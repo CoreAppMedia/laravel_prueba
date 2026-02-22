@@ -1,0 +1,82 @@
+para encender el servidor laravel usa el siguiente comando:
+
+        php artisan serve
+
+para iniciar el servidor vite usa el siguiente comando: 
+
+        desarrollo: npm run dev
+        produccion: npm run build
+
+
+
+comandos para limpiar puertos comunes de larabel: 
+
+        lsof -i :8000
+        lsof -i :5173
+
+y terminas procesos con 
+
+        kill -9 PID ---> 
+        cambias la palabra PID por el numero del proceso, ejemplo kill -9 4231
+
+
+
+Instalar PHP 8.2 en macOS (Homebrew)
+
+        brew install php@8.2
+
+Cambiar PHP activo a 8.2
+        brew unlink php
+        brew link php@8.2 --force
+        php -v
+
+
+pasos para iniciar el proyecto:
+
+        1.1️⃣ Verificar requisitos del entorno
+                php -v
+                npm -v
+                composer -v
+                mysql -v
+                php artisan -v
+
+        2.1️⃣ Instalar dependencias del proyecto (esto en caso de que la carpeta verdor no exista)
+                composer install
+                npm install
+        3.2️⃣ Configurar variables de entorno
+                cp .env.example .env
+        4.3️⃣ Generar clave de aplicación
+                php artisan key:generate
+        5.4️⃣ Ejecutar migraciones de base de datos(antes de migrar verificar que la base de datos exista)
+                php artisan migrate
+                (Opcional) Ejecutar seeders
+                        php artisan db:seed
+
+        6.5️⃣ Instalar dependencias de Node.js
+                npm install
+        7.6️⃣ Iniciar servidor de desarrollo
+                php artisan serve
+                npm run dev
+
+
+
+Verificar conexión a la base de datos (SIN migrar aún)
+
+        php artisan tinker
+        Dentro de Tinker ejecuta:
+                DB::connection()->getDatabaseName();
+        ✅ Si la conexión es correcta verás algo similar a:
+                => "nombre_de_tu_base_de_datos"
+
+        ❌ Si la conexión falla verás un error indicando el problema.
+
+        Sal de Tinker:
+                exit
+
+Dependencias de React instaladas (Para Producción tener en cuenta):
+
+        npm install react react-dom @vitejs/plugin-react
+
+
+
+

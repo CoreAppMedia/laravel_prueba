@@ -1,29 +1,27 @@
 FROM php:8.2-cli
 
-WORKDIR /var/www
-
-# Dependencias sistema
+# Dependencias sistema + PostgreSQL + ZIP
 RUN apt-get update && apt-get install -y \
-    git \
-    unzip \
-    libpq-dev
-
-# Extensión PostgreSQL
-RUN docker-php-ext-install pdo_pgsql
+    git unzip curl libpq-dev libzip-dev \
+    && docker-php-ext-install pdo pdo_pgsql zip \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+# Directorio app
+WORKDIR /var/www
+
 # Copiar proyecto
 COPY . .
 
-# Instalar dependencias
-RUN composer install --no-dev --optimize-autoloader
+# Instalar dependencias Laravel
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Permisos Laravel
+# Permisos Laravel (necesario en Render)
 RUN chmod -R 775 storage bootstrap/cache
 
-# Limpiar cache (solo esto en build)
+# Limpiar caches (build-time)
 RUN php artisan config:clear && \
     php artisan route:clear && \
     php artisan view:clear
@@ -32,5 +30,9 @@ RUN php artisan config:clear && \
 ENV PORT=10000
 EXPOSE 10000
 
-# 🔥 Migrar en runtime (correcto)
-CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT
+# Arranque container (runtime)
+CMD php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan view:cache && \
+    php artisan migrate --force && \
+    php artisan serve --host=0.0.0.0 --port=$PORT

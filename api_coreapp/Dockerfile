@@ -18,6 +18,10 @@ COPY . .
 # Instalar dependencias Laravel
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
+# Instalar dependencias frontend y compilar Vite
+RUN npm install
+RUN npm run build
+
 # Permisos Laravel
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache

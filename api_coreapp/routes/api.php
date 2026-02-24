@@ -8,10 +8,10 @@ use App\Http\Middleware\EnsureRegistrationKey;
 use App\Http\Middleware\CheckSuperAdmin;
 use App\Http\Controllers\UserController;
 
-Route::post('/register', [AuthController::class, 'register'])->middleware(EnsureRegistrationKey::class);
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
-Route::post('/reset-password', [PasswordResetController::class, 'reset']);
+Route::post('/register', [AuthController::class, 'register'])->middleware([EnsureRegistrationKey::class, 'throttle:register']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
+Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->middleware('throttle:password');
+Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:password');
 
 
 Route::middleware('auth:sanctum')->group(function () {

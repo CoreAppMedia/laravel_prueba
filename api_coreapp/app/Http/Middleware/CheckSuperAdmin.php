@@ -21,7 +21,10 @@ class CheckSuperAdmin
     {
         $user = $request->user();
 
-        if ($user && $user->permiso_id == 1 && $user->rol_id == 1) {
+        $superPermisoId = (int) env('SUPERADMIN_PERMISO_ID', 1);
+        $superRolId = (int) env('SUPERADMIN_ROL_ID', 1);
+
+        if ($user && (int) $user->permiso_id === $superPermisoId && (int) $user->rol_id === $superRolId) {
             return $next($request);
         }
 

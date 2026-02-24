@@ -20,6 +20,28 @@ use Illuminate\Validation\Rules\Password;
  */
 class AuthController extends Controller
 {
+    private const MAX_ACTIVE_TOKENS = 3;
+    private const TOKEN_CLEANUP_BATCH_SIZE = 500;
+
+    private function enforceTokenLimit(User $user): void
+    {
+        $max = (int) env('SANCTUM_MAX_ACTIVE_TOKENS', self::MAX_ACTIVE_TOKENS);
+
+        if ($max <= 0) {
+            return;
+        }
+
+        $tokenIdsToDelete = $user->tokens()
+            ->latest('created_at')
+            ->skip($max)
+            ->take(self::TOKEN_CLEANUP_BATCH_SIZE)
+            ->pluck('id');
+
+        if ($tokenIdsToDelete->isNotEmpty()) {
+            $user->tokens()->whereIn('id', $tokenIdsToDelete)->delete();
+        }
+    }
+
     /**
      * Registrar un nuevo usuario. (Register a new user.)           
      */
@@ -38,8 +60,7 @@ class AuthController extends Controller
         if ($existingUser) {
             return response()->json([
                 'message' => 'Usuario ya existe',
-                'reason' => 'Duplicado detectado (Email, Username, o Nombre Completo)',
-                'user' => $existingUser
+                'reason' => 'Duplicado detectado (Email, Username, o Nombre Completo)'
             ], 409);
         }
 
@@ -76,9 +97,14 @@ class AuthController extends Controller
                 'asignado' => $validated['asignado'] ?? null,
             ]);
 
-            Mail::to($user)->send(new RegistrationSuccess($user));
+            try {
+                Mail::to($user)->send(new RegistrationSuccess($user));
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Error al enviar correo de registro: ' . $e->getMessage());
+            }
 
             $token = $user->createToken('auth_token')->plainTextToken;
+            $this->enforceTokenLimit($user);
 
             return response()->json([
                 'access_token' => $token,
@@ -96,13 +122,18 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        $validated = $request->validate([
+            'email' => 'required|string|email',
+            'password' => 'required|string',
+        ]);
+
+        if (!Auth::attempt($validated)) {
             return response()->json([
-                'message' => 'Invalid login details'
+                'message' => 'Credenciales inválidas'
             ], 401);
         }
 
-        $user = User::with(['permiso', 'rol'])->where('email', $request['email'])->firstOrFail();
+        $user = User::with(['permiso', 'rol'])->where('email', $validated['email'])->firstOrFail();
 
         if (!$user->active) {
             return response()->json([
@@ -111,6 +142,7 @@ class AuthController extends Controller
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
+        $this->enforceTokenLimit($user);
 
         return response()->json([
             'access_token' => $token,
@@ -135,7 +167,7 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json([
-            'message' => 'Cerrado sesión'
+            'message' => 'Sesión cerrada'
         ]);
     }
 }

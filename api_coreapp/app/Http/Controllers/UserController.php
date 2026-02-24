@@ -71,8 +71,8 @@ class UserController extends Controller
             'active' => $request->active
         ])->save();
 
-        $status = $request->active ? 'activated' : 'deactivated';
-        return response()->json(['message' => "User has been {$status} successfully", 'active' => $user->active]);
+        $status = $request->active ? 'activado' : 'desactivado';
+        return response()->json(['message' => "Usuario {$status} con éxito", 'active' => $user->active]);
     }
 
     /**

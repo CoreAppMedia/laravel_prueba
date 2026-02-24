@@ -79,4 +79,5 @@ Dependencias de React instaladas (Para Producción tener en cuenta):
 
 
 
-
+#comando para ejecutar el scheduler que hace tareas programadas, en segundo plano para produccion
+php artisan schedule:work

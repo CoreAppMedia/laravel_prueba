@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +21,8 @@ use Illuminate\Validation\Rules\Password as PasswordRules;
 
 class PasswordResetController extends Controller
 {
+    private const DEFAULT_CODE_TTL_MINUTES = 15;
+
     public function sendResetLink(Request $request)
     {
         $request->validate(['email' => 'required|email']);
@@ -53,8 +54,11 @@ class PasswordResetController extends Controller
             Mail::to($user)->send(new PasswordResetCode($code));
             \Illuminate\Support\Facades\Log::info('Correo electrónico enviado con éxito.');
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Error sending email: ' . $e->getMessage());
-            throw $e;
+            \Illuminate\Support\Facades\Log::error('Error al enviar correo de restablecimiento: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Si su correo electrónico está registrado, recibirá un código de restablecimiento.'
+            ], 200);
         }
 
         return response()->json(['message' => 'Código de restablecimiento enviado a su correo electrónico.'], 200);
@@ -80,7 +84,10 @@ class PasswordResetController extends Controller
         }
 
         // Check expiration (e.g., 15 minutes)
-        if (now()->diffInMinutes($record->created_at) > 15) {
+        $ttlMinutes = (int) env('PASSWORD_RESET_CODE_TTL_MINUTES', self::DEFAULT_CODE_TTL_MINUTES);
+
+        if ($ttlMinutes > 0 && now()->diffInMinutes($record->created_at) > $ttlMinutes) {
+            DB::table('password_reset_codes')->where('email', $request->email)->delete();
             throw ValidationException::withMessages(['token' => 'Código de restablecimiento expirado.']);
         }
 

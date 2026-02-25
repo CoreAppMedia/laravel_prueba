@@ -9,6 +9,7 @@ import Login from './Pages/Auth/Login';
 import ForgotPassword from './Pages/Auth/ForgotPassword';
 import ResetPassword from './Pages/Auth/ResetPassword';
 
+import Dashboard from './Components/Dashboard';
 import HomeRedirect from './Pages/HomeRedirect';
 import NotFound from './Pages/NotFound';
 

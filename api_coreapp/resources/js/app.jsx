@@ -32,8 +32,9 @@ function App() {
                     <Route path="/recuperar" element={<ForgotPassword />} />
                     <Route path="/restablecer" element={<ResetPassword />} />
 
+
+                    <Route path="/" element={<Dashboard />} />
                     <Route element={<ProtectedRoute />}>
-                        <Route path="/" element={<Dashboard />} />
                         <Route path="/panel" element={<PanelGenerico />} />
 
                         <Route path="/panel/desarrollador" element={<PanelDesarrollador />} />

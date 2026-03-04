@@ -17,6 +17,21 @@ export async function fetchMe() {
     return data;
 }
 
+export async function register(userData) {
+    const { registrationKey, ...dataToSubmit } = userData;
+    const { data } = await http.post('/api/register', dataToSubmit, {
+        headers: {
+            'X-Registration-Key': registrationKey
+        }
+    });
+
+    if (data?.access_token) {
+        setToken(data.access_token);
+    }
+
+    return data;
+}
+
 export async function login({ email, password }) {
     const { data } = await http.post('/api/login', { email, password });
 

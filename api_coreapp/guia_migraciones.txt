@@ -1,0 +1,93 @@
+# GUÍA PARA CREAR Y MANEJAR MIGRACIONES EN LARAVEL
+
+Esta es una guía rápida paso a paso para crear nuevas tablas en la base de datos de tu sistema "Clubes Unidos / Liga MX".
+
+---
+
+## 1. Crear una nueva migración (y Modelo)
+Para crear una nueva tabla en la base de datos, el mejor enfoque es generar el **Modelo** y su **Migración** al mismo tiempo con la bandera `-m`. 
+
+Ejemplo para crear la tabla de "equipos":
+    php artisan make:model Equipo -m
+
+Ejemplo para "jugadores":
+    php artisan make:model Jugador -m
+
+Si solo quieres crear la migración sin el modelo (ej. para una tabla pivot), usa:
+    php artisan make:migration create_equipo_jugador_table
+
+---
+
+## 2. Definir los campos de la tabla
+Abre el archivo generado en la carpeta `database/migrations/` (tendrá la fecha de hoy en el nombre) y define las columnas en el método `up()`.
+
+```php
+public function up()
+{
+    Schema::create('equipos', function (Blueprint $table) {
+        $table->id();
+        $table->string('nombre');
+        $table->string('logotipo')->nullable();
+        $table->boolean('activo')->default(true);
+        $table->timestamps(); // Crea los campos created_at y updated_at automáticamente
+    });
+}
+```
+
+---
+
+## 3. Ejecutar las migraciones (Subir cambios a la BD)
+Una vez que definiste los campos, ejecuta este comando para crear las tablas físicamente en tu base de datos:
+
+    php artisan migrate
+
+---
+
+## 4. Deshacer migraciones o reiniciar la BD
+Si te equivocaste en las últimas migraciones que acabas de subir:
+
+    php artisan migrate:rollback
+
+Si estás en modo desarrollo y quieres borrar TODAS las tablas y volver a crearlas desde cero (muy útil cuando estás experimentando):
+
+    php artisan migrate:fresh
+
+**¡IMPORTANTE!** Si quieres borrar todas las tablas, recrearlas e insertar los datos iniciales de tus Seeders (como tus roles de `admin`, `tribunalPenas`, `delegado`, etc. que editaste en `DatabaseSeeder.php`), usa:
+
+    php artisan migrate:fresh --seed
+
+---
+
+## 5. Modificar una tabla que ya existe
+Si ya corriste la migración de `users` y quieres agregarle un nuevo campo (ej. `telefono`), la mejor práctica es crear una migración nueva de actualización:
+
+    php artisan make:migration add_telefono_to_users_table
+
+Dentro modificarías la estructura así:
+```php
+public function up()
+{
+    Schema::table('users', function (Blueprint $table) {
+        // Agrega el campo después del email
+        $table->string('telefono')->nullable()->after('email');
+    });
+}
+
+public function down()
+{
+    Schema::table('users', function (Blueprint $table) {
+        // Por si necesitas hacer rollback, definir cómo borrar la columna
+        $table->dropColumn('telefono');
+    });
+}
+```
+Y luego simplemente corres `php artisan migrate`.
+
+---
+
+## RESUMEN DE COMANDOS ÚTILES
+👉 `php artisan make:model NombreModelo -m` (Crea modelo + migración)
+👉 `php artisan make:migration nombre_de_la_migracion` (Crea migración sola)
+👉 `php artisan migrate` (Impacta cambios en BD)
+👉 `php artisan migrate:rollback` (Deshace el último lote de migraciones)
+👉 `php artisan migrate:fresh --seed` (Destruye todo, recrea tablas y corre los Seeders)

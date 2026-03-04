@@ -6,6 +6,7 @@ import { AuthProvider } from './Auth/AuthContext';
 import ProtectedRoute from './Auth/ProtectedRoute';
 
 import Login from './Pages/Auth/Login';
+import Register from './Pages/Auth/Register';
 import ForgotPassword from './Pages/Auth/ForgotPassword';
 import ResetPassword from './Pages/Auth/ResetPassword';
 
@@ -30,6 +31,7 @@ function App() {
             <BrowserRouter>
                 <Routes>
                     <Route path="/login" element={<Login />} />
+                    <Route path="/registro" element={<Register />} />
                     <Route path="/recuperar" element={<ForgotPassword />} />
                     <Route path="/restablecer" element={<ResetPassword />} />
 

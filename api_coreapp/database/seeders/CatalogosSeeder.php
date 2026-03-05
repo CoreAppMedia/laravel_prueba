@@ -82,12 +82,12 @@ class CatalogosSeeder extends Seeder
                 'activo' => true,
             ],
         ];
-foreach ($estadosPartido as $item) {
-    CatalogoEstadoPartido::firstOrCreate(
-        ['nombre' => $item['nombre']],
-        $item
-    );
-}
+        foreach ($estadosPartido as $item) {
+            CatalogoEstadoPartido::firstOrCreate(
+                ['nombre' => $item['nombre']],
+                $item
+            );
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -111,7 +111,10 @@ foreach ($estadosPartido as $item) {
             ],
         ];
         foreach ($tiposMulta as $item) {
-            CatalogoTipoMulta::create($item);
+            CatalogoTipoMulta::firstOrCreate(
+                ['nombre' => $item['nombre']],
+                $item
+            );
         }
     }
 }

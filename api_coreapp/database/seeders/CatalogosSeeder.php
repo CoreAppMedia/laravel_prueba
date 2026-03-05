@@ -30,7 +30,10 @@ class CatalogosSeeder extends Seeder
             ],
         ];
         foreach ($tiposTorneo as $item) {
-            CatalogoTipoTorneo::create($item);
+            CatalogoTipoTorneo::firstOrCreate(
+                ['nombre' => $item['nombre']],
+                $item
+            );
         }
 
         /*
@@ -51,7 +54,10 @@ class CatalogosSeeder extends Seeder
             ],
         ];
         foreach ($categorias as $item) {
-            CatalogoCategoria::create($item);
+            CatalogoCategoria::firstOrCreate(
+                ['nombre' => $item['nombre']],
+                $item
+            );
         }
 
         /*

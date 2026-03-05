@@ -81,3 +81,25 @@ Dependencias de React instaladas (Para Producción tener en cuenta):
 
 #comando para ejecutar el scheduler que hace tareas programadas, en segundo plano para produccion
 php artisan schedule:work
+
+
+
+para crear un controlador con su respectivo modelo y migracion usa el siguiente comando:
+
+        php artisan make:model NombreModelo -mcr
+
+para crear el controlador con el crud completo usa el siguiente comando:
+
+        php artisan make:controller NombreControlador --resource
+
+
+
+para crear el controlador con el crud completo y con las rutas de la api usa el siguiente comando:
+
+        php artisan make:controller NombreControlador --api
+
+
+
+para crear el controlador con el crud completo y con las rutas de la api y con los métodos de auditoria usa el siguiente comando:
+
+        php artisan make:controller NombreControlador --api --resource

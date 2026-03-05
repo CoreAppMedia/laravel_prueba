@@ -24,6 +24,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('/users/{id}/status', [UserController::class, 'toggleStatus']);
         Route::delete('/users/{id}', [UserController::class, 'destroy']);
     });
+
+    // Phase 1 Controllers
+    Route::apiResource('temporadas', \App\Http\Controllers\TemporadaController::class);
+    Route::apiResource('torneos', \App\Http\Controllers\TorneoController::class);
+    Route::apiResource('clubs', \App\Http\Controllers\ClubController::class);
+    
+    Route::apiResource('equipos', \App\Http\Controllers\EquipoController::class);
+    Route::patch('/equipos/{equipo}/status', [\App\Http\Controllers\EquipoController::class, 'toggleStatus']);
 });
 
 Route::get('/test', function () {

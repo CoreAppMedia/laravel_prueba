@@ -8,7 +8,7 @@ use App\Models\CatalogoCategoria;
 use App\Models\CatalogoEstadoPartido;
 use App\Models\CatalogoTipoMulta;
 
-class CatalogosSeeder extends Seeder
+class CatalogosSeederPostgrest extends Seeder
 {
     public function run(): void
     {

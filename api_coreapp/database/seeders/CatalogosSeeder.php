@@ -76,9 +76,12 @@ class CatalogosSeeder extends Seeder
                 'activo' => true,
             ],
         ];
-        foreach ($estadosPartido as $item) {
-            CatalogoEstadoPartido::create($item);
-        }
+foreach ($estadosPartido as $item) {
+    CatalogoEstadoPartido::firstOrCreate(
+        ['nombre' => $item['nombre']],
+        $item
+    );
+}
 
         /*
         |--------------------------------------------------------------------------

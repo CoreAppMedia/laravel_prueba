@@ -91,3 +91,10 @@ Y luego simplemente corres `php artisan migrate`.
 👉 `php artisan migrate` (Impacta cambios en BD)
 👉 `php artisan migrate:rollback` (Deshace el último lote de migraciones)
 👉 `php artisan migrate:fresh --seed` (Destruye todo, recrea tablas y corre los Seeders)
+
+
+
+##crear un nuevo controlador para api
+php artisan make:controller NombreControlador --api
+
+##crear un nuevo controlador para api

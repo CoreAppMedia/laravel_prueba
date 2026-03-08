@@ -32,6 +32,13 @@ Route::middleware('auth:sanctum')->group(function () {
     
     Route::apiResource('equipos', \App\Http\Controllers\EquipoController::class);
     Route::patch('/equipos/{equipo}/status', [\App\Http\Controllers\EquipoController::class, 'toggleStatus']);
+    // Catalogos
+    Route::prefix('catalogos')->group(function () {
+        Route::get('/tipos-torneo', [\App\Http\Controllers\CatalogosController::class, 'getTiposTorneo']);
+        Route::get('/categorias', [\App\Http\Controllers\CatalogosController::class, 'getCategorias']);
+        Route::get('/estados-partido', [\App\Http\Controllers\CatalogosController::class, 'getEstadosPartido']);
+        Route::get('/tipos-multa', [\App\Http\Controllers\CatalogosController::class, 'getTiposMulta']);
+    });
 });
 
 Route::get('/test', function () {

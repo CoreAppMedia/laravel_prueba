@@ -1,43 +1,73 @@
 import React from 'react';
+import { Calendar, MapPin, Clock, Trophy } from 'lucide-react';
 
 export default function MatchCard({ homeTeam, awayTeam, time, status, stadium }) {
+    const isLive = status === 'LIVE';
+
     return (
-        <div className="bg-[--color-bg-card] rounded-xl shadow-xl border border-gray-700 overflow-hidden relative">
-            {/* Status Badge */}
-            <div className="absolute top-0 right-0 left-0 flex justify-center -mt-3">
-                <span className={`px-4 py-1 text-xs font-bold uppercase tracking-wider rounded-b-lg shadow-md ${status === 'LIVE' ? 'bg-[--color-mx-red] text-[--color-mx-white] animate-pulse' : 'bg-[--color-mx-green] text-[--color-mx-white]'}`}>
-                    {status}
-                </span>
+        <div className="bg-white rounded-2xl shadow-soft border border-[--color-border-subtle] overflow-hidden relative group hover:shadow-premium transition-all duration-300">
+            {/* Light Glass Header */}
+            <div className={`h-1.5 w-full ${isLive ? 'bg-mx-red' : 'bg-mx-green'} relative overflow-hidden`}>
+                {isLive && <div className="absolute inset-0 bg-white/30 animate-pulse"></div>}
             </div>
 
-            <div className="p-6 pt-8 flex items-center justify-between">
-                {/* Home Team */}
-                <div className="flex flex-col items-center w-1/3">
-                    <div className="w-16 h-16 bg-gray-700 rounded-full mb-3 flex items-center justify-center text-2xl shadow-inner border-2 border-gray-600">
-                        🏠 {/* Placeholder Icon */}
+            <div className="p-8">
+                <div className="flex items-center justify-between gap-4">
+                    {/* Home Team */}
+                    <div className="flex flex-col items-center flex-1">
+                        <div className="w-20 h-20 bg-slate-50 rounded-2xl mb-4 flex items-center justify-center shadow-inner border border-slate-100 group-hover:scale-110 transition-transform duration-500">
+                            <div className="text-3xl grayscale group-hover:grayscale-0 transition-all">🛡️</div>
+                        </div>
+                        <span className="text-slate-900 font-black text-xs uppercase tracking-tight text-center leading-tight">
+                            {homeTeam}
+                        </span>
                     </div>
-                    <span className="text-[--color-mx-white] font-bold text-center leading-tight">{homeTeam}</span>
+
+                    {/* VS / Info Center */}
+                    <div className="flex flex-col items-center px-4">
+                        {isLive ? (
+                            <span className="px-3 py-1 bg-red-100 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-red-200 mb-2 animate-bounce">
+                                En Vivo
+                            </span>
+                        ) : (
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Próximo</span>
+                        )}
+                        <div className="flex items-center gap-3">
+                            <div className="h-px w-6 bg-slate-200"></div>
+                            <span className="text-2xl font-black text-slate-900 italic tracking-tighter">VS</span>
+                            <div className="h-px w-6 bg-slate-200"></div>
+                        </div>
+                    </div>
+
+                    {/* Away Team */}
+                    <div className="flex flex-col items-center flex-1">
+                        <div className="w-20 h-20 bg-slate-50 rounded-2xl mb-4 flex items-center justify-center shadow-inner border border-slate-100 group-hover:scale-110 transition-transform duration-500">
+                            <div className="text-3xl grayscale group-hover:grayscale-0 transition-all">⚽</div>
+                        </div>
+                        <span className="text-slate-900 font-black text-xs uppercase tracking-tight text-center leading-tight">
+                            {awayTeam}
+                        </span>
+                    </div>
                 </div>
 
-                {/* VS / Score */}
-                <div className="flex flex-col items-center w-1/3 z-10">
-                    <span className="text-3xl font-black text-[--color-mx-white] italic">VS</span>
-                    <span className="text-gray-400 text-sm mt-1">{time}</span>
-                </div>
-
-                {/* Away Team */}
-                <div className="flex flex-col items-center w-1/3">
-                    <div className="w-16 h-16 bg-gray-700 rounded-full mb-3 flex items-center justify-center text-2xl shadow-inner border-2 border-gray-600">
-                        ✈️ {/* Placeholder Icon */}
+                {/* Match Details Grid */}
+                <div className="mt-8 grid grid-cols-2 gap-3">
+                    <div className="flex items-center gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                        <Calendar size={14} className="text-slate-400" />
+                        <span className="text-[10px] font-bold text-slate-600 uppercase whitespace-nowrap">{time.split(' ')[0]}</span>
                     </div>
-                    <span className="text-[--color-mx-white] font-bold text-center leading-tight">{awayTeam}</span>
+                    <div className="flex items-center gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                        <Clock size={14} className="text-slate-400" />
+                        <span className="text-[10px] font-bold text-slate-600 uppercase whitespace-nowrap">{time.split(' ')[1] || '20:00'}</span>
+                    </div>
                 </div>
             </div>
 
-            {/* Stadium / Footer */}
-            <div className="bg-gray-800/50 p-3 text-center border-t border-gray-700">
-                <p className="text-xs text-gray-500 uppercase tracking-widest flex items-center justify-center gap-2">
-                    🏟️ {stadium}
+            {/* Stadium / Venue Footer */}
+            <div className="bg-slate-50/80 backdrop-blur-sm p-4 text-center border-t border-slate-100 flex items-center justify-center gap-3">
+                <MapPin size={14} className="text-mx-red" />
+                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">
+                    {stadium}
                 </p>
             </div>
         </div>

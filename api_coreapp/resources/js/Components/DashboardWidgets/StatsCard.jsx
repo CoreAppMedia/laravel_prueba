@@ -1,28 +1,69 @@
 import React from 'react';
+import * as Lucide from 'lucide-react';
 
 export default function StatsCard({ title, value, icon, color, href }) {
-    const colorClasses = {
-        green: 'bg-[--color-mx-green]',
-        red: 'bg-[--color-mx-red]',
-        white: 'bg-[--color-mx-dark]',
-        default: 'bg-[--color-bg-card]'
+    // Map emoji or string icons to Lucide components if possible, or use the icon directly
+    const IconComponent = typeof icon === 'string' && Lucide[icon] ? Lucide[icon] : null;
+
+    const colorConfigs = {
+        green: {
+            bg: 'bg-green-50',
+            icon: 'text-mx-green',
+            accent: 'bg-mx-green',
+            shadow: 'hover:shadow-green-500/10'
+        },
+        red: {
+            bg: 'bg-red-50',
+            icon: 'text-mx-red',
+            accent: 'bg-mx-red',
+            shadow: 'hover:shadow-red-500/10'
+        },
+        white: {
+            bg: 'bg-blue-50',
+            icon: 'text-blue-600',
+            accent: 'bg-blue-600',
+            shadow: 'hover:shadow-blue-500/10'
+        },
+        default: {
+            bg: 'bg-slate-50',
+            icon: 'text-slate-600',
+            accent: 'bg-slate-600',
+            shadow: 'hover:shadow-slate-500/10'
+        }
     };
 
-    const selectedColor = colorClasses[color] || colorClasses.default;
-    const textColor = color === 'white' ? 'text-[--color-mx-white]' : 'text-[--color-mx-white]';
-    const subTextColor = color === 'white' ? 'text-gray-600' : 'text-gray-400';
+    const config = colorConfigs[color] || colorConfigs.default;
 
     return (
-        <a href={href || '#'} className={`block rounded-xl shadow-lg p-6 border border-gray-700/50 relative overflow-hidden group ${selectedColor} hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer`}>
-            <div className={`absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 group-hover:scale-110 transition-all duration-300`}>
-                {icon && <div className="text-6xl">{icon}</div>}
+        <a
+            href={href || '#'}
+            className={`block bg-white border border-[--color-border-subtle] rounded-2xl p-6 relative overflow-hidden group shadow-soft hover:shadow-premium ${config.shadow} transition-all duration-500 hover:-translate-y-1`}
+        >
+            <div className={`absolute -right-4 -top-4 w-24 h-24 ${config.bg} rounded-full opacity-50 group-hover:scale-125 transition-transform duration-700 ease-out flex items-center justify-center`}>
+                <div className={`${config.icon} opacity-20 group-hover:opacity-40 transition-opacity`}>
+                    {IconComponent ? <IconComponent size={64} /> : <span className="text-4xl">{icon}</span>}
+                </div>
             </div>
 
             <div className="relative z-10">
-                <h3 className={`text-sm font-medium uppercase tracking-wider mb-1 ${subTextColor}`}>{title}</h3>
-                <div className={`text-3xl font-bold ${textColor}`}>{value}</div>
+                <div className={`w-12 h-12 ${config.bg} rounded-xl flex items-center justify-center mb-4 border border-white shadow-sm`}>
+                    <div className={config.icon}>
+                        {IconComponent ? <IconComponent size={24} /> : <span className="text-xl">{icon}</span>}
+                    </div>
+                </div>
 
-                <div className={`h-1 w-0 group-hover:w-full transition-all duration-500 mt-4 rounded-full ${color === 'green' ? 'bg-green-400' : color === 'red' ? 'bg-red-400' : 'bg-gray-500'}`}></div>
+                <h3 className="text-xs font-black uppercase tracking-widest text-[--color-text-muted] mb-1 group-hover:text-slate-600 transition-colors">
+                    {title}
+                </h3>
+                <div className="text-3xl font-black text-slate-900 tracking-tight">
+                    {value}
+                </div>
+
+                <div className="mt-4 flex items-center gap-2">
+                    <div className={`h-1.5 w-12 rounded-full ${config.accent}`}></div>
+                    <div className="h-1.5 w-1.5 rounded-full bg-slate-200"></div>
+                    <div className="h-1.5 w-1.5 rounded-full bg-slate-100"></div>
+                </div>
             </div>
         </a>
     );

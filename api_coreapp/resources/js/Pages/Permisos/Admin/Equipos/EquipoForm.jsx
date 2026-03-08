@@ -4,17 +4,17 @@ import GradientButton from '../../../../Components/UI/GradientButton';
 import toast from 'react-hot-toast';
 
 export default function EquipoForm({ equipo, onSuccess, onCancel }) {
+    const [clubes, setClubes] = useState([]);
+    const [categorias, setCategorias] = useState([]);
+    const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         club_id: equipo?.club_id || '',
         categoria_id: equipo?.categoria_id || '',
         nombre_mostrado: equipo?.nombre_mostrado || '',
-        activo: equipo?.activo ?? true,
+        activo: equipo?.activo ?? true
     });
 
-    const [clubes, setClubes] = useState([]);
-    const [categorias, setCategorias] = useState([]);
     const [errors, setErrors] = useState({});
-    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const fetchDependencies = async () => {
@@ -26,7 +26,7 @@ export default function EquipoForm({ equipo, onSuccess, onCancel }) {
                 setClubes(resClubes.data);
                 setCategorias(resCats.data);
             } catch (error) {
-                toast.error('Error al cargar catálogos para equipos');
+                toast.error('Error al cargar clubes o categorías');
             }
         };
         fetchDependencies();
@@ -34,10 +34,10 @@ export default function EquipoForm({ equipo, onSuccess, onCancel }) {
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData({
-            ...formData,
+        setFormData(prev => ({
+            ...prev,
             [name]: type === 'checkbox' ? checked : value
-        });
+        }));
     };
 
     const handleSubmit = async (e) => {
@@ -48,94 +48,95 @@ export default function EquipoForm({ equipo, onSuccess, onCancel }) {
         try {
             if (equipo) {
                 await http.put(`/api/equipos/${equipo.id}`, formData);
-                toast.success('Equipo actualizado exitosamente');
+                toast.success('Equipo actualizado correctamente');
             } else {
                 await http.post('/api/equipos', formData);
-                toast.success('Equipo registrado exitosamente');
+                toast.success('Equipo registrado correctamente');
             }
             onSuccess();
         } catch (error) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors);
-                // El backend ya tiene la lógica de anti-duplicación y devuelve un mensaje claro
-                const mainError = error.response.data.errors.club_id || error.response.data.errors.categoria_id;
-                if (mainError) toast.error(mainError[0]);
-                else toast.error('Error de validación en los datos');
             } else {
-                toast.error('Ocurrió un error inesperado al guardar el equipo');
+                toast.error('Error al guardar el equipo');
             }
         } finally {
             setLoading(false);
         }
     };
 
+    const inputClass = "w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900 focus:ring-2 focus:ring-mx-green/20 focus:border-mx-green outline-none transition-all font-medium shadow-sm";
+    const labelClass = "block text-sm font-black text-slate-700 mb-1 tracking-tight";
+
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Club / Organización</label>
+                <label className={labelClass}>Club / Organización</label>
                 <select
                     name="club_id"
                     value={formData.club_id}
                     onChange={handleChange}
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-md px-4 py-2 text-white focus:ring-mx-green focus:border-mx-green outline-none"
+                    className={inputClass}
                 >
-                    <option value="">Selecciona organización</option>
-                    {clubes.map(c => (
+                    <option value="">Selecciona un Club</option>
+                    {clubes.map((c) => (
                         <option key={c.id} value={c.id}>{c.nombre}</option>
                     ))}
                 </select>
-                {errors.club_id && <p className="text-red-400 text-xs mt-1">{errors.club_id[0]}</p>}
+                {errors.club_id && <p className="text-red-600 text-xs mt-1 font-bold">{errors.club_id[0]}</p>}
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Categoría</label>
+                <label className={labelClass}>Categoría</label>
                 <select
                     name="categoria_id"
                     value={formData.categoria_id}
                     onChange={handleChange}
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-md px-4 py-2 text-white focus:ring-mx-green focus:border-mx-green outline-none"
+                    className={inputClass}
                 >
-                    <option value="">Selecciona categoría</option>
-                    {categorias.map(cat => (
+                    <option value="">Selecciona una Categoría</option>
+                    {categorias.map((cat) => (
                         <option key={cat.id} value={cat.id}>{cat.nombre}</option>
                     ))}
                 </select>
-                {errors.categoria_id && <p className="text-red-400 text-xs mt-1">{errors.categoria_id[0]}</p>}
+                {errors.categoria_id && <p className="text-red-600 text-xs mt-1 font-bold">{errors.categoria_id[0]}</p>}
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Nombre Mostrado (Ej. Chivas Sub-17)</label>
+                <label className={labelClass}>Nombre Mostrado (Ej. Chivas Sub-17)</label>
                 <input
                     type="text"
                     name="nombre_mostrado"
                     value={formData.nombre_mostrado}
                     onChange={handleChange}
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-md px-4 py-2 text-white focus:ring-mx-green focus:border-mx-green outline-none"
+                    className={inputClass}
                     placeholder="¿Cómo se verá el equipo en las tablas?"
                 />
-                {errors.nombre_mostrado && <p className="text-red-400 text-xs mt-1">{errors.nombre_mostrado[0]}</p>}
-                <p className="text-[10px] text-slate-500 mt-1 italic italic">Ejemplo: Si el club es 'América' y la categoría 'Femenil', puedes poner 'América Femenil'.</p>
+                {errors.nombre_mostrado && <p className="text-red-600 text-xs mt-1 font-bold">{errors.nombre_mostrado[0]}</p>}
+                <p className="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-tight italic">
+                    Ejemplo: Si el club es 'América' y la categoría 'Femenil', puedes poner 'América Femenil'.
+                </p>
             </div>
 
-            <div className="flex items-center mt-4">
+            <div className="flex items-center p-4 bg-slate-50 rounded-xl border border-slate-200 shadow-inner">
                 <input
                     type="checkbox"
                     id="activo"
                     name="activo"
                     checked={formData.activo}
                     onChange={handleChange}
-                    className="w-4 h-4 text-mx-green bg-slate-900 border-slate-700 rounded focus:ring-mx-green focus:ring-2"
+                    className="w-5 h-5 text-mx-green bg-white border-slate-300 rounded-lg focus:ring-mx-green focus:ring-2 transition-all cursor-pointer"
                 />
-                <label htmlFor="activo" className="ml-2 text-sm font-medium text-slate-300">
+                <label htmlFor="activo" className="ml-3 text-sm font-black text-slate-700 cursor-pointer">
                     Equipo Activo para Torneos
                 </label>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-700/50 mt-6">
+            <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 mt-6">
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors"
+                    className="px-6 py-2 text-sm font-black text-slate-400 hover:text-slate-800 transition-colors uppercase tracking-widest"
                 >
                     Cancelar
                 </button>

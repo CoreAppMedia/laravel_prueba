@@ -1,37 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import http from '../../../../lib/http';
-import GradientButton from '../../../../Components/UI/GradientButton';
-import toast from 'react-hot-toast';
+import React, { useState, useEffect } from "react";
+import http from "../../../../lib/http";
+import GradientButton from "../../../../Components/UI/GradientButton";
+import toast from "react-hot-toast";
 
 export default function TorneoForm({ torneo, onSuccess, onCancel }) {
-    const [formData, setFormData] = useState({
-        temporada_id: torneo?.temporada_id || '',
-        tipo_torneo_id: torneo?.tipo_torneo_id || '',
-        nombre: torneo?.nombre || '',
-        fecha_inicio: torneo?.fecha_inicio || '',
-        fecha_fin: torneo?.fecha_fin || '',
-        es_abierto: torneo?.es_abierto ?? false,
-        costo_inscripcion: torneo?.costo_inscripcion || 0,
-        costo_arbitraje_por_partido: torneo?.costo_arbitraje_por_partido || 0,
-        estatus: torneo?.estatus || 'Planeación',
-    });
-
     const [temporadas, setTemporadas] = useState([]);
     const [tiposTorneo, setTiposTorneo] = useState([]);
-    const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        temporada_id: torneo?.temporada_id || "",
+        catalogo_tipo_torneo_id: torneo?.catalogo_tipo_torneo_id || "",
+        nombre: torneo?.nombre || "",
+        fecha_inicio: torneo?.fecha_inicio || "",
+        fecha_fin: torneo?.fecha_fin || "",
+        costo_inscripcion: torneo?.costo_inscripcion || 0,
+        costo_arbitraje_por_partido: torneo?.costo_arbitraje_por_partido || 0,
+        estatus: torneo?.estatus || "Planeación",
+        es_abierto: torneo?.es_abierto ?? true,
+    });
+
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         const fetchDependencies = async () => {
             try {
                 const [resTemp, resTipos] = await Promise.all([
-                    http.get('/api/temporadas'),
-                    http.get('/api/catalogos/tipos-torneo')
+                    http.get("/api/temporadas"),
+                    http.get("/api/catalogos/tipos-torneo"),
                 ]);
                 setTemporadas(resTemp.data);
                 setTiposTorneo(resTipos.data);
             } catch (error) {
-                toast.error('Error al cargar dependencias del formulario');
+                toast.error("Error al cargar datos necesarios");
             }
         };
         fetchDependencies();
@@ -39,10 +39,10 @@ export default function TorneoForm({ torneo, onSuccess, onCancel }) {
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData({
-            ...formData,
-            [name]: type === 'checkbox' ? checked : value
-        });
+        setFormData((prev) => ({
+            ...prev,
+            [name]: type === "checkbox" ? checked : value,
+        }));
     };
 
     const handleSubmit = async (e) => {
@@ -53,133 +53,134 @@ export default function TorneoForm({ torneo, onSuccess, onCancel }) {
         try {
             if (torneo) {
                 await http.put(`/api/torneos/${torneo.id}`, formData);
-                toast.success('Torneo actualizado exitosamente');
+                toast.success("Torneo actualizado correctamente");
             } else {
-                await http.post('/api/torneos', formData);
-                toast.success('Torneo creado exitosamente');
+                await http.post("/api/torneos", formData);
+                toast.success("Torneo creado correctamente");
             }
             onSuccess();
         } catch (error) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors);
-                toast.error('Por favor revisa los campos del formulario');
             } else {
-                toast.error('Ocurrió un error inesperado');
+                toast.error("Error al guardar el torneo");
             }
         } finally {
             setLoading(false);
         }
     };
 
+    const inputClass = "w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900 focus:ring-2 focus:ring-mx-green/20 focus:border-mx-green outline-none transition-all font-medium shadow-sm";
+    const labelClass = "block text-sm font-black text-slate-700 mb-1 tracking-tight";
+
     return (
-        <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto px-1">
+        <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Temporada</label>
+                    <label className={labelClass}>Temporada</label>
                     <select
                         name="temporada_id"
                         value={formData.temporada_id}
                         onChange={handleChange}
-                        className="w-full bg-slate-900/50 border border-slate-700 rounded-md px-4 py-2 text-white focus:ring-mx-green focus:border-mx-green outline-none"
+                        className={inputClass}
                     >
-                        <option value="">Selecciona una temporada</option>
-                        {temporadas.map(t => (
-                            <option key={t.id} value={t.id}>{t.nombre}</option>
+                        <option value="">Selecciona Temporada</option>
+                        {temporadas.map((temp) => (
+                            <option key={temp.id} value={temp.id}>{temp.nombre}</option>
                         ))}
                     </select>
-                    {errors.temporada_id && <p className="text-red-400 text-xs mt-1">{errors.temporada_id[0]}</p>}
+                    {errors.temporada_id && <p className="text-red-600 text-xs mt-1 font-bold">{errors.temporada_id[0]}</p>}
                 </div>
-
                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Tipo de Torneo</label>
+                    <label className={labelClass}>Tipo de Torneo</label>
                     <select
-                        name="tipo_torneo_id"
-                        value={formData.tipo_torneo_id}
+                        name="catalogo_tipo_torneo_id"
+                        value={formData.catalogo_tipo_torneo_id}
                         onChange={handleChange}
-                        className="w-full bg-slate-900/50 border border-slate-700 rounded-md px-4 py-2 text-white focus:ring-mx-green focus:border-mx-green outline-none"
+                        className={inputClass}
                     >
-                        <option value="">Selecciona tipo</option>
-                        {tiposTorneo.map(tipo => (
+                        <option value="">Selecciona Tipo</option>
+                        {tiposTorneo.map((tipo) => (
                             <option key={tipo.id} value={tipo.id}>{tipo.nombre}</option>
                         ))}
                     </select>
-                    {errors.tipo_torneo_id && <p className="text-red-400 text-xs mt-1">{errors.tipo_torneo_id[0]}</p>}
+                    {errors.catalogo_tipo_torneo_id && <p className="text-red-600 text-xs mt-1 font-bold">{errors.catalogo_tipo_torneo_id[0]}</p>}
                 </div>
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Nombre del Torneo</label>
+                <label className={labelClass}>Nombre del Torneo</label>
                 <input
                     type="text"
                     name="nombre"
                     value={formData.nombre}
                     onChange={handleChange}
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-md px-4 py-2 text-white focus:ring-mx-green focus:border-mx-green outline-none"
+                    className={inputClass}
                     placeholder="Ej. Liga Premier 2026"
                 />
-                {errors.nombre && <p className="text-red-400 text-xs mt-1">{errors.nombre[0]}</p>}
+                {errors.nombre && <p className="text-red-600 text-xs mt-1 font-bold">{errors.nombre[0]}</p>}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Fecha Inicio</label>
+                    <label className={labelClass}>Fecha Inicio</label>
                     <input
                         type="date"
                         name="fecha_inicio"
                         value={formData.fecha_inicio}
                         onChange={handleChange}
-                        className="w-full bg-slate-900/50 border border-slate-700 rounded-md px-4 py-2 text-white focus:ring-mx-green focus:border-mx-green outline-none"
+                        className={inputClass}
                     />
-                    {errors.fecha_inicio && <p className="text-red-400 text-xs mt-1">{errors.fecha_inicio[0]}</p>}
+                    {errors.fecha_inicio && <p className="text-red-600 text-xs mt-1 font-bold">{errors.fecha_inicio[0]}</p>}
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Fecha Fin</label>
+                    <label className={labelClass}>Fecha Fin</label>
                     <input
                         type="date"
                         name="fecha_fin"
                         value={formData.fecha_fin}
                         onChange={handleChange}
-                        className="w-full bg-slate-900/50 border border-slate-700 rounded-md px-4 py-2 text-white focus:ring-mx-green focus:border-mx-green outline-none"
+                        className={inputClass}
                     />
-                    {errors.fecha_fin && <p className="text-red-400 text-xs mt-1">{errors.fecha_fin[0]}</p>}
+                    {errors.fecha_fin && <p className="text-red-600 text-xs mt-1 font-bold">{errors.fecha_fin[0]}</p>}
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Costo Inscripción ($)</label>
+                    <label className={labelClass}>Costo Inscripción ($)</label>
                     <input
                         type="number"
                         step="0.01"
                         name="costo_inscripcion"
                         value={formData.costo_inscripcion}
                         onChange={handleChange}
-                        className="w-full bg-slate-900/50 border border-slate-700 rounded-md px-4 py-2 text-white focus:ring-mx-green focus:border-mx-green outline-none"
+                        className={inputClass}
                     />
-                    {errors.costo_inscripcion && <p className="text-red-400 text-xs mt-1">{errors.costo_inscripcion[0]}</p>}
+                    {errors.costo_inscripcion && <p className="text-red-600 text-xs mt-1 font-bold">{errors.costo_inscripcion[0]}</p>}
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Arbitraje por Partido ($)</label>
+                    <label className={labelClass}>Arbitraje por Partido ($)</label>
                     <input
                         type="number"
                         step="0.01"
                         name="costo_arbitraje_por_partido"
                         value={formData.costo_arbitraje_por_partido}
                         onChange={handleChange}
-                        className="w-full bg-slate-900/50 border border-slate-700 rounded-md px-4 py-2 text-white focus:ring-mx-green focus:border-mx-green outline-none"
+                        className={inputClass}
                     />
-                    {errors.costo_arbitraje_por_partido && <p className="text-red-400 text-xs mt-1">{errors.costo_arbitraje_por_partido[0]}</p>}
+                    {errors.costo_arbitraje_por_partido && <p className="text-red-600 text-xs mt-1 font-bold">{errors.costo_arbitraje_por_partido[0]}</p>}
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Estatus</label>
+                    <label className={labelClass}>Estatus</label>
                     <select
                         name="estatus"
                         value={formData.estatus}
                         onChange={handleChange}
-                        className="w-full bg-slate-900/50 border border-slate-700 rounded-md px-4 py-2 text-white focus:ring-mx-green focus:border-mx-green outline-none"
+                        className={inputClass}
                     >
                         <option value="Planeación">Planeación</option>
                         <option value="En Inscripción">En Inscripción</option>
@@ -187,26 +188,26 @@ export default function TorneoForm({ torneo, onSuccess, onCancel }) {
                         <option value="Finalizado">Finalizado</option>
                     </select>
                 </div>
-                <div className="flex items-center mt-6">
+                <div className="flex items-center mt-6 p-4 bg-slate-50 rounded-xl border border-slate-200 shadow-inner">
                     <input
                         type="checkbox"
                         id="es_abierto"
                         name="es_abierto"
                         checked={formData.es_abierto}
                         onChange={handleChange}
-                        className="w-4 h-4 text-mx-green bg-slate-900 border-slate-700 rounded focus:ring-mx-green focus:ring-2"
+                        className="w-5 h-5 text-mx-green bg-white border-slate-300 rounded-lg focus:ring-mx-green focus:ring-2 transition-all cursor-pointer"
                     />
-                    <label htmlFor="es_abierto" className="ml-2 text-sm font-medium text-slate-300">
+                    <label htmlFor="es_abierto" className="ml-3 text-sm font-black text-slate-700 cursor-pointer">
                         Torneo Abierto (Público)
                     </label>
                 </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-700/50 mt-6 pb-2">
+            <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 mt-6">
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors"
+                    className="px-6 py-2 text-sm font-black text-slate-400 hover:text-slate-800 transition-colors uppercase tracking-widest"
                 >
                     Cancelar
                 </button>

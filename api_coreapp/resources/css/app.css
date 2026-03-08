@@ -1,39 +1,68 @@
 @import 'tailwindcss';
 
 :root {
-    /* Palette - Mexican Flag & Dark Theme */
+    /* Brand Colors - Mexican Flag */
     --color-mx-green: #006847;
     --color-mx-white: #FFFFFF;
     --color-mx-red: #CE1126;
-    --color-bg-dark: #0f172a;
-    /* Slate 900 */
-    --color-bg-card: #1e293b;
-    /* Slate 800 */
-}
 
+    /* Semantic Theme Variables (Light Mode Default) */
+    --color-bg-main: #f8fafc;
+    /* Slate 50 */
+    --color-bg-surface: #ffffff;
+    --color-bg-surface-alt: #f1f5f9;
+    /* Slate 100 */
+
+    --color-text-primary: #0f172a;
+    /* Slate 900 */
+    --color-text-secondary: #475569;
+    /* Slate 600 */
+    --color-text-muted: #94a3b8;
+    /* Slate 400 */
+
+    --color-border-subtle: #e2e8f0;
+    /* Slate 200 */
+    --color-border-strong: #cbd5e1;
+    /* Slate 300 */
+
+    --shadow-premium: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
 
 body {
     font-family: 'Instrument Sans', sans-serif;
-    background-color: var(--color-bg-dark);
-    color: var(--color-mx-white);
+    background-color: var(--color-bg-main);
+    color: var(--color-text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Utility Classes */
 .bg-theme-gradient {
-    background: linear-gradient(to right, var(--color-mx-green), #111827, var(--color-mx-red));
+    background: linear-gradient(to right, var(--color-mx-green), #0a1f18, var(--color-mx-red));
 }
 
 .text-gradient-metallic {
-    background: linear-gradient(to right, #ffffff, #9ca3af);
+    background: linear-gradient(to right, #0f172a, #475569);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
 .card-theme {
-    background-color: var(--color-bg-card);
-    border: 1px solid #334155;
-    /* Slate 700 */
-    border-radius: 0.75rem;
-    /* rounded-xl */
+    background-color: var(--color-bg-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-soft);
+}
+
+.glass-premium {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Transitions for page-wide consistency */
+* {
+    transition: border-color 0.2s ease, background-color 0.2s ease;
 }

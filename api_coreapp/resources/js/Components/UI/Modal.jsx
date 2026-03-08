@@ -15,26 +15,26 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
             <div
-                className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity"
+                className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
                 onClick={onClose}
             ></div>
 
             <div className={`relative w-full ${maxWidth} transform transition-all`}>
-                <Card className="shadow-2xl ring-1 ring-slate-700/50">
-                    <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-700/50">
-                        <h3 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-mx-white to-slate-400">
+                <Card className="shadow-2xl !p-0 border-none overflow-hidden">
+                    <div className="flex items-center justify-between p-6 border-b border-[--color-border-subtle] bg-slate-50">
+                        <h3 className="text-xl font-black text-slate-800 tracking-tight">
                             {title}
                         </h3>
                         <button
                             onClick={onClose}
-                            className="text-slate-400 hover:text-white transition-colors p-1 rounded-md hover:bg-slate-800"
+                            className="text-slate-400 hover:text-slate-600 transition-colors p-2 rounded-xl hover:bg-slate-200"
                         >
                             <X size={20} />
                         </button>
                     </div>
-                    <div>
+                    <div className="p-6">
                         {children}
                     </div>
                 </Card>

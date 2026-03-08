@@ -2,40 +2,40 @@ import React from 'react';
 
 export default function DataTable({ columns, data, actions, keyField = 'id' }) {
     return (
-        <div className="overflow-x-auto rounded-lg border border-slate-700/50">
-            <table className="w-full text-left text-sm text-slate-300">
-                <thead className="bg-slate-800/80 text-xs uppercase text-slate-400 border-b border-slate-700/50">
+        <div className="overflow-x-auto rounded-xl border border-[--color-border-subtle] bg-white shadow-soft">
+            <table className="w-full text-left text-sm text-[--color-text-secondary]">
+                <thead className="bg-[--color-bg-surface-alt] text-xs uppercase text-[--color-text-muted] border-b border-[--color-border-strong]">
                     <tr>
                         {columns.map((col, idx) => (
-                            <th key={idx} scope="col" className="px-6 py-4 font-medium whitespace-nowrap">
+                            <th key={idx} scope="col" className="px-6 py-4 font-black whitespace-nowrap tracking-wider">
                                 {col.header}
                             </th>
                         ))}
                         {actions && (
-                            <th scope="col" className="px-6 py-4 font-medium text-right relative">
+                            <th scope="col" className="px-6 py-4 font-black text-right relative tracking-wider">
                                 Acciones
                             </th>
                         )}
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-700/50 bg-slate-800/30">
+                <tbody className="divide-y divide-[--color-border-subtle]">
                     {data.length === 0 ? (
                         <tr>
-                            <td colSpan={columns.length + (actions ? 1 : 0)} className="px-6 py-8 text-center text-slate-500">
+                            <td colSpan={columns.length + (actions ? 1 : 0)} className="px-6 py-10 text-center text-[--color-text-muted] italic font-medium">
                                 No hay registros para mostrar.
                             </td>
                         </tr>
                     ) : (
                         data.map((row) => (
-                            <tr key={row[keyField]} className="hover:bg-slate-700/40 transition-colors">
+                            <tr key={row[keyField]} className="hover:bg-slate-50 transition-colors group">
                                 {columns.map((col, idx) => (
-                                    <td key={idx} className="px-6 py-4 whitespace-nowrap">
+                                    <td key={idx} className="px-6 py-4 whitespace-nowrap font-medium text-[--color-text-primary]">
                                         {col.render ? col.render(row) : row[col.accessor]}
                                     </td>
                                 ))}
                                 {actions && (
                                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                                        <div className="flex justify-end gap-3 items-center">
+                                        <div className="flex justify-end gap-3 items-center opacity-70 group-hover:opacity-100 transition-opacity">
                                             {actions(row)}
                                         </div>
                                     </td>

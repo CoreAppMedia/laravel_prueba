@@ -52,13 +52,13 @@ export default function Header() {
 
             {/* Mobile Menu */}
             {isMenuOpen && (
-                <div className="md:hidden bg-gray-900 border-t border-gray-800">
-                    <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <div className="md:hidden bg-[--color-bg-surface] border-t border-[--color-border-subtle] shadow-xl overflow-hidden mt-1 mx-2 rounded-2xl animate-fade-in">
+                    <div className="px-4 py-3 space-y-1">
                         {['Inicio', 'Equipos', 'Calendario', 'Estadísticas', 'Noticias'].map((item) => (
                             <a
                                 key={item}
                                 href="#"
-                                className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+                                className="text-[--color-text-primary] hover:text-white hover:bg-mx-green block px-4 py-3 rounded-xl text-base font-bold uppercase tracking-widest transition-all"
                             >
                                 {item}
                             </a>

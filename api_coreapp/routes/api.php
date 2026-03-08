@@ -26,14 +26,50 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Phase 1 Controllers
-    Route::apiResource('temporadas', \App\Http\Controllers\TemporadaController::class);
-    Route::apiResource('torneos', \App\Http\Controllers\TorneoController::class);
-    Route::apiResource('clubs', \App\Http\Controllers\ClubController::class);
-    
-    Route::apiResource('equipos', \App\Http\Controllers\EquipoController::class);
-    Route::patch('/equipos/{equipo}/status', [\App\Http\Controllers\EquipoController::class, 'toggleStatus']);
+    Route::middleware('can:temporadas.view')->group(function () {
+        Route::get('temporadas', [\App\Http\Controllers\TemporadaController::class, 'index']);
+        Route::get('temporadas/{temporada}', [\App\Http\Controllers\TemporadaController::class, 'show']);
+    });
+    Route::middleware('can:temporadas.create')->group(function () {
+        Route::post('temporadas', [\App\Http\Controllers\TemporadaController::class, 'store']);
+        Route::put('temporadas/{temporada}', [\App\Http\Controllers\TemporadaController::class, 'update']);
+        Route::patch('temporadas/{temporada}', [\App\Http\Controllers\TemporadaController::class, 'update']);
+        Route::delete('temporadas/{temporada}', [\App\Http\Controllers\TemporadaController::class, 'destroy']);
+    });
+
+    Route::middleware('can:torneos.view')->group(function () {
+        Route::get('torneos', [\App\Http\Controllers\TorneoController::class, 'index']);
+        Route::get('torneos/{torneo}', [\App\Http\Controllers\TorneoController::class, 'show']);
+    });
+    Route::middleware('can:torneos.create')->group(function () {
+        Route::post('torneos', [\App\Http\Controllers\TorneoController::class, 'store']);
+        Route::put('torneos/{torneo}', [\App\Http\Controllers\TorneoController::class, 'update']);
+        Route::delete('torneos/{torneo}', [\App\Http\Controllers\TorneoController::class, 'destroy']);
+    });
+
+    Route::middleware('can:clubs.view')->group(function () {
+        Route::get('clubs', [\App\Http\Controllers\ClubController::class, 'index']);
+        Route::get('clubs/{club}', [\App\Http\Controllers\ClubController::class, 'show']);
+    });
+    Route::middleware('can:clubs.create')->group(function () {
+        Route::post('clubs', [\App\Http\Controllers\ClubController::class, 'store']);
+        Route::put('clubs/{club}', [\App\Http\Controllers\ClubController::class, 'update']);
+        Route::delete('clubs/{club}', [\App\Http\Controllers\ClubController::class, 'destroy']);
+    });
+
+    Route::middleware('can:equipos.view')->group(function () {
+        Route::get('equipos', [\App\Http\Controllers\EquipoController::class, 'index']);
+        Route::get('equipos/{equipo}', [\App\Http\Controllers\EquipoController::class, 'show']);
+    });
+    Route::middleware('can:equipos.create')->group(function () {
+        Route::post('equipos', [\App\Http\Controllers\EquipoController::class, 'store']);
+        Route::put('equipos/{equipo}', [\App\Http\Controllers\EquipoController::class, 'update']);
+        Route::delete('equipos/{equipo}', [\App\Http\Controllers\EquipoController::class, 'destroy']);
+        Route::patch('/equipos/{equipo}/status', [\App\Http\Controllers\EquipoController::class, 'toggleStatus']);
+    });
+
     // Catalogos
-    Route::prefix('catalogos')->group(function () {
+    Route::prefix('catalogos')->middleware('can:*.view')->group(function () {
         Route::get('/tipos-torneo', [\App\Http\Controllers\CatalogosController::class, 'getTiposTorneo']);
         Route::get('/categorias', [\App\Http\Controllers\CatalogosController::class, 'getCategorias']);
         Route::get('/estados-partido', [\App\Http\Controllers\CatalogosController::class, 'getEstadosPartido']);

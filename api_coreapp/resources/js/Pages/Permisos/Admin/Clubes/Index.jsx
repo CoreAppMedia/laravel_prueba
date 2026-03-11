@@ -58,24 +58,47 @@ export default function ClubesIndex() {
             header: 'Tipo',
             accessor: 'es_club',
             render: (row) => (
-                <div className="flex items-center gap-2">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'var(--font-body)', fontSize: '13px' }}>
                     {row.es_club ? (
-                        <ShieldCheck size={16} className="text-blue-400" />
+                        <ShieldCheck size={16} style={{ color: 'var(--color-slate)' }} />
                     ) : (
-                        <User size={16} className="text-orange-400" />
+                        <User size={16} style={{ color: 'var(--color-gold)' }} />
                     )}
-                    <span>{row.es_club ? 'Club' : 'Independiente'}</span>
+                    <span style={{ fontWeight: 600, color: 'var(--color-text-secondary)' }}>
+                        {row.es_club ? 'Club' : 'Independiente'}
+                    </span>
                 </div>
             )
         },
-        { header: 'Nombre', accessor: 'nombre' },
+        { 
+            header: 'Nombre', 
+            accessor: 'nombre',
+            render: (row) => (
+                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                    {row.nombre}
+                </span>
+            )
+        },
         { header: 'Teléfono', accessor: 'telefono' },
         { header: 'Correo', accessor: 'correo' },
         {
             header: 'Estado',
             accessor: 'activo',
             render: (row) => (
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${row.activo ? 'bg-mx-green/20 text-green-400 border border-green-500/30' : 'bg-red-400/20 text-red-400 border border-red-500/30'}`}>
+                <span 
+                    style={{ 
+                        display: 'inline-flex',
+                        padding: '4px 10px', 
+                        borderRadius: 'var(--radius-sm)', 
+                        fontSize: '11px', 
+                        fontWeight: 700, 
+                        letterSpacing: '0.5px',
+                        textTransform: 'uppercase',
+                        backgroundColor: row.activo ? 'var(--color-sage-light)' : 'var(--color-terra-light)',
+                        color: row.activo ? 'var(--color-sage)' : 'var(--color-terra)',
+                        border: `1px solid ${row.activo ? 'rgba(58, 107, 82, 0.15)' : 'rgba(192, 68, 42, 0.15)'}`
+                    }}
+                >
                     {row.activo ? 'Activo' : 'Suspendido'}
                 </span>
             )
@@ -83,27 +106,59 @@ export default function ClubesIndex() {
     ];
 
     const actions = (row) => (
-        <>
-            <button onClick={() => handleEdit(row)} className="text-blue-400 hover:text-blue-300 p-1" title="Editar">
+        <div style={{ display: 'flex', gap: '8px' }}>
+            <button 
+                onClick={() => handleEdit(row)} 
+                className="btn-ghost"
+                style={{ 
+                    padding: '6px', 
+                    color: 'var(--color-slate)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'opacity 0.2s',
+                    cursor: 'pointer',
+                    background: 'none',
+                    border: 'none'
+                }} 
+                title="Editar"
+            >
                 <Edit size={18} />
             </button>
-            <button onClick={() => handleDelete(row.id)} className="text-red-400 hover:text-red-300 p-1" title="Eliminar">
+            <button 
+                onClick={() => handleDelete(row.id)} 
+                className="btn-ghost"
+                style={{ 
+                    padding: '6px', 
+                    color: 'var(--color-terra)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'opacity 0.2s',
+                    cursor: 'pointer',
+                    background: 'none',
+                    border: 'none'
+                }} 
+                title="Eliminar"
+            >
                 <Trash2 size={18} />
             </button>
-        </>
+        </div>
     );
 
     return (
         <BasePanel titulo="Gestión de Clubes y Equipos Independientes" backUrl="/panel/admin">
             <Card title="Directorio de Clubes">
-                <div className="flex justify-end mb-4">
-                    <GradientButton onClick={handleCreate} icon={Plus}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
+                    <GradientButton onClick={handleCreate} icon={Plus} variant="primary">
                         Registrar Club / Equipo
                     </GradientButton>
                 </div>
 
                 {loading ? (
-                    <div className="text-center py-8 text-slate-400 italic">Cargando clubes...</div>
+                    <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--color-text-muted)', fontStyle: 'italic', fontFamily: 'var(--font-body)' }}>
+                        Cargando clubes...
+                    </div>
                 ) : (
                     <DataTable
                         columns={columns}
@@ -116,7 +171,7 @@ export default function ClubesIndex() {
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title={editingClub ? "Editar Información del Club" : "Registro de Nuevo Club"}
+                title={editingClub ? "Editar Información" : "Registro de Nuevo Club"}
             >
                 <ClubForm
                     club={editingClub}

@@ -4,13 +4,7 @@ const LINKS = ['Reglamento', 'Equipos', 'Resultados', 'Estadísticas'];
 
 export default function Footer() {
     return (
-        <footer
-            style={{
-                background: 'var(--color-bg-surface)',
-                borderTop: '1px solid var(--color-border-subtle)',
-                marginTop: 'auto',
-            }}
-        >
+        <footer>
             {/* Banda tricolor superior — coherencia con header */}
             <div className="brand-bar" />
 
@@ -19,6 +13,7 @@ export default function Footer() {
 
                     {/* Identidad */}
                     <div>
+                        <br />
                         <div className="flex items-center gap-3 mb-4">
                             <div className="brand-logo" style={{ width: 32, height: 32 }}>
                                 <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
@@ -26,33 +21,19 @@ export default function Footer() {
                                     <path d="M10 2 L12 7.5 H18 L13.5 11 L15.5 17 L10 13.5 L4.5 17 L6.5 11 L2 7.5 H8 Z" fill="#fff" opacity=".85" />
                                 </svg>
                             </div>
-                            <span
-                                style={{
-                                    fontFamily: 'var(--font-display)',
-                                    fontSize: 15,
-                                    fontWeight: 700,
-                                    color: 'var(--color-text-primary)',
-                                }}
-                            >
+                            <span className="text-display-md">
                                 Liga Santiago Zapotitlán
                             </span>
                         </div>
-                        <p
-                            style={{
-                                fontFamily: 'var(--font-body)',
-                                fontSize: 13,
-                                color: 'var(--color-text-muted)',
-                                lineHeight: 1.65,
-                                maxWidth: 260,
-                            }}
-                        >
+                        <p className="text-body-md">
                             La liga municipal de fútbol que une pasión, comunidad y deporte en el corazón de México.
                         </p>
                     </div>
 
                     {/* Enlaces rápidos */}
                     <div>
-                        <div className="text-label" style={{ marginBottom: 16 }}>
+                        <br />
+                        <div className="text-display-md">
                             Enlaces rápidos
                         </div>
                         <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -93,7 +74,8 @@ export default function Footer() {
 
                     {/* Contacto */}
                     <div>
-                        <div className="text-label" style={{ marginBottom: 16 }}>
+                        <br />
+                        <div className="text-display-md">
                             Contacto
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -110,7 +92,7 @@ export default function Footer() {
                                 onMouseEnter={e => e.currentTarget.style.color = 'var(--color-terra)'}
                                 onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-secondary)'}
                             >
-                                info@clubesunidos.com
+                                clubesunidoszapotitlan@gmail.com
                             </a>
                             <span
                                 style={{
@@ -119,7 +101,7 @@ export default function Footer() {
                                     color: 'var(--color-text-muted)',
                                 }}
                             >
-                                Santiago Zapotitlán, CDMX
+                                Santiago Zapotitlán, Tlahuac, CDMX.
                             </span>
                         </div>
                     </div>
@@ -147,18 +129,7 @@ export default function Footer() {
                             letterSpacing: '1.5px',
                         }}
                     >
-                        © {new Date().getFullYear()} Liga Santiago Zapotitlán · Todos los derechos reservados.
-                    </span>
-                    <span
-                        style={{
-                            fontFamily: 'var(--font-body)',
-                            fontSize: 11,
-                            color: 'var(--color-text-ghost)',
-                            textTransform: 'uppercase',
-                            letterSpacing: '1.5px',
-                        }}
-                    >
-                        Temporada 2025
+                        © {new Date().getFullYear()} Liga Clubes Unidos Zapotitlán · Todos los derechos reservados.
                     </span>
                 </div>
             </div>

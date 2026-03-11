@@ -80,16 +80,16 @@ export default function EquiposInscritos({ torneo }) {
 
     const columns = [
         {
-            header: 'Equipo',
+            header: 'Equipo Participante',
             accessor: 'nombre_mostrado',
             render: (row) => (
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
-                        <Users size={14} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--color-bg-surface-alt)', border: '1px solid var(--color-border-subtle)', display: 'flex', alignItems: 'center', justifyCenter: 'center', color: 'var(--color-gold)' }}>
+                        <Users size={16} style={{ margin: 'auto' }} />
                     </div>
-                    <div>
-                        <div className="font-bold text-slate-800">{row.nombre_mostrado}</div>
-                        <div className="text-[10px] text-slate-400 uppercase font-black tracking-wider flex items-center gap-1">
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ fontWeight: 700, color: 'var(--color-slate)', fontSize: '14px', fontFamily: 'var(--font-display)' }}>{row.nombre_mostrado}</div>
+                        <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <Shield size={10} />
                             {row.club?.nombre || 'Independiente'}
                         </div>
@@ -99,21 +99,30 @@ export default function EquiposInscritos({ torneo }) {
         },
         {
             header: 'Categoría',
-            render: (row) => (
-                <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                    torneo.categoria_id === row.categoria_id 
-                        ? 'bg-green-100 text-green-700' 
-                        : 'bg-red-100 text-red-700'
-                }`}>
-                    {row.categoria?.nombre || 'General'}
-                    {torneo.categoria_id !== row.categoria_id && ' (Incompatible)'}
-                </span>
-            )
+            render: (row) => {
+                const isCompatible = torneo.categoria_id === row.categoria_id;
+                return (
+                    <span 
+                        style={{ 
+                            fontSize: '11px', 
+                            fontWeight: 700, 
+                            padding: '4px 10px', 
+                            borderRadius: 'var(--radius-sm)',
+                            backgroundColor: isCompatible ? 'var(--color-sage-light)' : 'var(--color-terra-light)',
+                            color: isCompatible ? 'var(--color-sage)' : 'var(--color-terra)',
+                            border: `1px solid ${isCompatible ? 'rgba(58, 107, 82, 0.1)' : 'rgba(192, 68, 42, 0.1)'}`
+                        }}
+                    >
+                        {row.categoria?.nombre || 'General'}
+                        {!isCompatible && ' (Incompatible)'}
+                    </span>
+                );
+            }
         },
         {
-            header: 'Fecha de Inscripción',
+            header: 'Fecha de Alta',
             render: (row) => (
-                <span className="text-sm text-slate-600">
+                <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)', fontFamily: 'var(--font-body)', fontWeight: 500 }}>
                     {new Date(row.pivot.fecha_inscripcion).toLocaleDateString()}
                 </span>
             )
@@ -125,15 +134,26 @@ export default function EquiposInscritos({ torneo }) {
                 return (
                     <button 
                         onClick={() => togglePago(row.id, isPaid)}
-                        className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all border ${
-                            isPaid 
-                                ? 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100' 
-                                : 'bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100'
-                        }`}
-                        title="Clic para cambiar estatus"
+                        style={{ 
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '6px 12px',
+                            borderRadius: 'var(--radius-sm)',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            textTransform: 'uppercase',
+                            transition: 'all 0.2s',
+                            cursor: 'pointer',
+                            backgroundColor: isPaid ? 'var(--color-sage-light)' : 'var(--color-gold-light)',
+                            color: isPaid ? 'var(--color-sage)' : 'var(--color-gold)',
+                            border: `1px solid ${isPaid ? 'rgba(58, 107, 82, 0.2)' : 'rgba(212, 175, 55, 0.2)'}`,
+                            outline: 'none'
+                        }}
+                        title="Haz clic para actualizar estatus de pago"
                     >
                         {isPaid ? <Check size={14} /> : <X size={14} />}
-                        {isPaid ? 'Pagado' : 'Pendiente'}
+                        {isPaid ? 'Liquidado' : 'Pendiente'}
                     </button>
                 );
             }
@@ -145,19 +165,34 @@ export default function EquiposInscritos({ torneo }) {
         ed => !equipos.some(ei => ei.id === ed.id)
     );
 
+    const inputStyle = {
+        width: '100%',
+        backgroundColor: 'var(--color-bg-surface)',
+        border: '1px solid var(--color-border-subtle)',
+        borderRadius: 'var(--radius-md)',
+        padding: '12px 16px',
+        fontFamily: 'var(--font-body)',
+        fontSize: '14px',
+        color: 'var(--color-text-primary)',
+        transition: 'all 0.2s ease',
+        outline: 'none',
+        boxShadow: 'var(--shadow-soft)',
+    };
+
     return (
-        <Card title="Equipos Inscritos">
-            <div className="flex justify-end mb-4">
+        <Card title="Plantilla de Equipos Oficiales">
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
                 <GradientButton 
                     onClick={() => setIsModalOpen(true)} 
                     icon={Plus}
+                    variant="primary"
                 >
-                    Inscribir Equipo
+                    Inscribir Nuevo Equipo
                 </GradientButton>
             </div>
 
             {loading ? (
-                <div className="text-center py-8 text-slate-400 italic">Cargando equipos...</div>
+                <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--color-text-muted)', fontStyle: 'italic', fontFamily: 'var(--font-body)' }}>Cargando equipos...</div>
             ) : (
                 <DataTable
                     columns={columns}
@@ -168,54 +203,74 @@ export default function EquiposInscritos({ torneo }) {
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title="Nueva Inscripción"
+                title="Nueva Inscripción a Torneo"
             >
-                <form onSubmit={handleInscriptionSubmit} className="space-y-4">
+                <form onSubmit={handleInscriptionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                     {torneo.categoria && (
-                        <div className="bg-blue-50 border border-blue-200 text-blue-700 p-3 rounded-xl text-xs flex flex-col gap-1">
-                            <span className="font-bold">Información Importante</span>
-                            <span>Este torneo es exclusivo para la categoría: <strong>{torneo.categoria.nombre}</strong>. Solo puedes inscribir equipos que pertenezcan a esta categoría.</span>
+                        <div style={{ padding: '16px', backgroundColor: 'var(--color-bg-surface-alt)', borderLeft: '4px solid var(--color-sage)', borderRadius: 'var(--radius-sm)', fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
+                            <span style={{ fontWeight: 800, color: 'var(--color-sage)', textTransform: 'uppercase', display: 'block', marginBottom: '4px', letterSpacing: '0.5px' }}>Restricción de Categoría</span>
+                            Torneo exclusivo para la categoría: <strong style={{ color: 'var(--color-slate)' }}>{torneo.categoria.nombre}</strong>. Solo se permiten registros de equipos compatibles.
                         </div>
                     )}
                     
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1 tracking-tight">Seleccionar Equipo</label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label className="text-label" style={{ marginLeft: '4px' }}>Seleccionar Equipo para Alta</label>
                         <select 
-                            className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-mx-green/50 focus:border-mx-green bg-slate-50 text-slate-800 transition-all font-medium appearance-none"
+                            style={inputStyle}
                             value={selectedEquipoId}
                             onChange={(e) => setSelectedEquipoId(e.target.value)}
                             required
+                            onFocus={(e) => {
+                                e.target.style.borderColor = 'var(--color-gold)';
+                                e.target.style.boxShadow = '0 0 0 4px var(--color-gold-light)';
+                            }}
+                            onBlur={(e) => {
+                                e.target.style.borderColor = 'var(--color-border-subtle)';
+                                e.target.style.boxShadow = 'var(--shadow-soft)';
+                            }}
                         >
-                            <option value="">Selecciona un equipo disponible...</option>
+                            <option value="">-- Elige un equipo de la lista --</option>
                             {equiposFiltrados.map(eq => {
                                 const isCompatible = !torneo.categoria_id || eq.categoria_id === torneo.categoria_id;
                                 return (
                                     <option key={eq.id} value={eq.id} disabled={!isCompatible}>
-                                        {eq.nombre_mostrado} {eq.categoria ? `(${eq.categoria.nombre})` : ''} {!isCompatible ? '- Categoría no compatible' : ''}
+                                        {eq.nombre_mostrado} {eq.categoria ? `[${eq.categoria.nombre}]` : ''} {!isCompatible ? ' (Categoría No Válida)' : ''}
                                     </option>
                                 );
                             })}
                         </select>
                     </div>
 
-                    <div className="flex items-center gap-2 mt-4">
+                    <div 
+                        style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            padding: '12px 16px', 
+                            background: 'var(--color-bg-surface-alt)', 
+                            borderRadius: 'var(--radius-md)', 
+                            border: '1px solid var(--color-border-subtle)',
+                            cursor: 'pointer',
+                        }}
+                        onClick={() => setPagadoInscripcion(!pagadoInscripcion)}
+                    >
                         <input 
                             type="checkbox" 
                             id="pagado_inscripcion"
                             checked={pagadoInscripcion}
                             onChange={(e) => setPagadoInscripcion(e.target.checked)}
-                            className="w-4 h-4 text-mx-green rounded focus:ring-mx-green"
+                            style={{ width: '18px', height: '18px', accentColor: 'var(--color-sage)', cursor: 'pointer' }}
                         />
-                        <label htmlFor="pagado_inscripcion" className="text-sm font-bold text-slate-700">
-                            Marcar inscripción como pagada ahora
+                        <label htmlFor="pagado_inscripcion" style={{ marginLeft: '12px', fontSize: '13px', fontWeight: 600, color: 'var(--color-text-secondary)', cursor: 'pointer' }}>
+                            Registrar con pago de inscripción liquidado
                         </label>
                     </div>
 
-                    <div className="flex justify-end gap-3 mt-8">
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '12px', paddingTop: '24px', borderTop: '1px solid var(--color-border-subtle)' }}>
                         <button
                             type="button"
                             onClick={() => setIsModalOpen(false)}
-                            className="px-6 py-2.5 rounded-xl text-sm font-bold text-slate-600 border border-slate-200 hover:bg-slate-50 transition-all shadow-sm"
+                            className="btn btn-ghost"
+                            style={{ padding: '10px 20px', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}
                         >
                             Cancelar
                         </button>
@@ -223,9 +278,9 @@ export default function EquiposInscritos({ torneo }) {
                             type="submit"
                             disabled={saving || !selectedEquipoId}
                             isLoading={saving}
-                            icon={Plus}
+                            variant="primary"
                         >
-                            Inscribir
+                            Finalizar Inscripción
                         </GradientButton>
                     </div>
                 </form>

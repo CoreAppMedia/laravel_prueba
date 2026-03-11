@@ -48,91 +48,171 @@ export default function ClubForm({ club, onSuccess, onCancel }) {
         }
     };
 
-    const inputClass = "w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900 focus:ring-2 focus:ring-mx-green/20 focus:border-mx-green outline-none transition-all font-medium shadow-sm";
-    const labelClass = "block text-sm font-black text-slate-700 mb-1 tracking-tight";
+    // Estilos basados en el Design System de app.css
+    const inputStyle = {
+        width: '100%',
+        backgroundColor: 'var(--color-bg-surface)',
+        border: '1px solid var(--color-border-subtle)',
+        borderRadius: 'var(--radius-md)',
+        padding: '12px 16px',
+        fontFamily: 'var(--font-body)',
+        fontSize: '14px',
+        color: 'var(--color-text-primary)',
+        transition: 'all 0.2s ease',
+        outline: 'none',
+        boxShadow: 'var(--shadow-soft)',
+    };
+
+    const labelClass = "text-label"; // Clase definida en app.css para etiquetas consistente
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-                <label className={labelClass}>Nombre del Club / Equipo</label>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            {/* Nombre del Club */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label className={labelClass} style={{ marginLeft: '4px' }}>Nombre del Club / Equipo</label>
                 <input
                     type="text"
                     name="nombre"
                     value={formData.nombre}
                     onChange={handleChange}
-                    className={inputClass}
+                    style={{
+                        ...inputStyle,
+                        ...(errors.nombre ? { border: '1px solid var(--color-danger)' } : {})
+                    }}
                     placeholder="Ej. Real Sociedad"
+                    onFocus={(e) => {
+                        e.target.style.borderColor = 'var(--color-gold)';
+                        e.target.style.boxShadow = '0 0 0 4px var(--color-gold-light)';
+                    }}
+                    onBlur={(e) => {
+                        e.target.style.borderColor = errors.nombre ? 'var(--color-danger)' : 'var(--color-border-subtle)';
+                        e.target.style.boxShadow = 'var(--shadow-soft)';
+                    }}
                 />
-                {errors.nombre && <p className="text-red-600 text-xs mt-1 font-bold">{errors.nombre[0]}</p>}
+                {errors.nombre && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.nombre[0]}</p>}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label className={labelClass}>Teléfono</label>
+            {/* Fila: Teléfono y Correo */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label className={labelClass} style={{ marginLeft: '4px' }}>Teléfono de contacto</label>
                     <input
                         type="text"
                         name="telefono"
                         value={formData.telefono}
                         onChange={handleChange}
-                        className={inputClass}
+                        style={{
+                            ...inputStyle,
+                            ...(errors.telefono ? { border: '1px solid var(--color-danger)' } : {})
+                        }}
                         placeholder="Ej. 5512345678"
+                        onFocus={(e) => {
+                            e.target.style.borderColor = 'var(--color-gold)';
+                            e.target.style.boxShadow = '0 0 0 4px var(--color-gold-light)';
+                        }}
+                        onBlur={(e) => {
+                            e.target.style.borderColor = errors.telefono ? 'var(--color-danger)' : 'var(--color-border-subtle)';
+                            e.target.style.boxShadow = 'var(--shadow-soft)';
+                        }}
                     />
-                    {errors.telefono && <p className="text-red-600 text-xs mt-1 font-bold">{errors.telefono[0]}</p>}
+                    {errors.telefono && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.telefono[0]}</p>}
                 </div>
-                <div>
-                    <label className={labelClass}>Correo Electrónico</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label className={labelClass} style={{ marginLeft: '4px' }}>Correo Electrónico</label>
                     <input
                         type="email"
                         name="correo"
                         value={formData.correo}
                         onChange={handleChange}
-                        className={inputClass}
+                        style={{
+                            ...inputStyle,
+                            ...(errors.correo ? { border: '1px solid var(--color-danger)' } : {})
+                        }}
                         placeholder="contacto@club.com"
+                        onFocus={(e) => {
+                            e.target.style.borderColor = 'var(--color-gold)';
+                            e.target.style.boxShadow = '0 0 0 4px var(--color-gold-light)';
+                        }}
+                        onBlur={(e) => {
+                            e.target.style.borderColor = errors.correo ? 'var(--color-danger)' : 'var(--color-border-subtle)';
+                            e.target.style.boxShadow = 'var(--shadow-soft)';
+                        }}
                     />
-                    {errors.correo && <p className="text-red-600 text-xs mt-1 font-bold">{errors.correo[0]}</p>}
+                    {errors.correo && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.correo[0]}</p>}
                 </div>
             </div>
 
-            <div className="space-y-3">
-                <div className="flex items-center p-4 bg-slate-50 rounded-xl border border-slate-200 shadow-inner">
+            {/* Opciones de Checkbox */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div 
+                    style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        padding: '16px', 
+                        background: 'var(--color-bg-surface-alt)', 
+                        borderRadius: 'var(--radius-md)', 
+                        border: '1px solid var(--color-border-subtle)',
+                        cursor: 'pointer',
+                        transition: 'background 0.2s'
+                    }}
+                    onClick={() => handleChange({ target: { name: 'es_club', type: 'checkbox', checked: !formData.es_club } })}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-muted)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-bg-surface-alt)'}
+                >
                     <input
                         type="checkbox"
                         id="es_club"
                         name="es_club"
                         checked={formData.es_club}
                         onChange={handleChange}
-                        className="w-5 h-5 text-mx-green bg-white border-slate-300 rounded-lg focus:ring-mx-green focus:ring-2 transition-all cursor-pointer"
+                        style={{ width: '18px', height: '18px', accentColor: 'var(--color-terra)', cursor: 'pointer' }}
                     />
-                    <label htmlFor="es_club" className="ml-3 text-sm font-black text-slate-700 cursor-pointer">
-                        ¿Es un Club consolidado? (Tiene múltiples equipos)
+                    <label htmlFor="es_club" style={{ marginLeft: '12px', fontSize: '13px', fontWeight: 600, color: 'var(--color-text-secondary)', cursor: 'pointer' }}>
+                        ¿Es un Club consolidado? <span style={{ fontWeight: 400, color: 'var(--color-text-muted)' }}>(Tiene múltiples equipos)</span>
                     </label>
                 </div>
 
-                <div className="flex items-center p-4 bg-slate-50 rounded-xl border border-slate-200 shadow-inner">
+                <div 
+                    style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        padding: '16px', 
+                        background: 'var(--color-bg-surface-alt)', 
+                        borderRadius: 'var(--radius-md)', 
+                        border: '1px solid var(--color-border-subtle)',
+                        cursor: 'pointer',
+                        transition: 'background 0.2s'
+                    }}
+                    onClick={() => handleChange({ target: { name: 'activo', type: 'checkbox', checked: !formData.activo } })}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-muted)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-bg-surface-alt)'}
+                >
                     <input
                         type="checkbox"
                         id="activo"
                         name="activo"
                         checked={formData.activo}
                         onChange={handleChange}
-                        className="w-5 h-5 text-mx-green bg-white border-slate-300 rounded-lg focus:ring-mx-green focus:ring-2 transition-all cursor-pointer"
+                        style={{ width: '18px', height: '18px', accentColor: 'var(--color-terra)', cursor: 'pointer' }}
                     />
-                    <label htmlFor="activo" className="ml-3 text-sm font-black text-slate-700 cursor-pointer">
-                        Registro Activo
+                    <label htmlFor="activo" style={{ marginLeft: '12px', fontSize: '13px', fontWeight: 600, color: 'var(--color-text-secondary)', cursor: 'pointer' }}>
+                        Registro Activo para competencias
                     </label>
                 </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 mt-6">
+            {/* Acciones */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '12px', paddingTop: '24px', borderTop: '1px solid var(--color-border-subtle)' }}>
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="px-6 py-2 text-sm font-black text-slate-400 hover:text-slate-800 transition-colors uppercase tracking-widest"
+                    className="btn btn-ghost"
+                    style={{ padding: '10px 20px', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}
                 >
                     Cancelar
                 </button>
-                <GradientButton type="submit" disabled={loading}>
-                    {loading ? 'Guardando...' : (club ? 'Actualizar Información' : 'Registrar Club')}
+                <GradientButton type="submit" disabled={loading} variant="primary">
+                    {loading ? 'Procesando...' : (club ? 'Guardar Cambios' : 'Registrar Club')}
                 </GradientButton>
             </div>
         </form>

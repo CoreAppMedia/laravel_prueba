@@ -55,6 +55,7 @@ pasos para iniciar el proyecto:
         6.5️⃣ Instalar dependencias de Node.js
                 npm install
         7.6️⃣ Iniciar servidor de desarrollo
+                npm install react-to-print
                 php artisan serve
                 npm run dev
 
@@ -102,4 +103,4 @@ para crear el controlador con el crud completo y con las rutas de la api usa el 
 
 para crear el controlador con el crud completo y con las rutas de la api y con los métodos de auditoria usa el siguiente comando:
 
-        php artisan make:controller NombreControlador --api --resource
+        php artisan make:controller NombreControlador --api

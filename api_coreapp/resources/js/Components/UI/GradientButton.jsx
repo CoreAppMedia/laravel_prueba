@@ -56,7 +56,7 @@ export default function GradientButton({
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 8,
-                padding: '10px 22px',
+                padding: '10px 22px 10px 22px',
                 borderRadius: 'var(--radius-sm)',
                 fontFamily: 'var(--font-body)',
                 fontSize: 13,

@@ -59,10 +59,10 @@ export default function TorneosIndex() {
             header: 'Torneo',
             accessor: 'nombre',
             render: (row) => (
-                <div className="flex flex-col">
-                    <span className="font-bold text-white">{row.nombre}</span>
-                    <span className="text-xs text-slate-400 flex items-center gap-1">
-                        <Trophy size={12} className="text-yellow-500" />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '15px', color: 'var(--color-slate)' }}>{row.nombre}</span>
+                    <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Trophy size={12} style={{ color: 'var(--color-gold)' }} />
                         {row.tipo?.nombre || 'General'}
                     </span>
                 </div>
@@ -72,15 +72,17 @@ export default function TorneosIndex() {
             header: 'Temporada',
             accessor: 'temporada',
             render: (row) => (
-                <span className="text-blue-400 font-medium">{row.temporada?.nombre || 'N/A'}</span>
+                <span style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: '13px', color: 'var(--color-sage)' }}>
+                    {row.temporada?.nombre || 'N/A'}
+                </span>
             )
         },
         {
-            header: 'Periodo',
+            header: 'Periodo de Juego',
             render: (row) => (
-                <div className="flex items-center gap-1 text-xs text-slate-300">
-                    <Calendar size={12} />
-                    {row.fecha_inicio} al {row.fecha_fin}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--color-text-secondary)', fontFamily: 'var(--font-body)' }}>
+                    <Calendar size={13} style={{ color: 'var(--color-gold)' }} />
+                    <span style={{ fontWeight: 500 }}>{row.fecha_inicio} <span style={{ color: 'var(--color-text-muted)', margin: '0 4px' }}>al</span> {row.fecha_fin}</span>
                 </div>
             )
         },
@@ -89,13 +91,27 @@ export default function TorneosIndex() {
             accessor: 'estatus',
             render: (row) => {
                 const styles = {
-                    'Planeación': 'bg-slate-700 text-slate-300',
-                    'En Inscripción': 'bg-blue-900/40 text-blue-400 border border-blue-500/30',
-                    'En Curso': 'bg-mx-green/20 text-green-400 border border-green-500/30',
-                    'Finalizado': 'bg-red-900/40 text-red-400 border border-red-500/30'
+                    'Planeación': { bg: 'var(--color-bg-surface-alt)', color: 'var(--color-text-muted)', border: 'var(--color-border-subtle)' },
+                    'En Inscripción': { bg: 'var(--color-sage-light)', color: 'var(--color-sage)', border: 'rgba(58, 107, 82, 0.15)' },
+                    'En Curso': { bg: 'var(--color-gold-light)', color: 'var(--color-gold)', border: 'rgba(212, 175, 55, 0.15)' },
+                    'Finalizado': { bg: 'var(--color-terra-light)', color: 'var(--color-terra)', border: 'rgba(192, 68, 42, 0.15)' }
                 };
+                const style = styles[row.estatus] || styles['Planeación'];
                 return (
-                    <span className={`px-2 py-1 rounded-full text-[10px] uppercase font-bold ${styles[row.estatus] || styles['Planeación']}`}>
+                    <span 
+                        style={{ 
+                            display: 'inline-flex',
+                            padding: '4px 10px', 
+                            borderRadius: 'var(--radius-sm)', 
+                            fontSize: '11px', 
+                            fontWeight: 700, 
+                            letterSpacing: '0.5px',
+                            textTransform: 'uppercase',
+                            backgroundColor: style.bg,
+                            color: style.color,
+                            border: `1px solid ${style.border}`
+                        }}
+                    >
                         {row.estatus}
                     </span>
                 );
@@ -104,35 +120,62 @@ export default function TorneosIndex() {
     ];
 
     const actions = (row) => (
-        <div className="flex items-center gap-2">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Link 
                 to={`/panel/admin/torneos/${row.id}`} 
-                className="bg-mx-green/10 text-mx-green hover:bg-mx-green hover:text-white px-2 py-1 rounded text-xs font-bold transition-colors flex items-center gap-1"
-                title="Administrar Fase 2"
+                className="btn-ghost"
+                style={{ 
+                    padding: '6px 12px', 
+                    color: 'var(--color-sage)',
+                    textDecoration: 'none',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: 'var(--color-sage-light)',
+                    border: '1px solid rgba(58, 107, 82, 0.1)'
+                }}
             >
-                Administrar
-                <ArrowRight size={12} />
+                Gestionar
+                <ArrowRight size={14} />
             </Link>
-            <button onClick={() => handleEdit(row)} className="text-blue-400 hover:text-blue-300 p-1" title="Editar">
-                <Edit size={18} />
-            </button>
-            <button onClick={() => handleDelete(row.id)} className="text-red-400 hover:text-red-300 p-1" title="Eliminar">
-                <Trash2 size={18} />
-            </button>
+            <div style={{ display: 'flex', gap: '4px' }}>
+                <button 
+                    onClick={() => handleEdit(row)} 
+                    className="btn-ghost"
+                    style={{ padding: '6px', color: 'var(--color-slate)', background: 'none', border: 'none', cursor: 'pointer' }} 
+                    title="Editar Torneo"
+                >
+                    <Edit size={18} />
+                </button>
+                <button 
+                    onClick={() => handleDelete(row.id)} 
+                    className="btn-ghost"
+                    style={{ padding: '6px', color: 'var(--color-terra)', background: 'none', border: 'none', cursor: 'pointer' }} 
+                    title="Eliminar Torneo"
+                >
+                    <Trash2 size={18} />
+                </button>
+            </div>
         </div>
     );
 
     return (
         <BasePanel titulo="Gestión de Torneos" backUrl="/panel/admin">
-            <Card title="Calendario de Torneos Activos">
-                <div className="flex justify-end mb-4">
-                    <GradientButton onClick={handleCreate} icon={Plus}>
-                        Nuevo Torneo
+            <Card title="Calendario y Organización de Torneos">
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
+                    <GradientButton onClick={handleCreate} icon={Plus} variant="primary">
+                        Comenzar Nuevo Torneo
                     </GradientButton>
                 </div>
 
                 {loading ? (
-                    <div className="text-center py-8 text-slate-400 italic">Cargando torneos...</div>
+                    <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--color-text-muted)', fontStyle: 'italic', fontFamily: 'var(--font-body)' }}>
+                        Cargando torneos...
+                    </div>
                 ) : (
                     <DataTable
                         columns={columns}

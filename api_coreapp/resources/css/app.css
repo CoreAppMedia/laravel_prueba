@@ -859,8 +859,76 @@ body {
     background-color: var(--color-border-subtle);
 }
 
-.ornament-line::after {
-    content: '';
+/* =========================================================================
+   ESTILOS DE CONTENEDOR PRINCIPAL (main)
+========================================================================= */
+
+main {
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    main {
+        padding-left: 2.5rem;
+        /* px-10 */
+        padding-right: 2.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    main {
+        padding-top: 4rem;
+        /* py-16 */
+        padding-left: 3rem;
+        /* px-12 */
+        padding-right: 3rem;
+    }
+}
+
+footer {
+    width: 100%;
+    padding: 24px 28px
+}
+
+/* =========================================================================
+   ESTILOS DE SECCIÓN (Layout principal del Dashboard)
+========================================================================= */
+
+section {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 24px;
+    margin-top: 24px;
+    padding: 24px 28px;
+    background-color: var(--color-bg-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-soft);
+}
+
+@media (min-width: 1024px) {
+    section {
+        margin-bottom: 32px;
+        padding: 32px;
+    }
+}
+
+section>h3,
+section>h5 {
+    font-family: var(--font-display);
+    color: var(--color-text-primary);
+    font-weight: 700;
+    margin-bottom: 16px;
+    line-height: 1.2;
+}
+
+section>h5 {
+    font-size: 1.25rem;
+}
+
+section>h3 {
+    font-size: 1.5rem;
 }
 
 /* Separador de sección con etiqueta */

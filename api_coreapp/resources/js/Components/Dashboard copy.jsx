@@ -138,7 +138,10 @@ export default function Dashboard() {
             </div>
 
             {/* ── MAIN ─────────────────────────────────────────────────────── */}
-            <main>
+            <main
+                className="mx-auto w-full max-w-7xl px-6 md:px-10 lg:px-12 py-12 lg:py-16"
+                style={{ flex: 1 }}
+            >
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
 
@@ -159,7 +162,7 @@ export default function Dashboard() {
                                             letterSpacing: '-0.3px',
                                         }}
                                     >
-                                        Juego de la semana
+                                        Matchday Central
                                     </h2>
                                 </div>
                                 <a
@@ -191,10 +194,80 @@ export default function Dashboard() {
 
                         {/* Avisos y Reglamento (Nuevo Layout Grid) */}
                         <section>
-                            <div className="grid grid-cols-1 gap-8 lg:gap-10">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
+                                {/* Columna Izquierda: Reglamento */}
                                 <div>
                                     <div className="text-label" style={{ marginBottom: 16 }}>Normativa Liga</div>
                                     <ReglamentoWidget />
+                                </div>
+
+                                {/* Columna Derecha: Noticia Oficial */}
+                                <div>
+                                    <div className="text-label" style={{ marginBottom: 16 }}>Última Hora</div>
+                                    <div
+                                        style={{
+                                            background: 'var(--color-text-primary)',
+                                            borderRadius: 'var(--radius-lg)',
+                                            padding: 28,
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            justifyContent: 'space-between',
+                                            height: '100%',
+                                            minHeight: 220,
+                                            position: 'relative',
+                                            overflow: 'hidden',
+                                            boxShadow: 'var(--shadow-medium)',
+                                        }}
+                                    >
+                                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'var(--gradient-brand)' }} />
+                                        <div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                                                <Newspaper size={16} style={{ color: 'rgba(255,255,255,0.4)' }} />
+                                                <span
+                                                    style={{
+                                                        fontFamily: 'var(--font-body)',
+                                                        fontSize: 10,
+                                                        fontWeight: 600,
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '2px',
+                                                        color: 'rgba(255,255,255,0.4)',
+                                                    }}
+                                                >
+                                                    Comunicado oficial
+                                                </span>
+                                            </div>
+                                            <p
+                                                style={{
+                                                    fontFamily: 'var(--font-display)',
+                                                    fontSize: 22,
+                                                    fontWeight: 700,
+                                                    color: '#FFFFFF',
+                                                    lineHeight: 1.3,
+                                                    letterSpacing: '-0.2px',
+                                                }}
+                                            >
+                                                Los horarios de la fase de liguilla han sido confirmados por la directiva.
+                                            </p>
+                                        </div>
+                                        <a
+                                            href="#"
+                                            style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: 8,
+                                                fontFamily: 'var(--font-body)',
+                                                fontSize: 12,
+                                                fontWeight: 600,
+                                                color: 'var(--color-gold)',
+                                                textDecoration: 'none',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '1px',
+                                                marginTop: 20
+                                            }}
+                                        >
+                                            Leer más <ArrowRight size={13} />
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </section>

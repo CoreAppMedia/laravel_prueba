@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Info } from 'lucide-react';
 
 export default function LeagueTable({ teams }) {
     return (
@@ -10,263 +10,212 @@ export default function LeagueTable({ teams }) {
                 borderRadius: 'var(--radius-lg)',
                 overflow: 'hidden',
                 boxShadow: 'var(--shadow-soft)',
+                display: 'flex',
+                flexDirection: 'column',
             }}
         >
-            {/* Header */}
+            {/* Header Rediseñado */}
             <div
                 style={{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '14px 18px',
-                    background: 'var(--color-bg-surface-alt)',
+                    padding: '20px 24px',
                     borderBottom: '1px solid var(--color-border-subtle)',
                 }}
             >
-                <span
+                <div>
+                    <h3
+                        style={{
+                            fontFamily: 'var(--font-display)',
+                            fontSize: 18,
+                            fontWeight: 700,
+                            color: 'var(--color-text-primary)',
+                            lineHeight: 1,
+                            marginBottom: 4,
+                        }}
+                    >
+                        Clasificación General
+                    </h3>
+                    <span
+                        style={{
+                            fontFamily: 'var(--font-body)',
+                            fontSize: 12,
+                            color: 'var(--color-text-muted)',
+                        }}
+                    >
+                        Apertura 2025 · Jornada 12
+                    </span>
+                </div>
+                <div
                     style={{
-                        fontFamily: 'var(--font-body)',
-                        fontSize: 10,
-                        fontWeight: 600,
-                        textTransform: 'uppercase',
-                        letterSpacing: '2px',
-                        color: 'var(--color-text-muted)',
+                        width: 36,
+                        height: 36,
+                        borderRadius: '50%',
+                        background: 'var(--color-bg-surface-alt)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--color-text-secondary)',
+                        cursor: 'pointer',
                     }}
                 >
-                    Clasificación
-                </span>
-                <span
-                    style={{
-                        fontFamily: 'var(--font-body)',
-                        fontSize: 10,
-                        fontWeight: 600,
-                        textTransform: 'uppercase',
-                        letterSpacing: '1.5px',
-                        color: 'var(--color-terra)',
-                        background: 'var(--color-terra-light)',
-                        border: '1px solid rgba(192,68,42,0.2)',
-                        borderRadius: 4,
-                        padding: '2px 8px',
-                    }}
-                >
-                    Jornada 12
-                </span>
+                    <Info size={16} />
+                </div>
             </div>
 
             {/* Tabla */}
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                    <tr style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
-                        {['#', 'Club', 'PJ', 'PTS', 'DIF'].map((h, i) => (
-                            <th
-                                key={h}
-                                style={{
-                                    padding: '9px 14px',
-                                    fontFamily: 'var(--font-body)',
-                                    fontSize: 10,
-                                    fontWeight: 600,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '1.5px',
-                                    color: 'var(--color-text-ghost)',
-                                    textAlign: i > 1 ? 'center' : 'left',
-                                }}
-                            >
-                                {h}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
+            <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <thead>
+                        <tr style={{ background: 'var(--color-bg-surface-alt)' }}>
+                            <th style={{ padding: '12px 24px', fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-text-muted)', width: 60 }}>#</th>
+                            <th style={{ padding: '12px 14px', fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-text-muted)' }}>Club</th>
+                            <th style={{ padding: '12px 14px', fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-text-muted)', textAlign: 'center' }}>PJ</th>
+                            <th style={{ padding: '12px 14px', fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-text-muted)', textAlign: 'center' }}>DIF</th>
+                            <th style={{ padding: '12px 24px', fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-text-muted)', textAlign: 'center' }}>PTS</th>
+                        </tr>
+                    </thead>
 
-                <tbody>
-                    {teams.map((team, index) => {
-                        const isFirst = index === 0;
-                        const isRising = index < 2;
-                        const isFalling = index > 3;
+                    <tbody>
+                        {teams.map((team, index) => {
+                            const isLeader = index === 0;
+                            const isRelegation = index >= teams.length - 2; // Supongamos que los últimos dos descienden
+                            const isRising = index < 2 && index !== 0;
 
-                        return (
-                            <tr
-                                key={index}
-                                style={{
-                                    borderBottom: index < teams.length - 1
-                                        ? '1px solid var(--color-border-subtle)'
-                                        : 'none',
-                                    background: isFirst ? 'rgba(160,120,40,0.04)' : 'transparent',
-                                    transition: 'background 0.15s',
-                                    cursor: 'pointer',
-                                }}
-                                onMouseEnter={e => e.currentTarget.style.background = 'var(--color-bg-surface-alt)'}
-                                onMouseLeave={e => e.currentTarget.style.background = isFirst ? 'rgba(160,120,40,0.04)' : 'transparent'}
-                            >
-                                {/* Posición */}
-                                <td style={{ padding: '11px 14px', width: 44 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                        {isFirst ? (
-                                            <svg width="14" height="14" viewBox="0 0 14 14">
-                                                <polygon
-                                                    points="7,1 8.8,5.6 13.7,5.9 10,9.1 11.1,14 7,11.3 2.9,14 4,9.1 0.3,5.9 5.2,5.6"
-                                                    fill="var(--color-gold)"
-                                                />
-                                            </svg>
-                                        ) : (
+                            return (
+                                <tr
+                                    key={index}
+                                    style={{
+                                        borderBottom: '1px solid var(--color-border-subtle)',
+                                        background: isLeader ? 'rgba(160,120,40,0.03)' : (isRelegation ? 'rgba(176,48,48,0.02)' : 'transparent'),
+                                        transition: 'background 0.2s',
+                                    }}
+                                >
+                                    {/* Posición y Tendencia */}
+                                    <td style={{ padding: '14px 24px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                             <span
                                                 style={{
-                                                    fontFamily: 'var(--font-body)',
-                                                    fontSize: 12,
-                                                    fontWeight: 600,
-                                                    color: 'var(--color-text-muted)',
-                                                    width: 14,
-                                                    textAlign: 'center',
-                                                    display: 'inline-block',
+                                                    fontFamily: 'var(--font-display)',
+                                                    fontSize: 16,
+                                                    fontWeight: 700,
+                                                    color: isLeader ? 'var(--color-gold)' : (isRelegation ? 'var(--color-danger)' : 'var(--color-text-primary)'),
+                                                    width: 18,
                                                 }}
                                             >
                                                 {index + 1}
                                             </span>
-                                        )}
-                                        {isRising && (
-                                            <TrendingUp size={10} style={{ color: 'var(--color-sage)', flexShrink: 0 }} />
-                                        )}
-                                        {isFalling && (
-                                            <TrendingDown size={10} style={{ color: 'var(--color-terra)', flexShrink: 0 }} />
-                                        )}
-                                        {!isRising && !isFalling && (
-                                            <Minus size={10} style={{ color: 'var(--color-text-ghost)', flexShrink: 0 }} />
-                                        )}
-                                    </div>
-                                </td>
+                                            {isRising ? <TrendingUp size={12} style={{ color: 'var(--color-sage)' }} /> : (isRelegation ? <TrendingDown size={12} style={{ color: 'var(--color-danger)' }} /> : <Minus size={12} style={{ color: 'var(--color-text-ghost)' }} />)}
+                                        </div>
+                                    </td>
 
-                                {/* Club */}
-                                <td style={{ padding: '11px 14px' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                        <div
-                                            style={{
-                                                width: 4,
-                                                height: 16,
-                                                borderRadius: 2,
-                                                background: isFirst
-                                                    ? 'var(--color-gold)'
-                                                    : 'var(--color-border-strong)',
-                                                flexShrink: 0,
-                                            }}
-                                        />
-                                        <div>
+                                    {/* Equipo */}
+                                    <td style={{ padding: '14px 14px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                            {/* Avatar genérico */}
                                             <div
                                                 style={{
-                                                    fontFamily: 'var(--font-body)',
+                                                    width: 28,
+                                                    height: 28,
+                                                    borderRadius: '50%',
+                                                    background: 'var(--color-bg-surface)',
+                                                    border: '1px solid var(--color-border-subtle)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
                                                     fontSize: 12,
+                                                    boxShadow: 'var(--shadow-soft)'
+                                                }}
+                                            >
+                                                🛡️
+                                            </div>
+                                            <span
+                                                style={{
+                                                    fontFamily: 'var(--font-body)',
+                                                    fontSize: 14,
                                                     fontWeight: 600,
                                                     color: 'var(--color-text-primary)',
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.4px',
-                                                    lineHeight: 1.2,
                                                 }}
                                             >
                                                 {team.name}
-                                            </div>
-                                            {isFirst && (
-                                                <div
-                                                    style={{
-                                                        fontFamily: 'var(--font-body)',
-                                                        fontSize: 9,
-                                                        fontWeight: 600,
-                                                        color: 'var(--color-gold)',
-                                                        textTransform: 'uppercase',
-                                                        letterSpacing: '1px',
-                                                    }}
-                                                >
-                                                    Líder
-                                                </div>
-                                            )}
+                                            </span>
                                         </div>
-                                    </div>
-                                </td>
+                                    </td>
 
-                                {/* PJ */}
-                                <td
-                                    style={{
-                                        padding: '11px 14px',
-                                        textAlign: 'center',
-                                        fontFamily: 'var(--font-body)',
-                                        fontSize: 12,
-                                        color: 'var(--color-text-muted)',
-                                    }}
-                                >
-                                    {team.played}
-                                </td>
+                                    {/* PJ */}
+                                    <td style={{ padding: '14px 14px', textAlign: 'center', fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-text-secondary)' }}>
+                                        {team.played}
+                                    </td>
 
-                                {/* PTS */}
-                                <td style={{ padding: '11px 14px', textAlign: 'center' }}>
-                                    <span
-                                        style={{
-                                            fontFamily: 'var(--font-display)',
-                                            fontSize: 16,
-                                            fontWeight: 700,
-                                            color: isFirst ? 'var(--color-gold)' : 'var(--color-text-primary)',
-                                        }}
-                                    >
-                                        {team.points}
-                                    </span>
-                                </td>
+                                    {/* DIF */}
+                                    <td style={{ padding: '14px 14px', textAlign: 'center' }}>
+                                        <span
+                                            style={{
+                                                fontFamily: 'var(--font-body)',
+                                                fontSize: 12,
+                                                fontWeight: 600,
+                                                color: team.diff > 0 ? 'var(--color-sage)' : (team.diff < 0 ? 'var(--color-danger)' : 'var(--color-text-secondary)'),
+                                            }}
+                                        >
+                                            {team.diff > 0 ? `+${team.diff}` : team.diff}
+                                        </span>
+                                    </td>
 
-                                {/* DIF */}
-                                <td style={{ padding: '11px 14px', textAlign: 'center' }}>
-                                    <span
-                                        style={{
-                                            fontFamily: 'var(--font-body)',
-                                            fontSize: 11,
-                                            fontWeight: 600,
-                                            padding: '2px 7px',
-                                            borderRadius: 4,
-                                            background: team.diff > 0
-                                                ? 'var(--color-sage-light)'
-                                                : team.diff < 0
-                                                    ? 'var(--color-terra-light)'
-                                                    : 'var(--color-bg-surface-alt)',
-                                            color: team.diff > 0
-                                                ? 'var(--color-sage)'
-                                                : team.diff < 0
-                                                    ? 'var(--color-terra)'
-                                                    : 'var(--color-text-ghost)',
-                                            border: team.diff > 0
-                                                ? '1px solid rgba(58,107,82,0.2)'
-                                                : team.diff < 0
-                                                    ? '1px solid rgba(192,68,42,0.2)'
-                                                    : '1px solid var(--color-border-subtle)',
-                                        }}
-                                    >
-                                        {team.diff > 0 ? `+${team.diff}` : team.diff}
-                                    </span>
-                                </td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
+                                    {/* PTS (Destacado) */}
+                                    <td style={{ padding: '14px 24px', textAlign: 'center' }}>
+                                        <div
+                                            style={{
+                                                display: 'inline-block',
+                                                padding: '4px 12px',
+                                                background: isLeader ? 'var(--color-gold)' : 'var(--color-bg-surface-alt)',
+                                                borderRadius: 'var(--radius-sm)',
+                                                fontFamily: 'var(--font-display)',
+                                                fontSize: 16,
+                                                fontWeight: 700,
+                                                color: isLeader ? '#fff' : 'var(--color-text-primary)',
+                                            }}
+                                        >
+                                            {team.points}
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
 
-            {/* Pie */}
+            {/* Footer de Leyendas */}
             <div
                 style={{
-                    padding: '12px 18px',
-                    borderTop: '1px solid var(--color-border-subtle)',
+                    padding: '16px 24px',
                     background: 'var(--color-bg-surface-alt)',
-                    textAlign: 'center',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
                 }}
             >
+                <div style={{ display: 'flex', gap: 16 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: 'var(--font-body)', color: 'var(--color-text-muted)' }}>
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-gold)' }} /> Campeón
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: 'var(--font-body)', color: 'var(--color-text-muted)' }}>
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-danger)' }} /> Descenso
+                    </div>
+                </div>
+                
                 <a
                     href="#"
                     style={{
                         fontFamily: 'var(--font-body)',
-                        fontSize: 11,
+                        fontSize: 12,
                         fontWeight: 600,
                         color: 'var(--color-terra)',
                         textDecoration: 'none',
-                        textTransform: 'uppercase',
-                        letterSpacing: '1.5px',
-                        transition: 'opacity 0.15s',
                     }}
-                    onMouseEnter={e => e.currentTarget.style.opacity = '0.7'}
-                    onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                 >
-                    Ver tabla completa
+                    Ver todo
                 </a>
             </div>
         </div>

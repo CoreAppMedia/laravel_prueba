@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../Auth/AuthContext';
 import { getHomePathForUser } from '../../lib/permissions';
-import AuthCard from './Authcard';
-import AuthInput from './Authinput';
-import { authStyles } from './Authstyles';
+import AuthCard from './authcard';
+import AuthInput from './authinput';
+import { authStyles } from './authstyles';
 
 export default function Login() {
     const navigate = useNavigate();

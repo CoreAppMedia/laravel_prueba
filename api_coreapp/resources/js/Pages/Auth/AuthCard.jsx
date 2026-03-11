@@ -1,5 +1,5 @@
 import React from 'react';
-import { authStyles } from './Authstyles';
+import { authstyles } from './authstyles';
 
 /**
  * Contenedor visual compartido para todas las páginas de autenticación.
@@ -9,12 +9,12 @@ import { authStyles } from './Authstyles';
  */
 export default function AuthCard({ children, maxWidth = '448px' }) {
     return (
-        <div style={{ ...authStyles.page }}>
-            <div style={{ ...authStyles.card, maxWidth }}>
+        <div style={{ ...authstyles.page }}>
+            <div style={{ ...authstyles.card, maxWidth }}>
                 {/* Banda tricolor de marca */}
                 <div className="brand-bar-thick" />
                 {/* Cuerpo */}
-                <div style={authStyles.body}>
+                <div style={authstyles.body}>
                     {children}
                 </div>
             </div>

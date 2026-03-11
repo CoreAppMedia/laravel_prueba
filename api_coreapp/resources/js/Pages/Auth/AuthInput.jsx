@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { authStyles, inputFocusOn, inputFocusOff } from './Authstyles';
+import { authstyles, inputFocusOn, inputFocusOff } from './authstyles';
 
 /**
  * Campo de formulario reutilizable para pantallas de autenticación.

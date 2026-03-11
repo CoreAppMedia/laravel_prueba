@@ -101,8 +101,8 @@ class DummyDataSeeder extends Seeder
             foreach ($equipos as $eq) {
                 Equipo::updateOrCreate(
                 [
-                    'nombre_mostrado' => $eq['nombre_mostrado'],
-                    'club_id' => $eq['club_id']
+                    'club_id' => $eq['club_id'],
+                    'categoria_id' => $eq['categoria_id']
                 ],
                     $eq
                 );

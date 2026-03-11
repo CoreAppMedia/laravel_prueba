@@ -17,6 +17,7 @@ class Torneo extends Model
     protected $fillable = [
         'temporada_id',
         'tipo_torneo_id',
+        'categoria_id',
         'nombre',
         'fecha_inicio',
         'fecha_fin',
@@ -42,6 +43,11 @@ class Torneo extends Model
     public function tipo()
     {
         return $this->belongsTo(CatalogoTipoTorneo::class, 'tipo_torneo_id');
+    }
+
+    public function categoria()
+    {
+        return $this->belongsTo(CatalogoCategoria::class, 'categoria_id');
     }
 
     public function jornadas()

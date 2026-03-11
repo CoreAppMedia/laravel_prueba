@@ -11,6 +11,7 @@ import ForgotPassword from './Pages/Auth/ForgotPassword';
 import ResetPassword from './Pages/Auth/ResetPassword';
 
 import Dashboard from './Components/Dashboard';
+import GuiaEstilo from './Pages/GuiaEstilo';
 import HomeRedirect from './Pages/HomeRedirect';
 import NotFound from './Pages/NotFound';
 
@@ -20,6 +21,7 @@ import PanelAdmin from './Pages/Permisos/Admin/Panel';
 import TemporadasIndex from './Pages/Permisos/Admin/Temporadas/Index';
 import ClubesIndex from './Pages/Permisos/Admin/Clubes/Index';
 import TorneosIndex from './Pages/Permisos/Admin/Torneos/Index';
+import TorneoDashboard from './Pages/Permisos/Admin/Torneos/Dashboard';
 import EquiposIndex from './Pages/Permisos/Admin/Equipos/Index';
 import PanelPresidente from './Pages/Permisos/Presidente/Panel';
 import PanelDelegado from './Pages/Permisos/Delegado/Panel';
@@ -41,6 +43,7 @@ function App() {
 
 
                     <Route path="/" element={<Dashboard />} />
+                    <Route path="/guia-estilo" element={<GuiaEstilo />} />
                     <Route element={<ProtectedRoute />}>
                         <Route path="/panel" element={<PanelGenerico />} />
 
@@ -49,6 +52,7 @@ function App() {
                         <Route path="/panel/admin/temporadas" element={<TemporadasIndex />} />
                         <Route path="/panel/admin/clubes" element={<ClubesIndex />} />
                         <Route path="/panel/admin/torneos" element={<TorneosIndex />} />
+                        <Route path="/panel/admin/torneos/:id" element={<TorneoDashboard />} />
                         <Route path="/panel/admin/equipos" element={<EquiposIndex />} />
                         <Route path="/panel/presidente" element={<PanelPresidente />} />
                         <Route path="/panel/delegado" element={<PanelDelegado />} />

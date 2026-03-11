@@ -6,7 +6,8 @@ import DataTable from '../../../../Components/UI/DataTable';
 import GradientButton from '../../../../Components/UI/GradientButton';
 import Modal from '../../../../Components/UI/Modal';
 import TorneoForm from './TorneoForm';
-import { Plus, Edit, Trash2, Trophy, Calendar } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Plus, Edit, Trash2, Trophy, Calendar, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function TorneosIndex() {
@@ -103,14 +104,22 @@ export default function TorneosIndex() {
     ];
 
     const actions = (row) => (
-        <>
+        <div className="flex items-center gap-2">
+            <Link 
+                to={`/panel/admin/torneos/${row.id}`} 
+                className="bg-mx-green/10 text-mx-green hover:bg-mx-green hover:text-white px-2 py-1 rounded text-xs font-bold transition-colors flex items-center gap-1"
+                title="Administrar Fase 2"
+            >
+                Administrar
+                <ArrowRight size={12} />
+            </Link>
             <button onClick={() => handleEdit(row)} className="text-blue-400 hover:text-blue-300 p-1" title="Editar">
                 <Edit size={18} />
             </button>
             <button onClick={() => handleDelete(row.id)} className="text-red-400 hover:text-red-300 p-1" title="Eliminar">
                 <Trash2 size={18} />
             </button>
-        </>
+        </div>
     );
 
     return (

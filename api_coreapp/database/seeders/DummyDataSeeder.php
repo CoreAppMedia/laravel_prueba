@@ -29,7 +29,7 @@ class DummyDataSeeder extends Seeder
         $temporadaIds = [];
         foreach ($temporadas as $t) {
             $temporada = Temporada::updateOrCreate(
-                ['nombre' => $t['nombre']],
+            ['nombre' => $t['nombre']],
                 $t
             );
             $temporadaIds[] = $temporada->id;
@@ -66,7 +66,7 @@ class DummyDataSeeder extends Seeder
 
             foreach ($torneos as $tor) {
                 $torneo = Torneo::updateOrCreate(
-                    ['nombre' => $tor['nombre'], 'temporada_id' => $tor['temporada_id']],
+                ['nombre' => $tor['nombre'], 'temporada_id' => $tor['temporada_id']],
                     $tor
                 );
             }
@@ -82,7 +82,7 @@ class DummyDataSeeder extends Seeder
         $clubIds = [];
         foreach ($clubs as $c) {
             $club = Club::firstOrCreate(
-                ['nombre' => $c['nombre']],
+            ['nombre' => $c['nombre']],
                 $c
             );
             $clubIds[] = $club->id;
@@ -103,10 +103,10 @@ class DummyDataSeeder extends Seeder
 
             foreach ($equipos as $eq) {
                 Equipo::updateOrCreate(
-                    [
-                        'nombre_mostrado' => $eq['nombre_mostrado'],
-                        'club_id' => $eq['club_id']
-                    ],
+                [
+                    'nombre_mostrado' => $eq['nombre_mostrado'],
+                    'club_id' => $eq['club_id']
+                ],
                     $eq
                 );
             }

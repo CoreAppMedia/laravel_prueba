@@ -13,10 +13,10 @@ class CatalogosSeeder extends Seeder
     public function run(): void
     {
         /*
-        |--------------------------------------------------------------------------
-        | Tipos de Torneo
-        |--------------------------------------------------------------------------
-        */
+         |--------------------------------------------------------------------------
+         | Tipos de Torneo
+         |--------------------------------------------------------------------------
+         */
         $tiposTorneo = [
             [
                 'nombre' => 'Liga',
@@ -31,20 +31,25 @@ class CatalogosSeeder extends Seeder
         ];
         foreach ($tiposTorneo as $item) {
             CatalogoTipoTorneo::firstOrCreate(
-                ['nombre' => $item['nombre']],
+            ['nombre' => $item['nombre']],
                 $item
             );
         }
 
         /*
-        |--------------------------------------------------------------------------
-        | Categorías
-        |--------------------------------------------------------------------------
-        */
+         |--------------------------------------------------------------------------
+         | Categorías
+         |--------------------------------------------------------------------------
+         */
         $categorias = [
             [
                 'nombre' => 'Amateur',
                 'descripcion' => 'Categoría libre amateur',
+                'activo' => true,
+            ],
+            [
+                'nombre' => 'Primera',
+                'descripcion' => 'Categoría primera especial',
                 'activo' => true,
             ],
             [
@@ -55,16 +60,16 @@ class CatalogosSeeder extends Seeder
         ];
         foreach ($categorias as $item) {
             CatalogoCategoria::firstOrCreate(
-                ['nombre' => $item['nombre']],
+            ['nombre' => $item['nombre']],
                 $item
             );
         }
 
         /*
-        |--------------------------------------------------------------------------
-        | Estados de Partido
-        |--------------------------------------------------------------------------
-        */
+         |--------------------------------------------------------------------------
+         | Estados de Partido
+         |--------------------------------------------------------------------------
+         */
         $estadosPartido = [
             [
                 'nombre' => 'Programado',
@@ -84,16 +89,16 @@ class CatalogosSeeder extends Seeder
         ];
         foreach ($estadosPartido as $item) {
             CatalogoEstadoPartido::firstOrCreate(
-                ['nombre' => $item['nombre']],
+            ['nombre' => $item['nombre']],
                 $item
             );
         }
 
         /*
-        |--------------------------------------------------------------------------
-        | Tipos de Multa
-        |--------------------------------------------------------------------------
-        */
+         |--------------------------------------------------------------------------
+         | Tipos de Multa
+         |--------------------------------------------------------------------------
+         */
         $tiposMulta = [
             [
                 'nombre' => 'No presentación',
@@ -112,7 +117,7 @@ class CatalogosSeeder extends Seeder
         ];
         foreach ($tiposMulta as $item) {
             CatalogoTipoMulta::firstOrCreate(
-                ['nombre' => $item['nombre']],
+            ['nombre' => $item['nombre']],
                 $item
             );
         }

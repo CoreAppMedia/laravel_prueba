@@ -1,10 +1,16 @@
 @import 'tailwindcss';
 
 :root {
-    /* Brand Colors - Mexican Flag */
+    /* Brand Colors - Mexican Flag & Mictlán Futuro */
     --color-mx-green: #006847;
     --color-mx-white: #FFFFFF;
     --color-mx-red: #CE1126;
+    
+    /* Mictlán Futuro (Neon Accents) */
+    --color-mx-cempasuchil: #FF6B00;
+    --color-mx-rosa: #D946EF;
+    --color-mx-morado: #8B5CF6;
+    --color-mx-agave: #10B981;
 
     /* Semantic Theme Variables (Light Mode Default) */
     --color-bg-main: #f8fafc;

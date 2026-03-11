@@ -77,6 +77,24 @@ Route::middleware('auth:sanctum')->group(function () {
         }
         );
 
+        // Phase 2 Controllers
+        Route::middleware('can:torneos.create')->group(function () {
+            // Inscripciones a torneos
+            Route::post('torneos/{torneo}/inscribir', [\App\Http\Controllers\Api\EquipoTorneoController::class, 'inscribirEquipo']);
+            Route::patch('torneos/{torneo}/equipos/{equipo}/pago', [\App\Http\Controllers\Api\EquipoTorneoController::class, 'registrarPago']);
+            Route::get('torneos/{torneo}/equipos-inscritos', [\App\Http\Controllers\Api\EquipoTorneoController::class, 'obtenerEquiposInscritos']);
+
+            // Gestión de Jornadas
+            Route::post('torneos/{torneo}/jornadas', [\App\Http\Controllers\Api\JornadaController::class, 'store']);
+            Route::get('torneos/{torneo}/jornadas', [\App\Http\Controllers\Api\JornadaController::class, 'indexByTorneo']);
+            Route::patch('jornadas/{jornada}/cerrar', [\App\Http\Controllers\Api\JornadaController::class, 'cerrarJornada']);
+
+            // Gestión de Partidos
+            Route::post('jornadas/{jornada}/partidos', [\App\Http\Controllers\Api\PartidoController::class, 'store']);
+            Route::patch('partidos/{partido}/resultado', [\App\Http\Controllers\Api\PartidoController::class, 'registrarResultado']);
+            Route::patch('partidos/{partido}/cerrar', [\App\Http\Controllers\Api\PartidoController::class, 'cerrarPartido']);
+        });
+
         // Catalogos
         Route::prefix('catalogos')->middleware('can:*.view')->group(function () {
             Route::get('/tipos-torneo', [\App\Http\Controllers\CatalogosController::class , 'getTiposTorneo']);

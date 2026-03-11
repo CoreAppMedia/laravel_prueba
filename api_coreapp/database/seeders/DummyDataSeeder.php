@@ -74,9 +74,8 @@ class DummyDataSeeder extends Seeder
 
         // 3. Clubs
         $clubs = [
-            ['nombre' => 'Club Deportivo La Estación', 'es_club' => true, 'telefono' => '3411234567', 'correo' => 'contacto@laestacion.com', 'activo' => true],
-            ['nombre' => 'Real Zapotlán', 'es_club' => true, 'telefono' => '3419876543', 'correo' => 'info@realzapotlan.com', 'activo' => true],
-            ['nombre' => 'Atlético San José', 'es_club' => false, 'telefono' => '3415555555', 'correo' => null, 'activo' => true],
+            ['nombre' => 'Record FC', 'es_club' => true, 'telefono' => '3411234567', 'correo' => 'contacto@laestacion.com', 'activo' => true],
+            ['nombre' => 'Zapotlán FC', 'es_club' => true, 'telefono' => '3419876543', 'correo' => 'info@realzapotlan.com', 'activo' => true],
         ];
 
         $clubIds = [];
@@ -95,10 +94,12 @@ class DummyDataSeeder extends Seeder
             $catReservaId = $categorias->firstWhere('nombre', 'Reserva')->id ?? $categorias->last()->id;
 
             $equipos = [
-                ['club_id' => $clubIds[0], 'categoria_id' => $catAmateurId, 'nombre_mostrado' => 'La Estación A', 'activo' => true],
-                ['club_id' => $clubIds[0], 'categoria_id' => $catReservaId, 'nombre_mostrado' => 'La Estación Fuerzas Básicas', 'activo' => true],
-                ['club_id' => $clubIds[1], 'categoria_id' => $catAmateurId, 'nombre_mostrado' => 'Real Zapotlán Mayor', 'activo' => true],
-                ['club_id' => $clubIds[2], 'categoria_id' => $catAmateurId, 'nombre_mostrado' => 'Atlético San José', 'activo' => true],
+                ['club_id' => $clubIds[0], 'categoria_id' => $catAmateurId, 'nombre_mostrado' => 'Record Amateur', 'activo' => true],
+                ['club_id' => $clubIds[1], 'categoria_id' => $catAmateurId, 'nombre_mostrado' => 'Zapotlán Amateur', 'activo' => true],
+                ['club_id' => $clubIds[0], 'categoria_id' => $catAmateurId, 'nombre_mostrado' => 'Record Especial', 'activo' => true],
+                ['club_id' => $clubIds[1], 'categoria_id' => $catAmateurId, 'nombre_mostrado' => 'Zapotlán Especial', 'activo' => true],
+                ['club_id' => $clubIds[0], 'categoria_id' => $catAmateurId, 'nombre_mostrado' => 'Record Reserva', 'activo' => true],
+                ['club_id' => $clubIds[1], 'categoria_id' => $catAmateurId, 'nombre_mostrado' => 'Zapotlán Reserva', 'activo' => true],
             ];
 
             foreach ($equipos as $eq) {

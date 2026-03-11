@@ -6,10 +6,12 @@ import toast from "react-hot-toast";
 export default function TorneoForm({ torneo, onSuccess, onCancel }) {
     const [temporadas, setTemporadas] = useState([]);
     const [tiposTorneo, setTiposTorneo] = useState([]);
+    const [categorias, setCategorias] = useState([]);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         temporada_id: torneo?.temporada_id || "",
-        catalogo_tipo_torneo_id: torneo?.catalogo_tipo_torneo_id || "",
+        tipo_torneo_id: torneo?.tipo_torneo_id || "",
+        categoria_id: torneo?.categoria_id || "",
         nombre: torneo?.nombre || "",
         fecha_inicio: torneo?.fecha_inicio || "",
         fecha_fin: torneo?.fecha_fin || "",
@@ -24,12 +26,14 @@ export default function TorneoForm({ torneo, onSuccess, onCancel }) {
     useEffect(() => {
         const fetchDependencies = async () => {
             try {
-                const [resTemp, resTipos] = await Promise.all([
+                const [resTemp, resTipos, resCats] = await Promise.all([
                     http.get("/api/temporadas"),
                     http.get("/api/catalogos/tipos-torneo"),
+                    http.get("/api/catalogos/categorias"),
                 ]);
                 setTemporadas(resTemp.data);
                 setTiposTorneo(resTipos.data);
+                setCategorias(resCats.data);
             } catch (error) {
                 toast.error("Error al cargar datos necesarios");
             }
@@ -120,19 +124,19 @@ export default function TorneoForm({ torneo, onSuccess, onCancel }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <label className={labelClass} style={{ marginLeft: '4px' }}>Tipo de Torneo</label>
                     <select
-                        name="catalogo_tipo_torneo_id"
-                        value={formData.catalogo_tipo_torneo_id}
+                        name="tipo_torneo_id"
+                        value={formData.tipo_torneo_id}
                         onChange={handleChange}
                         style={{
                             ...inputStyle,
-                            ...(errors.catalogo_tipo_torneo_id ? { border: '1px solid var(--color-danger)' } : {})
+                            ...(errors.tipo_torneo_id ? { border: '1px solid var(--color-danger)' } : {})
                         }}
                         onFocus={(e) => {
                             e.target.style.borderColor = 'var(--color-gold)';
                             e.target.style.boxShadow = '0 0 0 4px var(--color-gold-light)';
                         }}
                         onBlur={(e) => {
-                            e.target.style.borderColor = errors.catalogo_tipo_torneo_id ? 'var(--color-danger)' : 'var(--color-border-subtle)';
+                            e.target.style.borderColor = errors.tipo_torneo_id ? 'var(--color-danger)' : 'var(--color-border-subtle)';
                             e.target.style.boxShadow = 'var(--shadow-soft)';
                         }}
                     >
@@ -141,33 +145,61 @@ export default function TorneoForm({ torneo, onSuccess, onCancel }) {
                             <option key={tipo.id} value={tipo.id}>{tipo.nombre}</option>
                         ))}
                     </select>
-                    {errors.catalogo_tipo_torneo_id && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.catalogo_tipo_torneo_id[0]}</p>}
+                    {errors.tipo_torneo_id && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.tipo_torneo_id[0]}</p>}
                 </div>
             </div>
 
-            {/* Nombre del Torneo */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label className={labelClass} style={{ marginLeft: '4px' }}>Nombre Identificador del Torneo</label>
-                <input
-                    type="text"
-                    name="nombre"
-                    value={formData.nombre}
-                    onChange={handleChange}
-                    style={{
-                        ...inputStyle,
-                        ...(errors.nombre ? { border: '1px solid var(--color-danger)' } : {})
-                    }}
-                    placeholder="Ej. Liga Premier 2026"
-                    onFocus={(e) => {
-                        e.target.style.borderColor = 'var(--color-gold)';
-                        e.target.style.boxShadow = '0 0 0 4px var(--color-gold-light)';
-                    }}
-                    onBlur={(e) => {
-                        e.target.style.borderColor = errors.nombre ? 'var(--color-danger)' : 'var(--color-border-subtle)';
-                        e.target.style.boxShadow = 'var(--shadow-soft)';
-                    }}
-                />
-                {errors.nombre && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.nombre[0]}</p>}
+            {/* Fila: Nombre y Categoría */}
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label className={labelClass} style={{ marginLeft: '4px' }}>Nombre Identificador del Torneo</label>
+                    <input
+                        type="text"
+                        name="nombre"
+                        value={formData.nombre}
+                        onChange={handleChange}
+                        style={{
+                            ...inputStyle,
+                            ...(errors.nombre ? { border: '1px solid var(--color-danger)' } : {})
+                        }}
+                        placeholder="Ej. Liga Premier 2026"
+                        onFocus={(e) => {
+                            e.target.style.borderColor = 'var(--color-gold)';
+                            e.target.style.boxShadow = '0 0 0 4px var(--color-gold-light)';
+                        }}
+                        onBlur={(e) => {
+                            e.target.style.borderColor = errors.nombre ? 'var(--color-danger)' : 'var(--color-border-subtle)';
+                            e.target.style.boxShadow = 'var(--shadow-soft)';
+                        }}
+                    />
+                    {errors.nombre && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.nombre[0]}</p>}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label className={labelClass} style={{ marginLeft: '4px' }}>Categoría</label>
+                    <select
+                        name="categoria_id"
+                        value={formData.categoria_id}
+                        onChange={handleChange}
+                        style={{
+                            ...inputStyle,
+                            ...(errors.categoria_id ? { border: '1px solid var(--color-danger)' } : {})
+                        }}
+                        onFocus={(e) => {
+                            e.target.style.borderColor = 'var(--color-gold)';
+                            e.target.style.boxShadow = '0 0 0 4px var(--color-gold-light)';
+                        }}
+                        onBlur={(e) => {
+                            e.target.style.borderColor = errors.categoria_id ? 'var(--color-danger)' : 'var(--color-border-subtle)';
+                            e.target.style.boxShadow = 'var(--shadow-soft)';
+                        }}
+                    >
+                        <option value="">Selecciona...</option>
+                        {categorias.map((cat) => (
+                            <option key={cat.id} value={cat.id}>{cat.nombre}</option>
+                        ))}
+                    </select>
+                    {errors.categoria_id && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.categoria_id[0]}</p>}
+                </div>
             </div>
 
             {/* Fila: Calendario */}

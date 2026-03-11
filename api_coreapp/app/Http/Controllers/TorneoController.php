@@ -26,6 +26,7 @@ class TorneoController extends Controller
             $validated = $request->validate([
                 'temporada_id' => 'required|uuid|exists:temporadas,id',
                 'tipo_torneo_id' => 'required|uuid|exists:catalogo_tipos_torneo,id',
+                'categoria_id' => 'required|uuid|exists:catalogo_categorias,id',
                 'nombre' => [
                     'required',
                     'string',
@@ -70,6 +71,7 @@ class TorneoController extends Controller
             $validated = $request->validate([
                 'temporada_id' => 'uuid|exists:temporadas,id',
                 'tipo_torneo_id' => 'uuid|exists:catalogo_tipos_torneo,id',
+                'categoria_id' => 'uuid|exists:catalogo_categorias,id',
                 'nombre' => [
                     'string',
                     'max:255',

@@ -1,5 +1,5 @@
 import React from 'react';
-import { authstyles } from './authstyles';
+import { authstyles } from './AuthStyles';
 
 export default function AuthCard({ children, maxWidth = '448px' }) {
     return (

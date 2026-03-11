@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { register } from '../../lib/auth';
-import AuthCard from './authcard';
-import AuthInput from './authinput';
-import { authstyles } from './authstyles';
+import AuthCard from './AuthCard';
+import AuthInput from './AuthInput';
+import { authstyles } from './AuthStyles';
 
 export default function Register() {
     const navigate = useNavigate();

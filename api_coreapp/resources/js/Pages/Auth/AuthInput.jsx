@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { authstyles, inputFocusOn, inputFocusOff } from './authstyles';
+import { authstyles, inputFocusOn, inputFocusOff } from './AuthStyles';
 
 
 export default function AuthInput({

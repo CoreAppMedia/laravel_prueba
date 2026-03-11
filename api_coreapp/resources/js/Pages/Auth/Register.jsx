@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { register } from '../../lib/auth';
 import AuthCard from './authcard';
 import AuthInput from './authinput';
-import { authStyles } from './authstyles';
+import { authstyles } from './authstyles';
 
 export default function Register() {
     const navigate = useNavigate();
@@ -81,13 +81,13 @@ export default function Register() {
                 </p>
             </div>
 
-            {error && <div style={authStyles.alertError}>{error}</div>}
+            {error && <div style={authstyles.alertError}>{error}</div>}
 
             <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
                 {/* ── Datos de cuenta ── */}
                 <div>
-                    <div style={authStyles.sectionTitle}>Datos de cuenta</div>
+                    <div style={authstyles.sectionTitle}>Datos de cuenta</div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                         <AuthInput label="Usuario (nickname) *" name="name" value={formData.name} onChange={handleChange} placeholder="ej. carlos123" required error={ve.name?.[0]} />
                         <AuthInput label="Correo electrónico *" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="tu-correo@ejemplo.com" required error={ve.email?.[0]} />
@@ -98,7 +98,7 @@ export default function Register() {
 
                 {/* ── Datos personales ── */}
                 <div>
-                    <div style={authStyles.sectionTitle}>Datos personales</div>
+                    <div style={authstyles.sectionTitle}>Datos personales</div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
                         <AuthInput label="Nombre(s) *" name="nombre" value={formData.nombre} onChange={handleChange} placeholder="Juan" required error={ve.nombre?.[0]} />
                         <AuthInput label="Apellido paterno *" name="apellido_paterno" value={formData.apellido_paterno} onChange={handleChange} placeholder="Pérez" required error={ve.apellido_paterno?.[0]} />
@@ -108,7 +108,7 @@ export default function Register() {
 
                 {/* ── Seguridad ── */}
                 <div>
-                    <div style={authStyles.sectionTitle}>Seguridad</div>
+                    <div style={authstyles.sectionTitle}>Seguridad</div>
                     <AuthInput
                         label="Clave de registro *"
                         name="registrationKey"
@@ -141,7 +141,7 @@ export default function Register() {
                 </span>
                 <Link
                     to="/login"
-                    style={authStyles.link}
+                    style={authstyles.link}
                     onMouseEnter={e => e.currentTarget.style.opacity = '0.7'}
                     onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                 >

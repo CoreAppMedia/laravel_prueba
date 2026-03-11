@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { resetPassword } from '../../lib/auth';
 import AuthCard from './authcard';
 import AuthInput from './authinput';
-import { authStyles } from './authstyles';
+import { authstyles } from './authstyles';
 
 export default function ResetPassword() {
     const [email, setEmail] = useState('');
@@ -65,8 +65,8 @@ export default function ResetPassword() {
                 </p>
             </div>
 
-            {message && <div style={authStyles.alertSuccess}>{message}</div>}
-            {error && <div style={authStyles.alertError}>{error}</div>}
+            {message && <div style={authstyles.alertSuccess}>{message}</div>}
+            {error && <div style={authstyles.alertError}>{error}</div>}
 
             <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <AuthInput
@@ -90,7 +90,7 @@ export default function ResetPassword() {
                 />
 
                 {/* Separador de sección */}
-                <div style={{ ...authStyles.sectionTitle, marginTop: 4 }}>
+                <div style={{ ...authstyles.sectionTitle, marginTop: 4 }}>
                     Nueva contraseña
                 </div>
 
@@ -133,7 +133,7 @@ export default function ResetPassword() {
             }}>
                 <Link
                     to="/login"
-                    style={authStyles.link}
+                    style={authstyles.link}
                     onMouseEnter={e => e.currentTarget.style.opacity = '0.7'}
                     onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                 >
@@ -141,7 +141,7 @@ export default function ResetPassword() {
                 </Link>
                 <Link
                     to="/recuperar"
-                    style={authStyles.linkMuted}
+                    style={authstyles.linkMuted}
                     onMouseEnter={e => e.currentTarget.style.color = 'var(--color-text-secondary)'}
                     onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-muted)'}
                 >

@@ -3,7 +3,7 @@
  * Importar desde cada componente de auth.
  */
 
-export const authStyles = {
+export const authstyles = {
     // Página contenedor
     page: {
         minHeight: '100vh',

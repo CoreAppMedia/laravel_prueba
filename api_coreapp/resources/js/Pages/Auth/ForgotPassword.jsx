@@ -58,8 +58,8 @@ export default function ForgotPassword() {
                 </p>
             </div>
 
-            {message && <div style={authStyles.alertSuccess}>{message}</div>}
-            {error && <div style={authStyles.alertError}>{error}</div>}
+            {message && <div style={authstyles.alertSuccess}>{message}</div>}
+            {error && <div style={authstyles.alertError}>{error}</div>}
 
             <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <AuthInput
@@ -92,7 +92,7 @@ export default function ForgotPassword() {
             }}>
                 <Link
                     to="/restablecer"
-                    style={authStyles.link}
+                    style={authstyles.link}
                     onMouseEnter={e => e.currentTarget.style.opacity = '0.7'}
                     onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                 >
@@ -100,7 +100,7 @@ export default function ForgotPassword() {
                 </Link>
                 <Link
                     to="/login"
-                    style={authStyles.linkMuted}
+                    style={authstyles.linkMuted}
                     onMouseEnter={e => e.currentTarget.style.color = 'var(--color-text-secondary)'}
                     onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-muted)'}
                 >

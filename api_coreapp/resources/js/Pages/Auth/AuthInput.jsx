@@ -1,14 +1,7 @@
 import React, { useRef } from 'react';
 import { authstyles, inputFocusOn, inputFocusOff } from './authstyles';
 
-/**
- * Campo de formulario reutilizable para pantallas de autenticación.
- * Props:
- *  - label, name, type, value, onChange, placeholder, required
- *  - error   : string — mensaje de validación inline
- *  - hint    : string — texto de ayuda debajo del campo
- *  - accent  : 'terra' (default) | 'gold' | 'sage'
- */
+
 export default function AuthInput({
     label,
     name,
@@ -26,7 +19,7 @@ export default function AuthInput({
     return (
         <div>
             {label && (
-                <label htmlFor={name} style={authStyles.label}>
+                <label htmlFor={name} style={authstyles.label}>
                     {label}
                 </label>
             )}
@@ -41,7 +34,7 @@ export default function AuthInput({
                 required={required}
                 maxLength={maxLength}
                 style={{
-                    ...authStyles.input,
+                    ...authstyles.input,
                     borderColor: error ? 'var(--color-terra)' : 'var(--color-border-strong)',
                 }}
                 onFocus={() => inputFocusOn(ref.current)}
@@ -49,8 +42,8 @@ export default function AuthInput({
                     if (!error) inputFocusOff(ref.current);
                 }}
             />
-            {error && <p style={authStyles.fieldError}>{error}</p>}
-            {hint && !error && <p style={authStyles.hint}>{hint}</p>}
+            {error && <p style={authstyles.fieldError}>{error}</p>}
+            {hint && !error && <p style={authstyles.hint}>{hint}</p>}
         </div>
     );
 }

@@ -75,6 +75,15 @@ class DatabaseSeeder extends Seeder
                 'apellido_materno' => 'MX',
             ],
             [
+                'permiso' => 'admin',
+                'rol' => $rolEscrituraLectura,
+                'name' => 'admin',
+                'email' => 'oscar@gmail.com',
+                'nombre' => 'Admin',
+                'apellido_paterno' => 'Valdes',
+                'apellido_materno' => 'Mendez',
+            ],
+            [
                 'permiso' => 'presidente',
                 'rol' => $rolEscrituraLectura,
                 'name' => 'presidente',

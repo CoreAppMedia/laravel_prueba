@@ -94,12 +94,8 @@ class DummyDataSeeder extends Seeder
             $catReservaId = $categorias->firstWhere('nombre', 'Reserva')->id ?? $categorias->last()->id;
 
             $equipos = [
-                ['club_id' => $clubIds[0], 'categoria_id' => $catAmateurId, 'nombre_mostrado' => 'Record Amateur', 'activo' => true],
-                ['club_id' => $clubIds[1], 'categoria_id' => $catAmateurId, 'nombre_mostrado' => 'Zapotlán Amateur', 'activo' => true],
-                ['club_id' => $clubIds[0], 'categoria_id' => $catAmateurId, 'nombre_mostrado' => 'Record Especial', 'activo' => true],
-                ['club_id' => $clubIds[1], 'categoria_id' => $catAmateurId, 'nombre_mostrado' => 'Zapotlán Especial', 'activo' => true],
-                ['club_id' => $clubIds[0], 'categoria_id' => $catAmateurId, 'nombre_mostrado' => 'Record Reserva', 'activo' => true],
-                ['club_id' => $clubIds[1], 'categoria_id' => $catAmateurId, 'nombre_mostrado' => 'Zapotlán Reserva', 'activo' => true],
+                ['club_id' => $clubIds[0], 'categoria_id' => $catAmateurId, 'nombre_mostrado' => 'Record amateur', 'activo' => true],
+                ['club_id' => $clubIds[1], 'categoria_id' => $catAmateurId, 'nombre_mostrado' => 'Zapotlán amateur', 'activo' => true],
             ];
 
             foreach ($equipos as $eq) {

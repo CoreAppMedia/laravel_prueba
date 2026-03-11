@@ -1,68 +1,125 @@
 import React, { useState } from 'react';
 
+const NAV_ITEMS = ['Inicio', 'Equipos', 'Calendario', 'Estadísticas', 'Noticias'];
+
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
-        <header className="bg-theme-gradient shadow-2xl relative z-50">
+        <header className="app-header">
+            {/* Banda tricolor de marca — firma visual del sistema */}
+            <div className="brand-bar-thick" />
+
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-20">
-                    {/* Logo Section */}
-                    <div className="flex-shrink-0 flex items-center gap-3">
-                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-yellow-500">
-                            {/* Placeholder Logo */}
-                            ⚽
+                <div className="app-header-inner">
+
+                    {/* Identidad */}
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                        <div className="brand-logo">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <circle cx="10" cy="10" r="9" stroke="#fff" strokeWidth="1.5" />
+                                <path
+                                    d="M10 2 L12 7.5 H18 L13.5 11 L15.5 17 L10 13.5 L4.5 17 L6.5 11 L2 7.5 H8 Z"
+                                    fill="#fff"
+                                    opacity=".85"
+                                />
+                            </svg>
                         </div>
                         <div>
-                            <h1 className="text-xl font-black text-white uppercase tracking-tighter leading-none">
-                                Clubes Unidos
-                            </h1>
-                            <span className="text-xs font-bold text-gray-300 uppercase tracking-widest block">
-                                Zapotitlán
-                            </span>
+                            <div className="brand-name">Liga Santiago Zapotitlán</div>
+                            <div className="brand-season">Temporada 2025</div>
                         </div>
                     </div>
 
-                    {/* Desktop Navigation */}
-                    <nav className="hidden md:flex space-x-8">
-                        {['Inicio', 'Equipos', 'Calendario', 'Estadísticas', 'Noticias'].map((item) => (
+                    {/* Navegación desktop */}
+                    <nav className="hidden md:flex items-center">
+                        {NAV_ITEMS.map((item) => (
                             <a
                                 key={item}
                                 href="#"
-                                className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-bold uppercase tracking-wider transition-colors duration-200 hover:bg-white/10"
+                                className="nav-tab"
+                                style={{ borderBottom: '2px solid transparent' }}
+                                onMouseEnter={e => e.currentTarget.style.color = 'var(--color-text-primary)'}
+                                onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-muted)'}
                             >
                                 {item}
                             </a>
                         ))}
                     </nav>
 
-                    {/* Mobile Menu Button */}
-                    <div className="flex items-center md:hidden">
+                    {/* Estado + menú móvil */}
+                    <div className="flex items-center gap-4">
+                        <div className="status-pill active hidden sm:inline-flex">
+                            <span className="status-dot" />
+                            Jornada 11
+                        </div>
+
+                        {/* Hamburger móvil */}
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            className="text-gray-300 hover:text-white p-2 focus:outline-none"
+                            className="md:hidden p-2 rounded-md"
+                            style={{ color: 'var(--color-text-muted)' }}
+                            aria-label="Menú"
                         >
-                            <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+                            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="1.8"
+                                    d={isMenuOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'}
+                                />
                             </svg>
                         </button>
                     </div>
                 </div>
             </div>
 
-            {/* Mobile Menu */}
+            {/* Menú móvil desplegable */}
             {isMenuOpen && (
-                <div className="md:hidden bg-[--color-bg-surface] border-t border-[--color-border-subtle] shadow-xl overflow-hidden mt-1 mx-2 rounded-2xl animate-fade-in">
-                    <div className="px-4 py-3 space-y-1">
-                        {['Inicio', 'Equipos', 'Calendario', 'Estadísticas', 'Noticias'].map((item) => (
+                <div
+                    className="md:hidden animate-fade-in"
+                    style={{
+                        background: 'var(--color-bg-surface)',
+                        borderTop: '1px solid var(--color-border-subtle)',
+                        boxShadow: 'var(--shadow-medium)',
+                    }}
+                >
+                    <div className="max-w-7xl mx-auto px-4 py-3 space-y-1">
+                        {NAV_ITEMS.map((item) => (
                             <a
                                 key={item}
                                 href="#"
-                                className="text-[--color-text-primary] hover:text-white hover:bg-mx-green block px-4 py-3 rounded-xl text-base font-bold uppercase tracking-widest transition-all"
+                                style={{
+                                    display: 'block',
+                                    padding: '11px 16px',
+                                    fontFamily: 'var(--font-body)',
+                                    fontSize: '13px',
+                                    fontWeight: '600',
+                                    color: 'var(--color-text-secondary)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    textDecoration: 'none',
+                                    transition: 'background 0.15s, color 0.15s',
+                                }}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.background = 'var(--color-bg-surface-alt)';
+                                    e.currentTarget.style.color = 'var(--color-terra)';
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.background = 'transparent';
+                                    e.currentTarget.style.color = 'var(--color-text-secondary)';
+                                }}
                             >
                                 {item}
                             </a>
                         ))}
+
+                        {/* Status en móvil */}
+                        <div style={{ padding: '12px 16px', borderTop: '1px solid var(--color-border-subtle)', marginTop: 4 }}>
+                            <div className="status-pill active" style={{ display: 'inline-flex' }}>
+                                <span className="status-dot" />
+                                En curso · Jornada 11
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

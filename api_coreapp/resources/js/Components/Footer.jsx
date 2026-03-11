@@ -1,31 +1,165 @@
 import React from 'react';
 
+const LINKS = ['Reglamento', 'Equipos', 'Resultados', 'Estadísticas'];
+
 export default function Footer() {
     return (
-        <footer className="bg-[--color-bg-surface] border-t border-[--color-border-subtle] text-[--color-text-primary] py-8 mt-12 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)]">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+        <footer
+            style={{
+                background: 'var(--color-bg-surface)',
+                borderTop: '1px solid var(--color-border-subtle)',
+                marginTop: 'auto',
+            }}
+        >
+            {/* Banda tricolor superior — coherencia con header */}
+            <div className="brand-bar" />
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+
+                    {/* Identidad */}
                     <div>
-                        <h4 className="text-lg font-black uppercase tracking-wider mb-4 text-[--color-mx-green]">Clubes Unidos Zapotitlán</h4>
-                        <p className="text-[--color-text-secondary] text-sm font-medium">
-                            La liga profesional de fútbol que une pasión, talento y tecnología.
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="brand-logo" style={{ width: 32, height: 32 }}>
+                                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                                    <circle cx="10" cy="10" r="9" stroke="#fff" strokeWidth="1.5" />
+                                    <path d="M10 2 L12 7.5 H18 L13.5 11 L15.5 17 L10 13.5 L4.5 17 L6.5 11 L2 7.5 H8 Z" fill="#fff" opacity=".85" />
+                                </svg>
+                            </div>
+                            <span
+                                style={{
+                                    fontFamily: 'var(--font-display)',
+                                    fontSize: 15,
+                                    fontWeight: 700,
+                                    color: 'var(--color-text-primary)',
+                                }}
+                            >
+                                Liga Santiago Zapotitlán
+                            </span>
+                        </div>
+                        <p
+                            style={{
+                                fontFamily: 'var(--font-body)',
+                                fontSize: 13,
+                                color: 'var(--color-text-muted)',
+                                lineHeight: 1.65,
+                                maxWidth: 260,
+                            }}
+                        >
+                            La liga municipal de fútbol que une pasión, comunidad y deporte en el corazón de México.
                         </p>
                     </div>
+
+                    {/* Enlaces rápidos */}
                     <div>
-                        <h4 className="text-lg font-black uppercase tracking-wider mb-4">Enlaces Rápidos</h4>
-                        <ul className="space-y-2 text-sm text-[--color-text-secondary] font-semibold">
-                            <li><a href="#" className="hover:text-[--color-mx-green] transition-colors">Reglamento</a></li>
-                            <li><a href="#" className="hover:text-[--color-mx-green] transition-colors">Equipos</a></li>
-                            <li><a href="#" className="hover:text-[--color-mx-green] transition-colors">Resultados</a></li>
+                        <div className="text-label" style={{ marginBottom: 16 }}>
+                            Enlaces rápidos
+                        </div>
+                        <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            {LINKS.map((link) => (
+                                <li key={link}>
+                                    <a
+                                        href="#"
+                                        style={{
+                                            fontFamily: 'var(--font-body)',
+                                            fontSize: 13,
+                                            fontWeight: 500,
+                                            color: 'var(--color-text-secondary)',
+                                            textDecoration: 'none',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 6,
+                                            transition: 'color 0.15s',
+                                        }}
+                                        onMouseEnter={e => e.currentTarget.style.color = 'var(--color-terra)'}
+                                        onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-secondary)'}
+                                    >
+                                        <span
+                                            style={{
+                                                display: 'inline-block',
+                                                width: 4,
+                                                height: 4,
+                                                borderRadius: '50%',
+                                                background: 'var(--color-border-strong)',
+                                                flexShrink: 0,
+                                            }}
+                                        />
+                                        {link}
+                                    </a>
+                                </li>
+                            ))}
                         </ul>
                     </div>
+
+                    {/* Contacto */}
                     <div>
-                        <h4 className="text-lg font-black uppercase tracking-wider mb-4 text-[--color-mx-red]">Contacto</h4>
-                        <p className="text-[--color-text-secondary] text-sm font-bold">info@clubesunidos.com</p>
+                        <div className="text-label" style={{ marginBottom: 16 }}>
+                            Contacto
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <a
+                                href="mailto:info@clubesunidos.com"
+                                style={{
+                                    fontFamily: 'var(--font-body)',
+                                    fontSize: 13,
+                                    fontWeight: 500,
+                                    color: 'var(--color-text-secondary)',
+                                    textDecoration: 'none',
+                                    transition: 'color 0.15s',
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.color = 'var(--color-terra)'}
+                                onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-secondary)'}
+                            >
+                                info@clubesunidos.com
+                            </a>
+                            <span
+                                style={{
+                                    fontFamily: 'var(--font-body)',
+                                    fontSize: 13,
+                                    color: 'var(--color-text-muted)',
+                                }}
+                            >
+                                Santiago Zapotitlán, CDMX
+                            </span>
+                        </div>
                     </div>
                 </div>
-                <div className="mt-8 pt-8 border-t border-[--color-border-subtle] text-center text-[--color-text-muted] text-xs font-bold uppercase tracking-widest">
-                    <p>&copy; {new Date().getFullYear()} Clubes Unidos Zapotitlán | Todos los derechos reservados.</p>
+
+                {/* Cierre */}
+                <div
+                    style={{
+                        marginTop: 40,
+                        paddingTop: 24,
+                        borderTop: '1px solid var(--color-border-subtle)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                        gap: 12,
+                    }}
+                >
+                    <span
+                        style={{
+                            fontFamily: 'var(--font-body)',
+                            fontSize: 11,
+                            color: 'var(--color-text-ghost)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '1.5px',
+                        }}
+                    >
+                        © {new Date().getFullYear()} Liga Santiago Zapotitlán · Todos los derechos reservados.
+                    </span>
+                    <span
+                        style={{
+                            fontFamily: 'var(--font-body)',
+                            fontSize: 11,
+                            color: 'var(--color-text-ghost)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '1.5px',
+                        }}
+                    >
+                        Temporada 2025
+                    </span>
                 </div>
             </div>
         </footer>

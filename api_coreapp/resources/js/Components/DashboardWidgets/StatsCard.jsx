@@ -1,70 +1,133 @@
 import React from 'react';
 import * as Lucide from 'lucide-react';
 
-export default function StatsCard({ title, value, icon, color, href }) {
-    // Map emoji or string icons to Lucide components if possible, or use the icon directly
+/**
+ * color prop acepta: 'terra' | 'gold' | 'sage' | 'slate'
+ * (también backward-compat con: 'red', 'green', 'white', 'default')
+ */
+const COLOR_MAP = {
+    terra: { accent: 'var(--color-terra)', light: 'var(--color-terra-light)', border: 'rgba(192,68,42,0.2)' },
+    gold: { accent: 'var(--color-gold)', light: 'var(--color-gold-light)', border: 'rgba(160,120,40,0.2)' },
+    sage: { accent: 'var(--color-sage)', light: 'var(--color-sage-light)', border: 'rgba(58,107,82,0.2)' },
+    slate: { accent: 'var(--color-slate)', light: 'var(--color-slate-light)', border: 'rgba(59,79,107,0.2)' },
+    // backward-compat aliases
+    red: { accent: 'var(--color-terra)', light: 'var(--color-terra-light)', border: 'rgba(192,68,42,0.2)' },
+    green: { accent: 'var(--color-sage)', light: 'var(--color-sage-light)', border: 'rgba(58,107,82,0.2)' },
+    white: { accent: 'var(--color-slate)', light: 'var(--color-slate-light)', border: 'rgba(59,79,107,0.2)' },
+    default: { accent: 'var(--color-gold)', light: 'var(--color-gold-light)', border: 'rgba(160,120,40,0.2)' },
+};
+
+export default function StatsCard({ title, value, icon, color = 'terra', href }) {
     const IconComponent = typeof icon === 'string' && Lucide[icon] ? Lucide[icon] : null;
-
-    const colorConfigs = {
-        green: {
-            bg: 'bg-green-50',
-            icon: 'text-mx-green',
-            accent: 'bg-mx-green',
-            shadow: 'hover:shadow-green-500/10'
-        },
-        red: {
-            bg: 'bg-red-50',
-            icon: 'text-mx-red',
-            accent: 'bg-mx-red',
-            shadow: 'hover:shadow-red-500/10'
-        },
-        white: {
-            bg: 'bg-blue-50',
-            icon: 'text-blue-600',
-            accent: 'bg-blue-600',
-            shadow: 'hover:shadow-blue-500/10'
-        },
-        default: {
-            bg: 'bg-slate-50',
-            icon: 'text-slate-600',
-            accent: 'bg-slate-600',
-            shadow: 'hover:shadow-slate-500/10'
-        }
-    };
-
-    const config = colorConfigs[color] || colorConfigs.default;
+    const cfg = COLOR_MAP[color] || COLOR_MAP.terra;
 
     return (
         <a
             href={href || '#'}
-            className={`block bg-white border border-[--color-border-subtle] rounded-2xl p-6 relative overflow-hidden group shadow-soft hover:shadow-premium ${config.shadow} transition-all duration-500 hover:-translate-y-1`}
+            style={{
+                display: 'block',
+                background: 'var(--color-bg-surface)',
+                border: '1px solid var(--color-border-subtle)',
+                borderTop: `3px solid ${cfg.accent}`,
+                borderRadius: 'var(--radius-lg)',
+                padding: '20px 20px 18px',
+                boxShadow: 'var(--shadow-soft)',
+                textDecoration: 'none',
+                position: 'relative',
+                overflow: 'hidden',
+                transition: 'box-shadow 0.15s, transform 0.1s',
+            }}
+            onMouseEnter={e => {
+                e.currentTarget.style.boxShadow = 'var(--shadow-medium)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={e => {
+                e.currentTarget.style.boxShadow = 'var(--shadow-soft)';
+                e.currentTarget.style.transform = 'translateY(0)';
+            }}
         >
-            <div className={`absolute -right-4 -top-4 w-24 h-24 ${config.bg} rounded-full opacity-50 group-hover:scale-125 transition-transform duration-700 ease-out flex items-center justify-center`}>
-                <div className={`${config.icon} opacity-20 group-hover:opacity-40 transition-opacity`}>
-                    {IconComponent ? <IconComponent size={64} /> : <span className="text-4xl">{icon}</span>}
-                </div>
+            {/* Icono de fondo decorativo */}
+            <div
+                style={{
+                    position: 'absolute',
+                    right: -10,
+                    bottom: -10,
+                    width: 64,
+                    height: 64,
+                    background: cfg.light,
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    opacity: 0.6,
+                }}
+            >
+                {IconComponent && (
+                    <IconComponent size={28} style={{ color: cfg.accent, opacity: 0.5 }} />
+                )}
             </div>
 
-            <div className="relative z-10">
-                <div className={`w-12 h-12 ${config.bg} rounded-xl flex items-center justify-center mb-4 border border-white shadow-sm`}>
-                    <div className={config.icon}>
-                        {IconComponent ? <IconComponent size={24} /> : <span className="text-xl">{icon}</span>}
-                    </div>
-                </div>
-
-                <h3 className="text-xs font-black uppercase tracking-widest text-[--color-text-muted] mb-1 group-hover:text-slate-600 transition-colors">
-                    {title}
-                </h3>
-                <div className="text-3xl font-black text-slate-900 tracking-tight">
-                    {value}
-                </div>
-
-                <div className="mt-4 flex items-center gap-2">
-                    <div className={`h-1.5 w-12 rounded-full ${config.accent}`}></div>
-                    <div className="h-1.5 w-1.5 rounded-full bg-slate-200"></div>
-                    <div className="h-1.5 w-1.5 rounded-full bg-slate-100"></div>
-                </div>
+            {/* Icono principal */}
+            <div
+                style={{
+                    width: 36,
+                    height: 36,
+                    background: cfg.light,
+                    border: `1px solid ${cfg.border}`,
+                    borderRadius: 'var(--radius-sm)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 14,
+                    flexShrink: 0,
+                }}
+            >
+                {IconComponent
+                    ? <IconComponent size={18} style={{ color: cfg.accent }} />
+                    : <span style={{ fontSize: 16 }}>{icon}</span>
+                }
             </div>
+
+            {/* Etiqueta */}
+            <div
+                style={{
+                    fontFamily: 'var(--font-body)',
+                    fontSize: 10,
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '1.8px',
+                    color: 'var(--color-text-muted)',
+                    marginBottom: 4,
+                }}
+            >
+                {title}
+            </div>
+
+            {/* Valor */}
+            <div
+                style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: 32,
+                    fontWeight: 700,
+                    color: 'var(--color-text-primary)',
+                    lineHeight: 1,
+                    letterSpacing: '-0.5px',
+                    marginBottom: 14,
+                }}
+            >
+                {value}
+            </div>
+
+            {/* Línea de acento */}
+            <div
+                style={{
+                    height: 2,
+                    width: 28,
+                    borderRadius: 1,
+                    background: cfg.accent,
+                    opacity: 0.7,
+                }}
+            />
         </a>
     );
 }

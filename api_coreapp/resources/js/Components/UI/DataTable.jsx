@@ -2,40 +2,126 @@ import React from 'react';
 
 export default function DataTable({ columns, data, actions, keyField = 'id' }) {
     return (
-        <div className="overflow-x-auto rounded-xl border border-[--color-border-subtle] bg-white shadow-soft">
-            <table className="w-full text-left text-sm text-[--color-text-secondary]">
-                <thead className="bg-[--color-bg-surface-alt] text-xs uppercase text-[--color-text-muted] border-b border-[--color-border-strong]">
-                    <tr>
+        <div
+            style={{
+                overflowX: 'auto',
+                background: 'var(--color-bg-surface)',
+                border: '1px solid var(--color-border-subtle)',
+                borderRadius: 'var(--radius-lg)',
+                boxShadow: 'var(--shadow-soft)',
+            }}
+        >
+            <table
+                style={{
+                    width: '100%',
+                    borderCollapse: 'collapse',
+                    textAlign: 'left',
+                }}
+            >
+                <thead>
+                    <tr
+                        style={{
+                            background: 'var(--color-bg-surface-alt)',
+                            borderBottom: '2px solid var(--color-border-subtle)',
+                        }}
+                    >
                         {columns.map((col, idx) => (
-                            <th key={idx} scope="col" className="px-6 py-4 font-black whitespace-nowrap tracking-wider">
+                            <th
+                                key={idx}
+                                style={{
+                                    padding: '11px 20px',
+                                    fontFamily: 'var(--font-body)',
+                                    fontSize: 10,
+                                    fontWeight: 600,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '1.5px',
+                                    color: 'var(--color-text-muted)',
+                                    whiteSpace: 'nowrap',
+                                }}
+                            >
                                 {col.header}
                             </th>
                         ))}
                         {actions && (
-                            <th scope="col" className="px-6 py-4 font-black text-right relative tracking-wider">
+                            <th
+                                style={{
+                                    padding: '11px 20px',
+                                    fontFamily: 'var(--font-body)',
+                                    fontSize: 10,
+                                    fontWeight: 600,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '1.5px',
+                                    color: 'var(--color-text-muted)',
+                                    textAlign: 'right',
+                                }}
+                            >
                                 Acciones
                             </th>
                         )}
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-[--color-border-subtle]">
+
+                <tbody>
                     {data.length === 0 ? (
                         <tr>
-                            <td colSpan={columns.length + (actions ? 1 : 0)} className="px-6 py-10 text-center text-[--color-text-muted] italic font-medium">
+                            <td
+                                colSpan={columns.length + (actions ? 1 : 0)}
+                                style={{
+                                    padding: '48px 24px',
+                                    textAlign: 'center',
+                                    fontFamily: 'var(--font-body)',
+                                    fontSize: 13,
+                                    color: 'var(--color-text-ghost)',
+                                }}
+                            >
                                 No hay registros para mostrar.
                             </td>
                         </tr>
                     ) : (
-                        data.map((row) => (
-                            <tr key={row[keyField]} className="hover:bg-slate-50 transition-colors group">
+                        data.map((row, rowIdx) => (
+                            <tr
+                                key={row[keyField]}
+                                style={{
+                                    borderBottom: rowIdx < data.length - 1
+                                        ? '1px solid var(--color-border-subtle)'
+                                        : 'none',
+                                    transition: 'background 0.15s',
+                                    cursor: 'default',
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.background = 'var(--color-bg-surface-alt)'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                            >
                                 {columns.map((col, idx) => (
-                                    <td key={idx} className="px-6 py-4 whitespace-nowrap font-medium text-[--color-text-primary]">
+                                    <td
+                                        key={idx}
+                                        style={{
+                                            padding: '13px 20px',
+                                            fontFamily: 'var(--font-body)',
+                                            fontSize: 13,
+                                            fontWeight: 500,
+                                            color: 'var(--color-text-primary)',
+                                            whiteSpace: 'nowrap',
+                                        }}
+                                    >
                                         {col.render ? col.render(row) : row[col.accessor]}
                                     </td>
                                 ))}
                                 {actions && (
-                                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                                        <div className="flex justify-end gap-3 items-center opacity-70 group-hover:opacity-100 transition-opacity">
+                                    <td
+                                        style={{
+                                            padding: '13px 20px',
+                                            textAlign: 'right',
+                                            whiteSpace: 'nowrap',
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                justifyContent: 'flex-end',
+                                                alignItems: 'center',
+                                                gap: 8,
+                                            }}
+                                        >
                                             {actions(row)}
                                         </div>
                                     </td>

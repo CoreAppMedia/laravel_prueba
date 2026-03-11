@@ -1,86 +1,273 @@
 import React from 'react';
-import { Trophy, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 export default function LeagueTable({ teams }) {
     return (
-        <div className="bg-white rounded-2xl shadow-soft border border-[--color-border-subtle] overflow-hidden group hover:shadow-premium transition-all duration-500">
-            <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center shadow-sm">
-                        <Trophy size={18} />
-                    </div>
-                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Tabla de Clasificación</h3>
-                </div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter bg-white px-2 py-0.5 rounded-full border border-slate-200">Jornada 12</span>
+        <div
+            style={{
+                background: 'var(--color-bg-surface)',
+                border: '1px solid var(--color-border-subtle)',
+                borderRadius: 'var(--radius-lg)',
+                overflow: 'hidden',
+                boxShadow: 'var(--shadow-soft)',
+            }}
+        >
+            {/* Header */}
+            <div
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '14px 18px',
+                    background: 'var(--color-bg-surface-alt)',
+                    borderBottom: '1px solid var(--color-border-subtle)',
+                }}
+            >
+                <span
+                    style={{
+                        fontFamily: 'var(--font-body)',
+                        fontSize: 10,
+                        fontWeight: 600,
+                        textTransform: 'uppercase',
+                        letterSpacing: '2px',
+                        color: 'var(--color-text-muted)',
+                    }}
+                >
+                    Clasificación
+                </span>
+                <span
+                    style={{
+                        fontFamily: 'var(--font-body)',
+                        fontSize: 10,
+                        fontWeight: 600,
+                        textTransform: 'uppercase',
+                        letterSpacing: '1.5px',
+                        color: 'var(--color-terra)',
+                        background: 'var(--color-terra-light)',
+                        border: '1px solid rgba(192,68,42,0.2)',
+                        borderRadius: 4,
+                        padding: '2px 8px',
+                    }}
+                >
+                    Jornada 12
+                </span>
             </div>
 
-            <div className="overflow-x-auto">
-                <table className="min-w-full text-sm text-left">
-                    <thead className="text-[10px] uppercase bg-slate-50 text-slate-400 font-black tracking-widest">
-                        <tr>
-                            <th scope="col" className="px-6 py-4"># Pos</th>
-                            <th scope="col" className="px-6 py-4">Club</th>
-                            <th scope="col" className="px-6 py-4 text-center">PJ</th>
-                            <th scope="col" className="px-6 py-4 text-center">PTS</th>
-                            <th scope="col" className="px-6 py-4 text-center">DIF</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                        {teams.map((team, index) => {
-                            const isTop = index < 4;
-                            const isFirst = index === 0;
+            {/* Tabla */}
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                    <tr style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+                        {['#', 'Club', 'PJ', 'PTS', 'DIF'].map((h, i) => (
+                            <th
+                                key={h}
+                                style={{
+                                    padding: '9px 14px',
+                                    fontFamily: 'var(--font-body)',
+                                    fontSize: 10,
+                                    fontWeight: 600,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '1.5px',
+                                    color: 'var(--color-text-ghost)',
+                                    textAlign: i > 1 ? 'center' : 'left',
+                                }}
+                            >
+                                {h}
+                            </th>
+                        ))}
+                    </tr>
+                </thead>
 
-                            return (
-                                <tr key={index} className="hover:bg-slate-50/80 transition-all group/row">
-                                    <td className="px-6 py-4 whitespace-nowrap w-12">
-                                        <div className="flex items-center gap-3">
-                                            <span className={`flex items-center justify-center w-7 h-7 rounded-lg text-xs font-black shadow-sm ${isFirst ? 'bg-theme-gradient text-white scale-110 shadow-mx-green/20' :
-                                                    isTop ? 'bg-green-100 text-mx-green' :
-                                                        'bg-slate-100 text-slate-500'
-                                                }`}>
+                <tbody>
+                    {teams.map((team, index) => {
+                        const isFirst = index === 0;
+                        const isRising = index < 2;
+                        const isFalling = index > 3;
+
+                        return (
+                            <tr
+                                key={index}
+                                style={{
+                                    borderBottom: index < teams.length - 1
+                                        ? '1px solid var(--color-border-subtle)'
+                                        : 'none',
+                                    background: isFirst ? 'rgba(160,120,40,0.04)' : 'transparent',
+                                    transition: 'background 0.15s',
+                                    cursor: 'pointer',
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.background = 'var(--color-bg-surface-alt)'}
+                                onMouseLeave={e => e.currentTarget.style.background = isFirst ? 'rgba(160,120,40,0.04)' : 'transparent'}
+                            >
+                                {/* Posición */}
+                                <td style={{ padding: '11px 14px', width: 44 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                        {isFirst ? (
+                                            <svg width="14" height="14" viewBox="0 0 14 14">
+                                                <polygon
+                                                    points="7,1 8.8,5.6 13.7,5.9 10,9.1 11.1,14 7,11.3 2.9,14 4,9.1 0.3,5.9 5.2,5.6"
+                                                    fill="var(--color-gold)"
+                                                />
+                                            </svg>
+                                        ) : (
+                                            <span
+                                                style={{
+                                                    fontFamily: 'var(--font-body)',
+                                                    fontSize: 12,
+                                                    fontWeight: 600,
+                                                    color: 'var(--color-text-muted)',
+                                                    width: 14,
+                                                    textAlign: 'center',
+                                                    display: 'inline-block',
+                                                }}
+                                            >
                                                 {index + 1}
                                             </span>
-                                            {index < 2 && <TrendingUp size={12} className="text-green-500" />}
-                                            {index > 3 && <TrendingDown size={12} className="text-red-400" />}
-                                            {index >= 2 && index <= 3 && <Minus size={12} className="text-slate-300" />}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 font-black text-slate-900 whitespace-nowrap">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-8 h-8 rounded-full border border-slate-100 flex items-center justify-center text-sm shadow-inner group-hover/row:scale-110 transition-transform ${isFirst ? 'bg-white' : 'bg-slate-50'}`}>
-                                                🛡️
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <span className="text-xs uppercase tracking-tight">{team.name}</span>
-                                                {isFirst && <span className="text-[8px] text-mx-green font-bold uppercase tracking-widest">Lider de Liga</span>}
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-center text-slate-500 font-bold">{team.played}</td>
-                                    <td className="px-6 py-4 text-center">
-                                        <span className={`text-sm font-black ${isFirst ? 'text-mx-green' : 'text-slate-900'}`}>
-                                            {team.points}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${team.diff > 0 ? 'bg-green-50 text-green-700' :
-                                                team.diff < 0 ? 'bg-red-50 text-red-700' :
-                                                    'bg-slate-50 text-slate-400'
-                                            }`}>
-                                            {team.diff > 0 ? `+${team.diff}` : team.diff}
-                                        </span>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-            </div>
+                                        )}
+                                        {isRising && (
+                                            <TrendingUp size={10} style={{ color: 'var(--color-sage)', flexShrink: 0 }} />
+                                        )}
+                                        {isFalling && (
+                                            <TrendingDown size={10} style={{ color: 'var(--color-terra)', flexShrink: 0 }} />
+                                        )}
+                                        {!isRising && !isFalling && (
+                                            <Minus size={10} style={{ color: 'var(--color-text-ghost)', flexShrink: 0 }} />
+                                        )}
+                                    </div>
+                                </td>
 
-            <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100 text-center">
-                <button className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-mx-green transition-colors">
-                    Ver Tabla Completa
-                </button>
+                                {/* Club */}
+                                <td style={{ padding: '11px 14px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                        <div
+                                            style={{
+                                                width: 4,
+                                                height: 16,
+                                                borderRadius: 2,
+                                                background: isFirst
+                                                    ? 'var(--color-gold)'
+                                                    : 'var(--color-border-strong)',
+                                                flexShrink: 0,
+                                            }}
+                                        />
+                                        <div>
+                                            <div
+                                                style={{
+                                                    fontFamily: 'var(--font-body)',
+                                                    fontSize: 12,
+                                                    fontWeight: 600,
+                                                    color: 'var(--color-text-primary)',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.4px',
+                                                    lineHeight: 1.2,
+                                                }}
+                                            >
+                                                {team.name}
+                                            </div>
+                                            {isFirst && (
+                                                <div
+                                                    style={{
+                                                        fontFamily: 'var(--font-body)',
+                                                        fontSize: 9,
+                                                        fontWeight: 600,
+                                                        color: 'var(--color-gold)',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '1px',
+                                                    }}
+                                                >
+                                                    Líder
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </td>
+
+                                {/* PJ */}
+                                <td
+                                    style={{
+                                        padding: '11px 14px',
+                                        textAlign: 'center',
+                                        fontFamily: 'var(--font-body)',
+                                        fontSize: 12,
+                                        color: 'var(--color-text-muted)',
+                                    }}
+                                >
+                                    {team.played}
+                                </td>
+
+                                {/* PTS */}
+                                <td style={{ padding: '11px 14px', textAlign: 'center' }}>
+                                    <span
+                                        style={{
+                                            fontFamily: 'var(--font-display)',
+                                            fontSize: 16,
+                                            fontWeight: 700,
+                                            color: isFirst ? 'var(--color-gold)' : 'var(--color-text-primary)',
+                                        }}
+                                    >
+                                        {team.points}
+                                    </span>
+                                </td>
+
+                                {/* DIF */}
+                                <td style={{ padding: '11px 14px', textAlign: 'center' }}>
+                                    <span
+                                        style={{
+                                            fontFamily: 'var(--font-body)',
+                                            fontSize: 11,
+                                            fontWeight: 600,
+                                            padding: '2px 7px',
+                                            borderRadius: 4,
+                                            background: team.diff > 0
+                                                ? 'var(--color-sage-light)'
+                                                : team.diff < 0
+                                                    ? 'var(--color-terra-light)'
+                                                    : 'var(--color-bg-surface-alt)',
+                                            color: team.diff > 0
+                                                ? 'var(--color-sage)'
+                                                : team.diff < 0
+                                                    ? 'var(--color-terra)'
+                                                    : 'var(--color-text-ghost)',
+                                            border: team.diff > 0
+                                                ? '1px solid rgba(58,107,82,0.2)'
+                                                : team.diff < 0
+                                                    ? '1px solid rgba(192,68,42,0.2)'
+                                                    : '1px solid var(--color-border-subtle)',
+                                        }}
+                                    >
+                                        {team.diff > 0 ? `+${team.diff}` : team.diff}
+                                    </span>
+                                </td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </table>
+
+            {/* Pie */}
+            <div
+                style={{
+                    padding: '12px 18px',
+                    borderTop: '1px solid var(--color-border-subtle)',
+                    background: 'var(--color-bg-surface-alt)',
+                    textAlign: 'center',
+                }}
+            >
+                <a
+                    href="#"
+                    style={{
+                        fontFamily: 'var(--font-body)',
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: 'var(--color-terra)',
+                        textDecoration: 'none',
+                        textTransform: 'uppercase',
+                        letterSpacing: '1.5px',
+                        transition: 'opacity 0.15s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.opacity = '0.7'}
+                    onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                >
+                    Ver tabla completa
+                </a>
             </div>
         </div>
     );

@@ -1,43 +1,108 @@
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
-import Card from './Card';
 
 export default function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl' }) {
     useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
+        document.body.style.overflow = isOpen ? 'hidden' : 'unset';
         return () => { document.body.style.overflow = 'unset'; };
     }, [isOpen]);
 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
+        <div
+            className="animate-fade-in"
+            style={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 50,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 16,
+            }}
+        >
+            {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
                 onClick={onClose}
-            ></div>
+                style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'rgba(17, 16, 16, 0.45)',
+                    backdropFilter: 'blur(4px)',
+                    WebkitBackdropFilter: 'blur(4px)',
+                }}
+            />
 
-            <div className={`relative w-full ${maxWidth} transform transition-all`}>
-                <Card className="shadow-2xl !p-0 border-none overflow-hidden">
-                    <div className="flex items-center justify-between p-6 border-b border-[--color-border-subtle] bg-slate-50">
-                        <h3 className="text-xl font-black text-slate-800 tracking-tight">
-                            {title}
-                        </h3>
-                        <button
-                            onClick={onClose}
-                            className="text-slate-400 hover:text-slate-600 transition-colors p-2 rounded-xl hover:bg-slate-200"
-                        >
-                            <X size={20} />
-                        </button>
-                    </div>
-                    <div className="p-6">
-                        {children}
-                    </div>
-                </Card>
+            {/* Panel */}
+            <div
+                className={`relative w-full ${maxWidth} animate-fade-in-up`}
+                style={{
+                    background: 'var(--color-bg-surface)',
+                    border: '1px solid var(--color-border-subtle)',
+                    borderRadius: 'var(--radius-lg)',
+                    boxShadow: 'var(--shadow-premium)',
+                    overflow: 'hidden',
+                }}
+            >
+                {/* Banda tricolor */}
+                <div className="brand-bar" />
+
+                {/* Header */}
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '18px 24px',
+                        borderBottom: '1px solid var(--color-border-subtle)',
+                        background: 'var(--color-bg-surface-alt)',
+                    }}
+                >
+                    <h3
+                        style={{
+                            fontFamily: 'var(--font-display)',
+                            fontSize: 18,
+                            fontWeight: 700,
+                            color: 'var(--color-text-primary)',
+                            letterSpacing: '-0.2px',
+                        }}
+                    >
+                        {title}
+                    </h3>
+                    <button
+                        onClick={onClose}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: 32,
+                            height: 32,
+                            borderRadius: 'var(--radius-sm)',
+                            background: 'transparent',
+                            border: '1px solid transparent',
+                            color: 'var(--color-text-muted)',
+                            cursor: 'pointer',
+                            transition: 'background 0.15s, color 0.15s',
+                        }}
+                        onMouseEnter={e => {
+                            e.currentTarget.style.background = 'var(--color-border-subtle)';
+                            e.currentTarget.style.color = 'var(--color-text-primary)';
+                        }}
+                        onMouseLeave={e => {
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.color = 'var(--color-text-muted)';
+                        }}
+                        aria-label="Cerrar"
+                    >
+                        <X size={18} />
+                    </button>
+                </div>
+
+                {/* Contenido */}
+                <div style={{ padding: 24 }}>
+                    {children}
+                </div>
             </div>
         </div>
     );

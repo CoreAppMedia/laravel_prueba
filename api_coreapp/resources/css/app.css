@@ -1,83 +1,938 @@
 @import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+/* ═══════════════════════════════════════════════════════════════
+   LIGA SANTIAGO ZAPOTITLÁN — Design System
+   Estilo: Editorial profesional · Fondo claro · Acentos sobrios
+   Inspiración: Cultura mexicana refinada + fútbol de alto nivel
+═══════════════════════════════════════════════════════════════ */
 
 :root {
-    /* Brand Colors - Mexican Flag & Mictlán Futuro */
-    --color-mx-green: #006847;
-    --color-mx-white: #FFFFFF;
-    --color-mx-red: #CE1126;
-    
-    /* Mictlán Futuro (Neon Accents) */
-    --color-mx-cempasuchil: #FF6B00;
-    --color-mx-rosa: #D946EF;
-    --color-mx-morado: #8B5CF6;
-    --color-mx-agave: #10B981;
+    /* ── Fondos ── */
+    --color-bg-main: #F7F6F4;
+    --color-bg-surface: #FFFFFF;
+    --color-bg-surface-alt: #F0EEE9;
+    --color-bg-muted: #F8F7F5;
 
-    /* Semantic Theme Variables (Light Mode Default) */
-    --color-bg-main: #f8fafc;
-    /* Slate 50 */
-    --color-bg-surface: #ffffff;
-    --color-bg-surface-alt: #f1f5f9;
-    /* Slate 100 */
+    /* ── Texto ── */
+    --color-text-primary: #111010;
+    --color-text-secondary: #3D3A35;
+    --color-text-muted: #8C8780;
+    --color-text-ghost: #B8B2A8;
 
-    --color-text-primary: #0f172a;
-    /* Slate 900 */
-    --color-text-secondary: #475569;
-    /* Slate 600 */
-    --color-text-muted: #94a3b8;
-    /* Slate 400 */
+    /* ── Bordes ── */
+    --color-border-subtle: #E4E0D8;
+    --color-border-strong: #C8C2B8;
 
-    --color-border-subtle: #e2e8f0;
-    /* Slate 200 */
-    --color-border-strong: #cbd5e1;
-    /* Slate 300 */
+    /* ── Acentos de marca — desaturados, con clase ── */
+    --color-terra: #C0442A;
+    /* Terracota · rojo liga        */
+    --color-terra-light: #F5EAE7;
+    /* Terracota suave (fondos)     */
+    --color-gold: #A07828;
+    /* Dorado antiguo               */
+    --color-gold-light: #F7F0E2;
+    /* Dorado suave (fondos)        */
+    --color-sage: #3A6B52;
+    /* Verde campo                  */
+    --color-sage-light: #E6F0EA;
+    /* Verde suave (fondos)         */
+    --color-slate: #3B4F6B;
+    /* Azul pizarra                 */
+    --color-slate-light: #E8EEF5;
+    /* Azul suave (fondos)          */
+    --color-danger: #B03030;
+    /* Rojo descenso                */
 
-    --shadow-premium: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-    --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    /* ── Tipografía ── */
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body: 'DM Sans', system-ui, sans-serif;
+
+    /* ── Sombras ── */
+    --shadow-soft: 0 2px 12px rgba(0, 0, 0, 0.06);
+    --shadow-medium: 0 4px 24px rgba(0, 0, 0, 0.08);
+    --shadow-premium: 0 8px 40px rgba(0, 0, 0, 0.10);
+
+    /* ── Radios ── */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+
+    /* ── Banda decorativa de marca ── */
+    --gradient-brand: linear-gradient(90deg, var(--color-terra), var(--color-gold) 50%, var(--color-sage));
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   RESET Y BASE
+═══════════════════════════════════════════════════════════════ */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-    font-family: 'Instrument Sans', sans-serif;
+    font-family: var(--font-body);
     background-color: var(--color-bg-main);
     color: var(--color-text-primary);
+    line-height: 1.5;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Utility Classes */
-.bg-theme-gradient {
-    background: linear-gradient(to right, var(--color-mx-green), #0a1f18, var(--color-mx-red));
+/* ── Scrollbar refinada ── */
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
 }
 
-.text-gradient-metallic {
-    background: linear-gradient(to right, #0f172a, #475569);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+::-webkit-scrollbar-track {
+    background: var(--color-bg-main);
 }
 
-.card-theme {
+::-webkit-scrollbar-thumb {
+    background: var(--color-border-strong);
+    border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-muted);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   TIPOGRAFÍA
+═══════════════════════════════════════════════════════════════ */
+
+.font-display {
+    font-family: var(--font-display);
+}
+
+.font-body {
+    font-family: var(--font-body);
+}
+
+/* Escala tipográfica */
+.text-display-xl {
+    font-family: var(--font-display);
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1.05;
+    color: var(--color-text-primary);
+}
+
+.text-display-lg {
+    font-family: var(--font-display);
+    font-size: clamp(22px, 3vw, 32px);
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    line-height: 1.1;
+    color: var(--color-text-primary);
+}
+
+.text-display-md {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--color-text-primary);
+}
+
+.text-stat {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.text-label {
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--color-text-muted);
+}
+
+.text-body-sm {
+    font-family: var(--font-body);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.text-body-md {
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.text-body-lg {
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.65;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   COLORES DE ACENTO — clases utilitarias
+═══════════════════════════════════════════════════════════════ */
+
+.text-terra {
+    color: var(--color-terra);
+}
+
+.text-gold {
+    color: var(--color-gold);
+}
+
+.text-sage {
+    color: var(--color-sage);
+}
+
+.text-slate {
+    color: var(--color-slate);
+}
+
+.text-danger {
+    color: var(--color-danger);
+}
+
+.bg-terra-light {
+    background-color: var(--color-terra-light);
+}
+
+.bg-gold-light {
+    background-color: var(--color-gold-light);
+}
+
+.bg-sage-light {
+    background-color: var(--color-sage-light);
+}
+
+.bg-slate-light {
+    background-color: var(--color-slate-light);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   COMPONENTES DE SUPERFICIE
+═══════════════════════════════════════════════════════════════ */
+
+/* Card base */
+.card {
     background-color: var(--color-bg-surface);
     border: 1px solid var(--color-border-subtle);
-    border-radius: 1rem;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.card-padded {
+    background-color: var(--color-bg-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+}
+
+/* Card con acento superior de color */
+.card-accent-terra {
+    border-top: 3px solid var(--color-terra);
+}
+
+.card-accent-gold {
+    border-top: 3px solid var(--color-gold);
+}
+
+.card-accent-sage {
+    border-top: 3px solid var(--color-sage);
+}
+
+.card-accent-slate {
+    border-top: 3px solid var(--color-slate);
+}
+
+/* Surface alternativa (gris cálido) */
+.surface-alt {
+    background-color: var(--color-bg-surface-alt);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-lg);
+}
+
+/* Sombras */
+.shadow-soft {
     box-shadow: var(--shadow-soft);
 }
 
-.glass-premium {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+.shadow-medium {
+    box-shadow: var(--shadow-medium);
 }
 
-/* Transitions for page-wide consistency */
-* {
-    transition: border-color 0.2s ease, background-color 0.2s ease;
+.shadow-premium {
+    box-shadow: var(--shadow-premium);
 }
 
-/* Custom Animations */
+
+/* ═══════════════════════════════════════════════════════════════
+   BANDA DE MARCA
+═══════════════════════════════════════════════════════════════ */
+
+/* Franja tricolor terracota→dorado→verde (3-4px, horizontal) */
+.brand-bar {
+    height: 3px;
+    background: var(--gradient-brand);
+    width: 100%;
+}
+
+.brand-bar-thick {
+    height: 4px;
+    background: var(--gradient-brand);
+    width: 100%;
+}
+
+/* Franja vertical lateral (para rows de tabla / partidos) */
+.accent-bar-left {
+    position: relative;
+    padding-left: 14px;
+}
+
+.accent-bar-left::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 70%;
+    border-radius: 2px;
+    background: var(--color-terra);
+}
+
+.accent-bar-left.gold::before {
+    background: var(--color-gold);
+}
+
+.accent-bar-left.sage::before {
+    background: var(--color-sage);
+}
+
+.accent-bar-left.slate::before {
+    background: var(--color-slate);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   HEADER / NAVEGACIÓN
+═══════════════════════════════════════════════════════════════ */
+
+.app-header {
+    background-color: var(--color-bg-surface);
+    border-bottom: 1px solid var(--color-border-subtle);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-soft);
+}
+
+.app-header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    padding: 0 24px;
+}
+
+/* Pestañas de navegación */
+.nav-tabs {
+    display: flex;
+    border-top: 1px solid var(--color-border-subtle);
+    padding: 0 24px;
+}
+
+.nav-tab {
+    padding: 11px 20px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--color-text-muted);
+    letter-spacing: 0.2px;
+    transition: color 0.15s ease, border-color 0.15s ease;
+    white-space: nowrap;
+}
+
+.nav-tab:hover {
+    color: var(--color-text-secondary);
+}
+
+.nav-tab.active {
+    font-weight: 600;
+    color: var(--color-terra);
+    border-bottom-color: var(--color-terra);
+}
+
+/* Logo / identidad */
+.brand-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    background-color: var(--color-terra);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.brand-name {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    line-height: 1;
+}
+
+.brand-season {
+    font-family: var(--font-body);
+    font-size: 10px;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 2px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   ESTADO "EN CURSO" — pill indicador
+═══════════════════════════════════════════════════════════════ */
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.status-pill.active {
+    background-color: var(--color-sage-light);
+    border: 1px solid rgba(58, 107, 82, 0.25);
+    color: var(--color-sage);
+}
+
+.status-pill.active .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--color-sage);
+    animation: pulse 2.5s ease-in-out infinite;
+}
+
+.status-pill.pending {
+    background-color: var(--color-gold-light);
+    border: 1px solid rgba(160, 120, 40, 0.25);
+    color: var(--color-gold);
+}
+
+.status-pill.finished {
+    background-color: var(--color-sage-light);
+    border: 1px solid rgba(58, 107, 82, 0.2);
+    color: var(--color-sage);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   TABLA DE POSICIONES
+═══════════════════════════════════════════════════════════════ */
+
+.standings-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.standings-header {
+    background-color: var(--color-bg-surface-alt);
+    border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.standings-header th {
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--color-text-muted);
+    padding: 10px 16px;
+    text-align: center;
+}
+
+.standings-header th:first-child,
+.standings-header th:nth-child(2) {
+    text-align: left;
+}
+
+.standings-row {
+    border-bottom: 1px solid var(--color-border-subtle);
+    transition: background-color 0.15s ease;
+    cursor: pointer;
+}
+
+.standings-row:last-child {
+    border-bottom: none;
+}
+
+.standings-row:hover {
+    background-color: var(--color-bg-surface-alt);
+}
+
+.standings-row td {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    padding: 13px 16px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.standings-row td:nth-child(2) {
+    text-align: left;
+}
+
+/* Celda de puntos */
+.standings-pts {
+    font-family: var(--font-display) !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: var(--color-text-primary) !important;
+    border-left: 1px solid var(--color-border-subtle);
+}
+
+.standings-pts.leader {
+    color: var(--color-gold) !important;
+}
+
+/* Fila líder */
+.standings-row.leader {
+    background-color: rgba(160, 120, 40, 0.04);
+}
+
+/* Fila descenso */
+.standings-row.relegation td:nth-child(2)::after {
+    content: 'Descenso';
+    display: block;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--color-danger);
+}
+
+/* Barra de color del equipo */
+.team-color-bar {
+    display: inline-block;
+    width: 3px;
+    height: 18px;
+    border-radius: 2px;
+    vertical-align: middle;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   PARTIDOS
+═══════════════════════════════════════════════════════════════ */
+
+.match-card {
+    background-color: var(--color-bg-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: flex;
+    align-items: stretch;
+    min-height: 72px;
+    transition: box-shadow 0.15s ease;
+}
+
+.match-card:hover {
+    box-shadow: var(--shadow-medium);
+}
+
+/* Franja lateral de estado */
+.match-status-bar {
+    width: 4px;
+    flex-shrink: 0;
+}
+
+.match-status-bar.played {
+    background-color: var(--color-sage);
+}
+
+.match-status-bar.upcoming {
+    background-color: var(--color-terra);
+}
+
+/* Columna de fecha/jornada */
+.match-date-col {
+    width: 84px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 8px;
+    background-color: var(--color-bg-surface-alt);
+    border-right: 1px solid var(--color-border-subtle);
+    gap: 2px;
+}
+
+/* Resultado / VS */
+.match-score {
+    min-width: 80px;
+    text-align: center;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+}
+
+.match-score.played {
+    background-color: var(--color-text-primary);
+    border-color: transparent;
+}
+
+.match-score.played span {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: 2px;
+}
+
+.match-score.upcoming {
+    background-color: var(--color-bg-surface-alt);
+}
+
+.match-score.upcoming span {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    letter-spacing: 2px;
+}
+
+/* Columna de estado final */
+.match-result-col {
+    width: 96px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-left: 1px solid var(--color-border-subtle);
+}
+
+.match-result-col.played {
+    background-color: var(--color-sage-light);
+}
+
+.match-result-col.upcoming {
+    background-color: var(--color-terra-light);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   JUGADORES / GOLEADORES
+═══════════════════════════════════════════════════════════════ */
+
+.players-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.player-row {
+    border-bottom: 1px solid var(--color-border-subtle);
+    transition: background-color 0.15s ease;
+    cursor: pointer;
+}
+
+.player-row:last-child {
+    border-bottom: none;
+}
+
+.player-row:hover {
+    background-color: var(--color-bg-surface-alt);
+}
+
+.player-row td {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    padding: 14px 20px;
+    vertical-align: middle;
+}
+
+/* Dorsal del jugador */
+.player-dorsal {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background-color: var(--color-bg-surface-alt);
+    border: 1px solid var(--color-border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+/* Goles: cifra grande con display serif */
+.player-goals {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    color: var(--color-text-primary);
+}
+
+.player-goals.leader {
+    color: var(--color-terra);
+}
+
+/* Ranking (1°, 2°, 3°...) */
+.player-rank {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--color-text-ghost);
+}
+
+.player-rank.gold {
+    color: var(--color-gold);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   STAT BLOCKS (bloque de estadísticas en grid)
+═══════════════════════════════════════════════════════════════ */
+
+.stat-block {
+    display: flex;
+    border-top: 1px solid var(--color-border-subtle);
+    border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.stat-block-item {
+    flex: 1;
+    padding: 16px 0;
+    text-align: center;
+    border-right: 1px solid var(--color-border-subtle);
+}
+
+.stat-block-item:last-child {
+    border-right: none;
+}
+
+.stat-block-value {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-text-primary);
+}
+
+.stat-block-label {
+    margin-top: 4px;
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--color-text-muted);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   BOTONES
+═══════════════════════════════════════════════════════════════ */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 10px 22px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+    transition: opacity 0.15s ease, box-shadow 0.15s ease;
+    white-space: nowrap;
+}
+
+.btn:hover {
+    opacity: 0.88;
+}
+
+.btn-primary {
+    background-color: var(--color-terra);
+    color: #FFFFFF;
+}
+
+.btn-primary:hover {
+    box-shadow: 0 4px 14px rgba(192, 68, 42, 0.35);
+    opacity: 1;
+}
+
+.btn-secondary {
+    background-color: transparent;
+    border: 1px solid var(--color-border-strong);
+    color: var(--color-text-secondary);
+}
+
+.btn-ghost {
+    background-color: transparent;
+    color: var(--color-text-muted);
+}
+
+.btn-ghost:hover {
+    color: var(--color-text-primary);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   DIVISORES Y ORNAMENTOS
+═══════════════════════════════════════════════════════════════ */
+
+.divider {
+    height: 1px;
+    background-color: var(--color-border-subtle);
+    width: 100%;
+}
+
+/* Divisor con label centrado */
+.divider-labeled {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.divider-labeled::before,
+.divider-labeled::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: var(--color-border-subtle);
+}
+
+/* Ornamento triangular inspirado en motivos prehispánicos */
+.ornament-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ornament-line::before,
+.ornament-line::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: var(--color-border-subtle);
+}
+
+.ornament-line::after {
+    content: '';
+}
+
+/* Separador de sección con etiqueta */
+.section-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: var(--color-border-subtle);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   HERO SECTION
+═══════════════════════════════════════════════════════════════ */
+
+.hero-card {
+    background-color: var(--color-bg-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.hero-body {
+    padding: 32px 28px 28px;
+}
+
+.hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 5vw, 46px);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    line-height: 1.08;
+    letter-spacing: -0.5px;
+    margin: 12px 0 8px;
+}
+
+.hero-subtitle {
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    max-width: 380px;
+    margin-bottom: 24px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   GLASS / STICKY HEADER ALTERNATIVO
+═══════════════════════════════════════════════════════════════ */
+
+.glass {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   ANIMACIONES
+═══════════════════════════════════════════════════════════════ */
+
 @keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(16px);
     }
 
     to {
@@ -86,28 +941,80 @@ body {
     }
 }
 
-@keyframes slowZoom {
-    0% {
-        transform: scale(1);
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 0.4;
     }
 
     50% {
-        transform: scale(1.05);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-12px);
     }
 
-    100% {
-        transform: scale(1);
+    to {
+        opacity: 1;
+        transform: translateX(0);
     }
 }
 
 .animate-fade-in-up {
-    animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-slow-zoom {
-    animation: slowZoom 20s ease-in-out infinite;
+    animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .animate-fade-in {
-    animation: fadeInUp 0.5s ease-out forwards;
+    animation: fadeIn 0.4s ease-out both;
+}
+
+.animate-slide-in-left {
+    animation: slideInLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Stagger para listas */
+.stagger>*:nth-child(1) {
+    animation-delay: 0ms;
+}
+
+.stagger>*:nth-child(2) {
+    animation-delay: 60ms;
+}
+
+.stagger>*:nth-child(3) {
+    animation-delay: 120ms;
+}
+
+.stagger>*:nth-child(4) {
+    animation-delay: 180ms;
+}
+
+.stagger>*:nth-child(5) {
+    animation-delay: 240ms;
+}
+
+.stagger>*:nth-child(6) {
+    animation-delay: 300ms;
+}
+
+/* Transición global suave */
+* {
+    transition-property: border-color, background-color, color, box-shadow;
+    transition-duration: 0.15s;
+    transition-timing-function: ease;
 }

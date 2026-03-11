@@ -1,74 +1,233 @@
 import React from 'react';
-import { Calendar, MapPin, Clock, Trophy } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
 export default function MatchCard({ homeTeam, awayTeam, time, status, stadium }) {
     const isLive = status === 'LIVE';
 
     return (
-        <div className="bg-white rounded-2xl shadow-soft border border-[--color-border-subtle] overflow-hidden relative group hover:shadow-premium transition-all duration-300">
-            {/* Light Glass Header */}
-            <div className={`h-1.5 w-full ${isLive ? 'bg-mx-red' : 'bg-mx-green'} relative overflow-hidden`}>
-                {isLive && <div className="absolute inset-0 bg-white/30 animate-pulse"></div>}
+        <div
+            style={{
+                background: 'var(--color-bg-surface)',
+                border: '1px solid var(--color-border-subtle)',
+                borderRadius: 'var(--radius-lg)',
+                overflow: 'hidden',
+                boxShadow: 'var(--shadow-soft)',
+                transition: 'box-shadow 0.2s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.boxShadow = 'var(--shadow-medium)'}
+            onMouseLeave={e => e.currentTarget.style.boxShadow = 'var(--shadow-soft)'}
+        >
+            {/* Banda superior de estado */}
+            <div
+                style={{
+                    height: 3,
+                    background: isLive
+                        ? 'var(--color-terra)'
+                        : 'var(--gradient-brand)',
+                    position: 'relative',
+                    overflow: isLive ? 'hidden' : 'visible',
+                }}
+            >
+                {isLive && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: 'rgba(255,255,255,0.4)',
+                            animation: 'pulse 1.5s ease-in-out infinite',
+                        }}
+                    />
+                )}
             </div>
 
-            <div className="p-8">
-                <div className="flex items-center justify-between gap-4">
-                    {/* Home Team */}
-                    <div className="flex flex-col items-center flex-1">
-                        <div className="w-20 h-20 bg-slate-50 rounded-2xl mb-4 flex items-center justify-center shadow-inner border border-slate-100 group-hover:scale-110 transition-transform duration-500">
-                            <div className="text-3xl grayscale group-hover:grayscale-0 transition-all">🛡️</div>
-                        </div>
-                        <span className="text-slate-900 font-black text-xs uppercase tracking-tight text-center leading-tight">
-                            {homeTeam}
-                        </span>
+            {/* Cabecera: estado + jornada */}
+            <div
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '14px 24px',
+                    borderBottom: '1px solid var(--color-border-subtle)',
+                    background: 'var(--color-bg-surface-alt)',
+                }}
+            >
+                {isLive ? (
+                    <div className="status-pill active">
+                        <span className="status-dot" />
+                        En Vivo
                     </div>
-
-                    {/* VS / Info Center */}
-                    <div className="flex flex-col items-center px-4">
-                        {isLive ? (
-                            <span className="px-3 py-1 bg-red-100 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-red-200 mb-2 animate-bounce">
-                                En Vivo
-                            </span>
-                        ) : (
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Próximo</span>
-                        )}
-                        <div className="flex items-center gap-3">
-                            <div className="h-px w-6 bg-slate-200"></div>
-                            <span className="text-2xl font-black text-slate-900 italic tracking-tighter">VS</span>
-                            <div className="h-px w-6 bg-slate-200"></div>
-                        </div>
+                ) : (
+                    <div className="status-pill pending">
+                        Próximo Partido
                     </div>
+                )}
+                <span
+                    style={{
+                        fontFamily: 'var(--font-body)',
+                        fontSize: 10,
+                        fontWeight: 600,
+                        textTransform: 'uppercase',
+                        letterSpacing: '1.5px',
+                        color: 'var(--color-text-ghost)',
+                    }}
+                >
+                    {time}
+                </span>
+            </div>
 
-                    {/* Away Team */}
-                    <div className="flex flex-col items-center flex-1">
-                        <div className="w-20 h-20 bg-slate-50 rounded-2xl mb-4 flex items-center justify-center shadow-inner border border-slate-100 group-hover:scale-110 transition-transform duration-500">
-                            <div className="text-3xl grayscale group-hover:grayscale-0 transition-all">⚽</div>
-                        </div>
-                        <span className="text-slate-900 font-black text-xs uppercase tracking-tight text-center leading-tight">
-                            {awayTeam}
+            {/* Equipos */}
+            <div
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '32px 24px',
+                    gap: 16,
+                }}
+            >
+                {/* Local */}
+                <div
+                    style={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 14,
+                    }}
+                >
+                    <div
+                        style={{
+                            width: 72,
+                            height: 72,
+                            borderRadius: 'var(--radius-md)',
+                            background: 'var(--color-bg-surface-alt)',
+                            border: '1px solid var(--color-border-subtle)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: 28,
+                        }}
+                    >
+                        🛡️
+                    </div>
+                    <div
+                        style={{
+                            fontFamily: 'var(--font-body)',
+                            fontSize: 12,
+                            fontWeight: 700,
+                            color: 'var(--color-text-primary)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px',
+                            textAlign: 'center',
+                            lineHeight: 1.3,
+                        }}
+                    >
+                        {homeTeam}
+                    </div>
+                    <span className="text-label">Local</span>
+                </div>
+
+                {/* Centro */}
+                <div
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 6,
+                        flexShrink: 0,
+                        padding: '0 8px',
+                    }}
+                >
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                        }}
+                    >
+                        <div style={{ height: 1, width: 20, background: 'var(--color-border-strong)' }} />
+                        <span
+                            style={{
+                                fontFamily: 'var(--font-display)',
+                                fontSize: 22,
+                                fontWeight: 700,
+                                color: 'var(--color-text-primary)',
+                                letterSpacing: '-0.3px',
+                            }}
+                        >
+                            vs
                         </span>
+                        <div style={{ height: 1, width: 20, background: 'var(--color-border-strong)' }} />
                     </div>
                 </div>
 
-                {/* Match Details Grid */}
-                <div className="mt-8 grid grid-cols-2 gap-3">
-                    <div className="flex items-center gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                        <Calendar size={14} className="text-slate-400" />
-                        <span className="text-[10px] font-bold text-slate-600 uppercase whitespace-nowrap">{time.split(' ')[0]}</span>
+                {/* Visitante */}
+                <div
+                    style={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 14,
+                    }}
+                >
+                    <div
+                        style={{
+                            width: 72,
+                            height: 72,
+                            borderRadius: 'var(--radius-md)',
+                            background: 'var(--color-bg-surface-alt)',
+                            border: '1px solid var(--color-border-subtle)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: 28,
+                        }}
+                    >
+                        ⚽
                     </div>
-                    <div className="flex items-center gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                        <Clock size={14} className="text-slate-400" />
-                        <span className="text-[10px] font-bold text-slate-600 uppercase whitespace-nowrap">{time.split(' ')[1] || '20:00'}</span>
+                    <div
+                        style={{
+                            fontFamily: 'var(--font-body)',
+                            fontSize: 12,
+                            fontWeight: 700,
+                            color: 'var(--color-text-primary)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px',
+                            textAlign: 'center',
+                            lineHeight: 1.3,
+                        }}
+                    >
+                        {awayTeam}
                     </div>
+                    <span className="text-label">Visitante</span>
                 </div>
             </div>
 
-            {/* Stadium / Venue Footer */}
-            <div className="bg-slate-50/80 backdrop-blur-sm p-4 text-center border-t border-slate-100 flex items-center justify-center gap-3">
-                <MapPin size={14} className="text-mx-red" />
-                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">
+            {/* Estadio */}
+            <div
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    padding: '12px 24px',
+                    borderTop: '1px solid var(--color-border-subtle)',
+                    background: 'var(--color-bg-surface-alt)',
+                }}
+            >
+                <MapPin size={12} style={{ color: 'var(--color-terra)', flexShrink: 0 }} />
+                <span
+                    style={{
+                        fontFamily: 'var(--font-body)',
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: 'var(--color-text-muted)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px',
+                    }}
+                >
                     {stadium}
-                </p>
+                </span>
             </div>
         </div>
     );

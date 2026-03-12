@@ -1,10 +1,9 @@
 import React from 'react';
-import Title from '../../Components/Title';
 import AppLayout from '../../Layouts/AppLayout';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 
-export default function BasePanel({ titulo, children, backUrl }) {
+export default function BasePanel({ children, backUrl }) {
     return (
         <AppLayout>
             {/* Simple Page Title */}
@@ -12,16 +11,27 @@ export default function BasePanel({ titulo, children, backUrl }) {
                 {backUrl && (
                     <Link
                         to={backUrl}
-                        className="text-slate-600 hover:text-mx-green p-2 rounded-lg hover:bg-mx-green/5 transition-all"
+                        style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '8px 16px',
+                        fontFamily: 'var(--font-body)',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        color: 'var(--color-text-secondary)',
+                        backgroundColor: 'var(--color-bg-surface-alt)',
+                        border: '1px solid var(--color-border-subtle)',
+                        borderRadius: 'var(--radius-md)',
+                        textDecoration: 'none',
+                        transition: 'all 0.15s ease',
+                        cursor: 'pointer',
+                    }}
                         title="Regresar"
                     >
                         <ArrowLeft size={18} />
                     </Link>
                 )}
-                
-                <div className="flex-1">
-                    <h1 className="text-xl font-bold text-slate-900">{titulo}</h1>
-                </div>
             </div>
 
             {/* Content Area */}
@@ -31,3 +41,5 @@ export default function BasePanel({ titulo, children, backUrl }) {
         </AppLayout>
     );
 }
+
+

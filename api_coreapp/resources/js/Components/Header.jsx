@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../Auth/AuthContext';
-import { User, ChevronDown, Shield, Mail, LogOut, Settings } from 'lucide-react';
+import { User, ChevronDown, Shield, Mail, LogOut, LayoutDashboard } from 'lucide-react';
 
 const NAV_ITEMS = ['Inicio', 'Equipos', 'Calendario', 'Estadísticas', 'Noticias'];
 
@@ -8,6 +9,12 @@ export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const { user, signOut } = useAuth();
+    const navigate = useNavigate();
+
+    // Determinar el panel según el permiso del usuario
+    const permisoNombre = user?.permiso?.nombre?.toLowerCase() || '';
+    const panelPath = permisoNombre ? `/panel/${permisoNombre.replace(/\s+/g, '-')}` : '/panel';
+    const panelLabel = user?.permiso?.nombre ? `Panel ${user.permiso.nombre}` : 'Panel';
 
     return (
         <header className="app-header">
@@ -17,8 +24,8 @@ export default function Header() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="app-header-inner">
 
-                    {/* Identidad */}
-                    <div className="flex items-center gap-3 flex-shrink-0">
+                    {/* Identidad - Clickable para ir al dashboard */}
+                    <Link to="/" className="flex items-center gap-3 flex-shrink-0 cursor-pointer">
                         <div className="brand-logo">
                             <img src="/images/logo.png" alt="Logo" />
                         </div>
@@ -26,7 +33,7 @@ export default function Header() {
                             <div className="brand-name">Liga Santiago Zapotitlán</div>
                             <div className="brand-season">Temporada 2026</div>
                         </div>
-                    </div>
+                    </Link>
 
                     {/* Navegación desktop */}
                     <nav className="hidden md:flex items-center">
@@ -122,6 +129,35 @@ export default function Header() {
                                                     <div className="text-xs text-slate-500">Correo electrónico</div>
                                                 </div>
                                             </div>
+                                        </div>
+
+                                        {/* Botón Panel Admin/Desarrollador */}
+                                        <div className="px-4 pb-2">
+                                            <button 
+                                                onClick={() => {
+                                                    navigate(panelPath);
+                                                    setIsUserMenuOpen(false);
+                                                }}
+                                                className="w-full px-4 py-3 flex items-center gap-3 text-sm font-medium rounded-full border transition-all cursor-pointer group"
+                                                style={{
+                                                    color: 'var(--color-sage)',
+                                                    backgroundColor: 'var(--color-sage-light)',
+                                                    borderColor: 'rgba(58, 107, 82, 0.2)',
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    e.currentTarget.style.backgroundColor = 'var(--color-sage)';
+                                                    e.currentTarget.style.color = '#fff';
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.currentTarget.style.backgroundColor = 'var(--color-sage-light)';
+                                                    e.currentTarget.style.color = 'var(--color-sage)';
+                                                }}
+                                            >
+                                                <div className="w-10 h-10 rounded-full bg-white/50 flex items-center justify-center group-hover:bg-white/30 transition-colors flex-shrink-0">
+                                                    <LayoutDashboard size={18} />
+                                                </div>
+                                                <span>{panelLabel}</span>
+                                            </button>
                                         </div>
 
                                         {/* Footer con logout */}

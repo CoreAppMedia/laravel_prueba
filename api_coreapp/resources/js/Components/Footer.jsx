@@ -15,11 +15,8 @@ export default function Footer() {
                     <div>
                         <br />
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="brand-logo" style={{ width: 32, height: 32 }}>
-                                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                                    <circle cx="10" cy="10" r="9" stroke="#fff" strokeWidth="1.5" />
-                                    <path d="M10 2 L12 7.5 H18 L13.5 11 L15.5 17 L10 13.5 L4.5 17 L6.5 11 L2 7.5 H8 Z" fill="#fff" opacity=".85" />
-                                </svg>
+                            <div className="brand-logo" style={{ width: 60, height: 60 }}>
+                                <img src="/images/logo.png" alt="Logo" />
                             </div>
                             <span className="text-display-md">
                                 Liga Santiago Zapotitlán

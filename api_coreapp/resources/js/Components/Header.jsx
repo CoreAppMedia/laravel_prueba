@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
+import { useAuth } from '../Auth/AuthContext';
+import { User, ChevronDown, Shield, Mail, LogOut, Settings } from 'lucide-react';
 
 const NAV_ITEMS = ['Inicio', 'Equipos', 'Calendario', 'Estadísticas', 'Noticias'];
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+    const { user, signOut } = useAuth();
 
     return (
         <header className="app-header">
@@ -16,18 +20,11 @@ export default function Header() {
                     {/* Identidad */}
                     <div className="flex items-center gap-3 flex-shrink-0">
                         <div className="brand-logo">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <circle cx="10" cy="10" r="9" stroke="#fff" strokeWidth="1.5" />
-                                <path
-                                    d="M10 2 L12 7.5 H18 L13.5 11 L15.5 17 L10 13.5 L4.5 17 L6.5 11 L2 7.5 H8 Z"
-                                    fill="#fff"
-                                    opacity=".85"
-                                />
-                            </svg>
+                            <img src="/images/logo.png" alt="Logo" />
                         </div>
                         <div>
                             <div className="brand-name">Liga Santiago Zapotitlán</div>
-                            <div className="brand-season">Temporada 2025</div>
+                            <div className="brand-season">Temporada 2026</div>
                         </div>
                     </div>
 
@@ -47,12 +44,104 @@ export default function Header() {
                         ))}
                     </nav>
 
-                    {/* Estado + menú móvil */}
+                    {/* Estado + menú usuario */}
                     <div className="flex items-center gap-4">
                         <div className="status-pill active hidden sm:inline-flex">
                             <span className="status-dot" />
                             Jornada 11
                         </div>
+
+                        {/* Menú desplegable del usuario - Solo si está logueado */}
+                        {user && (
+                            <div className="relative">
+                                <button
+                                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 transition-all"
+                                >
+                                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-mx-green to-mx-red p-[1px]">
+                                        <div className="w-full h-full rounded-[6px] bg-white flex items-center justify-center">
+                                            <User size={16} className="text-slate-700" />
+                                        </div>
+                                    </div>
+                                    <div className="hidden md:block text-left">
+                                        <div className="text-sm font-semibold text-slate-900">
+                                            {user?.nombre} {user?.apellido_paterno}
+                                        </div>
+                                        <div className="text-xs text-slate-500">
+                                            {user?.rol?.nombre || 'Administrador'}
+                                        </div>
+                                    </div>
+                                    <ChevronDown 
+                                        size={16} 
+                                        className={`text-slate-400 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`}
+                                    />
+                                </button>
+
+                                {/* Dropdown del usuario */}
+                                {isUserMenuOpen && (
+                                    <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-premium z-50 animate-fade-in overflow-hidden">
+                                        {/* Header del dropdown */}
+                                        <div className="bg-gradient-to-r from-mx-green/5 to-mx-red/5 border-b border-slate-100 p-6">
+                                            <div className="flex flex-col items-center gap-3">
+                                                <div className="text-center">
+                                                    <div className="font-bold text-slate-900 text-lg">
+                                                        {user?.nombre} {user?.apellido_paterno}
+                                                    </div>
+                                                    <div className="text-sm text-slate-500 font-medium">{user?.email}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Opciones del menú */}
+                                        <div className="p-4 space-y-3">
+                                            <div 
+                                                className="px-4 py-3 flex items-center gap-4 text-sm text-slate-600 rounded-full border border-slate-100 transition-all cursor-pointer group"
+                                                style={{'--tw-hover-bg': 'var(--color-terra-light)'}}
+                                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-terra-light)'}
+                                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                            >
+                                                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors flex-shrink-0">
+                                                    <Shield size={18} className="text-blue-600" />
+                                                </div>
+                                                <div className="flex-1 text-left">
+                                                    <div className="font-medium text-slate-900">{user?.rol?.nombre || 'Administrador'}</div>
+                                                    <div className="text-xs text-slate-500">Rol actual</div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div 
+                                                className="px-4 py-3 flex items-center gap-4 text-sm text-slate-600 rounded-full border border-slate-100 transition-all cursor-pointer group"
+                                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-terra-light)'}
+                                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                            >
+                                                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-slate-200 transition-colors flex-shrink-0">
+                                                    <Mail size={18} className="text-slate-600" />
+                                                </div>
+                                                <div className="flex-1 text-left">
+                                                    <div className="font-medium text-slate-900 truncate">{user?.email}</div>
+                                                    <div className="text-xs text-slate-500">Correo electrónico</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Footer con logout */}
+                                        <div className="border-t border-slate-100 bg-slate-50/50 p-4">
+                                            <button 
+                                                onClick={signOut}
+                                                className="w-full px-4 py-3 flex items-center justify-center gap-3 text-sm font-medium text-red-600 rounded-full border border-red-100 transition-all group"
+                                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-terra-light)'}
+                                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                            >
+                                                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center group-hover:bg-red-200 transition-colors flex-shrink-0">
+                                                    <LogOut size={18} />
+                                                </div>
+                                                <span>Cerrar sesión</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {/* Hamburger móvil */}
                         <button

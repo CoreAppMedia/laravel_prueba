@@ -81,12 +81,20 @@ class JornadaController extends Controller
             ], 422);
         }
 
-        // Validar que todos los partidos de la jornada estén cerrados
-        $partidosAbiertos = \App\Models\Partido::where('jornada_id', $jornada->id)->where('cerrado', false)->count();
-        if ($partidosAbiertos > 0) {
+        // Validar que todos los partidos estén cerrados O suspendidos
+        $partidosPendientes = \App\Models\Partido::where('jornada_id', $jornada->id)
+            ->where('cerrado', false)
+            ->where('suspendido', false)
+            ->with(['equipoLocal', 'equipoVisitante'])
+            ->get();
+
+        if ($partidosPendientes->count() > 0) {
+            $lista = $partidosPendientes->map(fn($p) => 
+                ($p->equipoLocal->nombre_mostrado ?? '?') . ' vs ' . ($p->equipoVisitante->nombre_mostrado ?? '?')
+            );
             return response()->json([
-                'message' => 'No se puede cerrar la jornada porque existen partidos pendientes de cerrar.',
-                'partidos_pendientes' => $partidosAbiertos
+                'message' => 'No se puede cerrar la jornada. Aún hay encuentros sin concluir.',
+                'partidos_pendientes' => $lista
             ], 422);
         }
 

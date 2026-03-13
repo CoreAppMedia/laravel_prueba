@@ -33,7 +33,7 @@ export default function Header() {
                     gap: '16px'
                 }}
             >
-
+ 
 
                 {/* Menú desplegable del usuario - Solo si está logueado */}
                 {user && (

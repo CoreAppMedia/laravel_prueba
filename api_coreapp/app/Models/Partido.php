@@ -25,11 +25,14 @@ class Partido extends Model
         'goles_local',
         'goles_visitante',
         'cerrado',
+        'suspendido',
+        'motivo_suspension',
     ];
 
     protected $casts = [
         'fecha' => 'datetime',
         'cerrado' => 'boolean',
+        'suspendido' => 'boolean',
     ];
 
     public function jornada()

@@ -139,7 +139,11 @@ class PartidoController extends Controller
             'goles_visitante' => 'required|integer|min:0'
         ]);
 
-        $estadoFinalizado = CatalogoEstadoPartido::where('nombre', 'finalizado')->first();
+        $estadoFinalizado = CatalogoEstadoPartido::where('nombre', 'Jugado')->first();
+        if (!$estadoFinalizado) {
+            // Fallback: try case-insensitive
+            $estadoFinalizado = CatalogoEstadoPartido::whereRaw('LOWER(nombre) IN (?, ?, ?)', ['jugado', 'finalizado', 'completado'])->first();
+        }
 
         $partido->goles_local = $validated['goles_local'];
         $partido->goles_visitante = $validated['goles_visitante'];
@@ -172,6 +176,66 @@ class PartidoController extends Controller
 
         return response()->json([
             'message' => 'Partido cerrado y validado correctamente.',
+            'data' => $partido
+        ]);
+    }
+
+    /**
+     * Marcar un partido como suspendido con un motivo.
+     */
+    public function suspenderPartido(Request $request, Partido $partido)
+    {
+        if ($partido->cerrado) {
+            return response()->json([
+                'message' => 'No se puede suspender un partido que ya fue cerrado.'
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'motivo_suspension' => 'required|string|max:500'
+        ]);
+
+        $estadoSuspendido = CatalogoEstadoPartido::where('nombre', 'Suspendido')
+            ->orWhere('nombre', 'suspendido')
+            ->first();
+
+        $partido->suspendido = true;
+        $partido->motivo_suspension = $validated['motivo_suspension'];
+        if ($estadoSuspendido) {
+            $partido->estado_partido_id = $estadoSuspendido->id;
+        }
+        $partido->save();
+
+        return response()->json([
+            'message' => 'Partido marcado como suspendido.',
+            'data' => $partido
+        ]);
+    }
+
+    /**
+     * Reactivar un partido suspendido.
+     */
+    public function reactivarPartido(Partido $partido)
+    {
+        if ($partido->cerrado) {
+            return response()->json([
+                'message' => 'No se puede reactivar un partido cerrado.'
+            ], 422);
+        }
+
+        $estadoProgramado = CatalogoEstadoPartido::where('nombre', 'Programado')
+            ->orWhere('nombre', 'programado')
+            ->first();
+
+        $partido->suspendido = false;
+        $partido->motivo_suspension = null;
+        if ($estadoProgramado) {
+            $partido->estado_partido_id = $estadoProgramado->id;
+        }
+        $partido->save();
+
+        return response()->json([
+            'message' => 'Partido reactivado.',
             'data' => $partido
         ]);
     }

@@ -110,6 +110,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('jornadas/{jornada}/partidos', [\App\Http\Controllers\Api\PartidoController::class, 'store']);
             Route::patch('partidos/{partido}/resultado', [\App\Http\Controllers\Api\PartidoController::class, 'registrarResultado']);
             Route::patch('partidos/{partido}/cerrar', [\App\Http\Controllers\Api\PartidoController::class, 'cerrarPartido']);
+            Route::patch('partidos/{partido}/suspender', [\App\Http\Controllers\Api\PartidoController::class, 'suspenderPartido']);
+            Route::patch('partidos/{partido}/reactivar', [\App\Http\Controllers\Api\PartidoController::class, 'reactivarPartido']);
         });
 
         // Catalogos

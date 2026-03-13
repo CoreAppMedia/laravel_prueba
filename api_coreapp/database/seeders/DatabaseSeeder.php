@@ -178,6 +178,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             CatalogosSeeder::class,
+            CanchasSeeder::class,
             DummyDataSeeder::class,
         ]);
 

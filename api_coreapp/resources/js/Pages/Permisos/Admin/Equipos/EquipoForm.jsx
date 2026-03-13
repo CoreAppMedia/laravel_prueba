@@ -6,11 +6,14 @@ import toast from 'react-hot-toast';
 export default function EquipoForm({ equipo, onSuccess, onCancel }) {
     const [clubes, setClubes] = useState([]);
     const [categorias, setCategorias] = useState([]);
+    const [canchas, setCanchas] = useState([]);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         club_id: equipo?.club_id || '',
         categoria_id: equipo?.categoria_id || '',
         nombre_mostrado: equipo?.nombre_mostrado || '',
+        cancha_id: equipo?.cancha_id || '',
+        cancha_horario_id: equipo?.cancha_horario_id || '',
         activo: equipo?.activo ?? true
     });
 
@@ -19,12 +22,14 @@ export default function EquipoForm({ equipo, onSuccess, onCancel }) {
     useEffect(() => {
         const fetchDependencies = async () => {
             try {
-                const [resClubes, resCats] = await Promise.all([
+                const [resClubes, resCats, resCanchas] = await Promise.all([
                     http.get('/api/clubs'),
-                    http.get('/api/catalogos/categorias')
+                    http.get('/api/catalogos/categorias'),
+                    http.get('/api/canchas')
                 ]);
                 setClubes(resClubes.data);
                 setCategorias(resCats.data);
+                setCanchas(resCanchas.data);
             } catch (error) {
                 toast.error('Error al cargar clubes o categorías');
             }
@@ -34,10 +39,17 @@ export default function EquipoForm({ equipo, onSuccess, onCancel }) {
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
+        setFormData(prev => {
+            const newData = {
+                ...prev,
+                [name]: type === 'checkbox' ? checked : value
+            };
+            // Si cambias la cancha, resetear el horario seleccionado
+            if (name === 'cancha_id') {
+                newData.cancha_horario_id = '';
+            }
+            return newData;
+        });
     };
 
     const handleSubmit = async (e) => {
@@ -81,6 +93,20 @@ export default function EquipoForm({ equipo, onSuccess, onCancel }) {
     };
 
     const labelClass = "text-label";
+
+    const canchaSeleccionada = canchas.find(c => c.id === formData.cancha_id);
+    const horariosDisponibles = canchaSeleccionada ? canchaSeleccionada.horarios : [];
+
+    const formatTime = (time) => {
+        if (!time) return '';
+        const [h, m] = time.split(':');
+        return `${h}:${m}`;
+    };
+
+    const diaSemanaMap = {
+        1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves',
+        5: 'Viernes', 6: 'Sábado', 7: 'Domingo'
+    };
 
     return (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -166,6 +192,70 @@ export default function EquipoForm({ equipo, onSuccess, onCancel }) {
                 <p style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '4px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     Ejemplo: Si el club es 'América' y la categoría 'Femenil', puedes poner 'América Femenil'.
                 </p>
+            </div>
+
+            {/* Cancha Local */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label className={labelClass} style={{ marginLeft: '4px' }}>Cancha Sede Oficial</label>
+                <select
+                    name="cancha_id"
+                    value={formData.cancha_id}
+                    onChange={handleChange}
+                    style={{
+                        ...inputStyle,
+                        ...(errors.cancha_id ? { border: '1px solid var(--color-danger)' } : {})
+                    }}
+                    onFocus={(e) => {
+                        e.target.style.borderColor = 'var(--color-gold)';
+                        e.target.style.boxShadow = '0 0 0 4px var(--color-gold-light)';
+                    }}
+                    onBlur={(e) => {
+                        e.target.style.borderColor = errors.cancha_id ? 'var(--color-danger)' : 'var(--color-border-subtle)';
+                        e.target.style.boxShadow = 'var(--shadow-soft)';
+                    }}
+                >
+                    <option value="">Selecciona una Cancha (Sede Libre)</option>
+                    {canchas.map((c) => (
+                        <option key={c.id} value={c.id}>{c.nombre}</option>
+                    ))}
+                </select>
+                {errors.cancha_id && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.cancha_id[0]}</p>}
+            </div>
+
+            {/* Horario Local */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label className={labelClass} style={{ marginLeft: '4px' }}>Horario Local Habitual</label>
+                <select
+                    name="cancha_horario_id"
+                    value={formData.cancha_horario_id}
+                    onChange={handleChange}
+                    disabled={!formData.cancha_id || horariosDisponibles.length === 0}
+                    style={{
+                        ...inputStyle,
+                        ...(errors.cancha_horario_id ? { border: '1px solid var(--color-danger)' } : {}),
+                        backgroundColor: (!formData.cancha_id || horariosDisponibles.length === 0) ? 'var(--color-bg-muted)' : 'var(--color-bg-surface)'
+                    }}
+                    onFocus={(e) => {
+                        e.target.style.borderColor = 'var(--color-gold)';
+                        e.target.style.boxShadow = '0 0 0 4px var(--color-gold-light)';
+                    }}
+                    onBlur={(e) => {
+                        e.target.style.borderColor = errors.cancha_horario_id ? 'var(--color-danger)' : 'var(--color-border-subtle)';
+                        e.target.style.boxShadow = 'var(--shadow-soft)';
+                    }}
+                >
+                    <option value="">
+                        {!formData.cancha_id ? 'Primero selecciona una cancha' : 
+                         horariosDisponibles.length === 0 ? 'La cancha no tiene horarios configurados' : 
+                         'Selecciona un horario...'}
+                    </option>
+                    {horariosDisponibles.filter(h => h.activo).map((h) => (
+                        <option key={h.id} value={h.id}>
+                            {diaSemanaMap[h.dia_semana]} - {formatTime(h.hora)} hrs
+                        </option>
+                    ))}
+                </select>
+                {errors.cancha_horario_id && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.cancha_horario_id[0]}</p>}
             </div>
 
             {/* Estatus */}

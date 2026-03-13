@@ -19,7 +19,31 @@ export default function TorneoForm({ torneo, onSuccess, onCancel }) {
         costo_arbitraje_por_partido: torneo?.costo_arbitraje_por_partido || 0,
         estatus: torneo?.estatus || "Planeación",
         es_abierto: torneo?.es_abierto ?? true,
+        dias_juego: torneo?.dias_juego || [],
     });
+
+    const diasSemana = [
+        { id: 1, nombre: 'Lun' },
+        { id: 2, nombre: 'Mar' },
+        { id: 3, nombre: 'Mié' },
+        { id: 4, nombre: 'Jue' },
+        { id: 5, nombre: 'Vie' },
+        { id: 6, nombre: 'Sáb' },
+        { id: 7, nombre: 'Dom' },
+    ];
+
+    const toggleDia = (diaId) => {
+        setFormData(prev => {
+            const current = [...(prev.dias_juego || [])];
+            const index = current.indexOf(diaId);
+            if (index > -1) {
+                current.splice(index, 1);
+            } else {
+                current.push(diaId);
+            }
+            return { ...prev, dias_juego: current.sort((a, b) => a - b) };
+        });
+    };
 
     const [errors, setErrors] = useState({});
 
@@ -242,6 +266,44 @@ export default function TorneoForm({ torneo, onSuccess, onCancel }) {
                     />
                     {errors.fecha_fin && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.fecha_fin[0]}</p>}
                 </div>
+            </div>
+
+            {/* Fila: Días de Juego */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label className={labelClass} style={{ marginLeft: '4px' }}>Días de Competencia Autorizados</label>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    {diasSemana.map((dia) => {
+                        const isSelected = formData.dias_juego?.includes(dia.id);
+                        return (
+                            <div
+                                key={dia.id}
+                                onClick={() => toggleDia(dia.id)}
+                                style={{
+                                    padding: '8px 16px',
+                                    borderRadius: 'var(--radius-sm)',
+                                    border: '1px solid',
+                                    borderColor: isSelected ? 'var(--color-gold)' : 'var(--color-border-subtle)',
+                                    backgroundColor: isSelected ? 'var(--color-gold-light)' : 'var(--color-bg-surface)',
+                                    color: isSelected ? 'var(--color-slate)' : 'var(--color-text-secondary)',
+                                    fontSize: '13px',
+                                    fontWeight: isSelected ? 800 : 600,
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    textAlign: 'center',
+                                    minWidth: '60px',
+                                    boxShadow: isSelected ? 'var(--shadow-soft)' : 'none',
+                                    userSelect: 'none'
+                                }}
+                            >
+                                {dia.nombre}
+                            </div>
+                        );
+                    })}
+                </div>
+                {errors.dias_juego && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.dias_juego[0]}</p>}
+                <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginLeft: '4px' }}>
+                    Indica qué días de la semana se permite programar encuentros para este torneo.
+                </p>
             </div>
 
             {/* Fila: Costos */}

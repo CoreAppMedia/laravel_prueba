@@ -34,13 +34,10 @@ export default function Login() {
             {/* Identidad */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
                 <div className="brand-logo">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <circle cx="10" cy="10" r="9" stroke="#fff" strokeWidth="1.5" />
-                        <path d="M10 2 L12 7.5 H18 L13.5 11 L15.5 17 L10 13.5 L4.5 17 L6.5 11 L2 7.5 H8 Z" fill="#fff" opacity=".85" />
-                    </svg>
+                    <img src="/images/logo.png" alt="Logo" />
                 </div>
                 <div>
-                    <div className="brand-name">Liga Santiago Zapotitlán</div>
+                    <div className="brand-name">Clubes Unidos Zapotitlán</div>
                     <div className="brand-season">Acceso al sistema</div>
                 </div>
             </div>

@@ -7,6 +7,7 @@ use App\Http\Controllers\PasswordResetController;
 use App\Http\Middleware\EnsureRegistrationKey;
 use App\Http\Middleware\CheckSuperAdmin;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Api\CanchaController;
 
 Route::post('/register', [AuthController::class , 'register'])->middleware([EnsureRegistrationKey::class , 'throttle:register']);
 Route::post('/login', [AuthController::class , 'login'])->middleware('throttle:login');
@@ -77,6 +78,19 @@ Route::middleware('auth:sanctum')->group(function () {
         }
         );
 
+        // Canchas Catalog
+        Route::middleware('can:*.view')->group(function () {
+            Route::get('/canchas', [CanchaController::class, 'index']);
+            Route::post('/canchas', [CanchaController::class, 'store']);
+            Route::get('/canchas/{cancha}', [CanchaController::class, 'show']);
+            Route::put('/canchas/{cancha}', [CanchaController::class, 'update']);
+            Route::delete('/canchas/{cancha}', [CanchaController::class, 'destroy']);
+            
+            // Cancha Horarios setup
+            Route::post('/canchas/{cancha}/horarios', [CanchaController::class, 'storeHorario']);
+            Route::delete('/canchas/horarios/{horario}', [CanchaController::class, 'destroyHorario']);
+        });
+
         // Phase 2 Controllers
         Route::middleware('can:torneos.create')->group(function () {
             // Inscripciones a torneos
@@ -88,6 +102,9 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('torneos/{torneo}/jornadas', [\App\Http\Controllers\Api\JornadaController::class, 'store']);
             Route::get('torneos/{torneo}/jornadas', [\App\Http\Controllers\Api\JornadaController::class, 'indexByTorneo']);
             Route::patch('jornadas/{jornada}/cerrar', [\App\Http\Controllers\Api\JornadaController::class, 'cerrarJornada']);
+            Route::patch('jornadas/{jornada}/suspender', [\App\Http\Controllers\Api\JornadaController::class, 'suspender']);
+            Route::patch('jornadas/{jornada}/reactivar', [\App\Http\Controllers\Api\JornadaController::class, 'reactivar']);
+            Route::delete('jornadas/{jornada}', [\App\Http\Controllers\Api\JornadaController::class, 'destroy']);
 
             // Gestión de Partidos
             Route::post('jornadas/{jornada}/partidos', [\App\Http\Controllers\Api\PartidoController::class, 'store']);

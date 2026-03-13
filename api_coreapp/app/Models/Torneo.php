@@ -21,6 +21,7 @@ class Torneo extends Model
         'nombre',
         'fecha_inicio',
         'fecha_fin',
+        'dias_juego',
         'es_abierto',
         'costo_inscripcion',
         'costo_arbitraje_por_partido',
@@ -30,6 +31,7 @@ class Torneo extends Model
     protected $casts = [
         'fecha_inicio' => 'date',
         'fecha_fin' => 'date',
+        'dias_juego' => 'array',
         'es_abierto' => 'boolean',
         'costo_inscripcion' => 'decimal:2',
         'costo_arbitraje_por_partido' => 'decimal:2',

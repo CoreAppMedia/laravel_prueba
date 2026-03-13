@@ -30,8 +30,10 @@ class PartidoController extends Controller
         $validated = $request->validate([
             'equipo_local_id' => 'required|uuid|exists:equipos,id',
             'equipo_visitante_id' => 'required|uuid|exists:equipos,id|different:equipo_local_id',
-            'fecha' => 'required|date',
-            'estado_partido_id' => 'nullable|uuid|exists:catalogo_estados_partido,id'
+            'fecha' => 'nullable|date',
+            'estado_partido_id' => 'nullable|uuid|exists:catalogo_estados_partido,id',
+            'cancha_id' => 'nullable|uuid|exists:canchas,id',
+            'cancha_horario_id' => 'nullable|uuid|exists:cancha_horarios,id'
         ], [
             'equipo_visitante_id.different' => 'Un equipo no puede jugar contra sí mismo.'
         ]);
@@ -55,13 +57,62 @@ class PartidoController extends Controller
             $estadoId = $estadoStr ? $estadoStr->id : CatalogoEstadoPartido::first()->id;
         }
 
+        // Lógica de cálculo automático de fecha si no se envía pero hay horario
+        $fechaFinal = $validated['fecha'] ?? null;
+
+        if (!$fechaFinal && isset($validated['cancha_horario_id'])) {
+            if (!$jornada->fecha_inicio || !$jornada->fecha_fin) {
+                return response()->json([
+                    'message' => 'La jornada debe tener un rango de fechas (Inicio y Fin) para calcular el día del encuentro automáticamente.'
+                ], 422);
+            }
+
+            $horario = \App\Models\CanchaHorario::find($validated['cancha_horario_id']);
+            $diaSemanaBuscado = $horario->dia_semana; // 1 (Lun) - 7 (Dom)
+
+            // Buscar el primer día de la semana que coincida dentro del rango de la jornada
+            $start = \Illuminate\Support\Carbon::parse($jornada->fecha_inicio);
+            $end = \Illuminate\Support\Carbon::parse($jornada->fecha_fin);
+            
+            $matchDate = null;
+            $current = $start->copy();
+            
+            while ($current->lte($end)) {
+                if ($current->dayOfWeekIso === (int)$diaSemanaBuscado) {
+                    $matchDate = $current->toDateString();
+                    break;
+                }
+                $current->addDay();
+            }
+
+            if (!$matchDate) {
+                return response()->json([
+                    'message' => "No se encontró un día { $diaSemanaBuscado } dentro del periodo de la jornada ({$jornada->fecha_inicio} al {$jornada->fecha_fin})."
+                ], 422);
+            }
+
+            $fechaFinal = $matchDate . ' ' . $horario->hora;
+        }
+
+        if (!$fechaFinal) {
+             return response()->json([
+                'message' => 'Se requiere una fecha específica o seleccionar un horario válido de cancha.'
+            ], 422);
+        }
+
         $partido = new Partido();
         $partido->id = \Illuminate\Support\Str::uuid()->toString();
         $partido->jornada_id = $jornada->id;
         $partido->equipo_local_id = $validated['equipo_local_id'];
         $partido->equipo_visitante_id = $validated['equipo_visitante_id'];
         $partido->estado_partido_id = $estadoId;
-        $partido->fecha = $validated['fecha'];
+        $partido->fecha = $fechaFinal;
+        
+        // Asignar cancha y horario explícitos, o intentar usar los del equipo local
+        $equipoLocal = \App\Models\Equipo::find($validated['equipo_local_id']);
+        $partido->cancha_id = $validated['cancha_id'] ?? $equipoLocal?->cancha_id;
+        $partido->cancha_horario_id = $validated['cancha_horario_id'] ?? $equipoLocal?->cancha_horario_id;
+        
         $partido->cerrado = false;
         $partido->save();
 

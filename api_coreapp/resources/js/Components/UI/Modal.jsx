@@ -43,6 +43,9 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
                     borderRadius: 'var(--radius-lg)',
                     boxShadow: 'var(--shadow-premium)',
                     overflow: 'hidden',
+                    maxHeight: 'calc(100vh - 40px)',
+                    display: 'flex',
+                    flexDirection: 'column'
                 }}
             >
                 {/* Banda tricolor */}
@@ -100,7 +103,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
                 </div>
 
                 {/* Contenido */}
-                <div style={{ padding: 24 }}>
+                <div style={{ padding: 24, overflowY: 'auto' }}>
                     {children}
                 </div>
             </div>

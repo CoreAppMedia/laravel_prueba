@@ -14,6 +14,19 @@ class Partido extends Model
     protected $keyType = 'string';
     public $incrementing = false;
 
+    protected $fillable = [
+        'jornada_id',
+        'equipo_local_id',
+        'equipo_visitante_id',
+        'estado_partido_id',
+        'fecha',
+        'cancha_id',
+        'cancha_horario_id',
+        'goles_local',
+        'goles_visitante',
+        'cerrado',
+    ];
+
     protected $casts = [
         'fecha' => 'datetime',
         'cerrado' => 'boolean',
@@ -52,5 +65,15 @@ class Partido extends Model
     public function multas()
     {
         return $this->hasMany(Multa::class);
+    }
+
+    public function cancha()
+    {
+        return $this->belongsTo(Cancha::class);
+    }
+
+    public function canchaHorario()
+    {
+        return $this->belongsTo(CanchaHorario::class);
     }
 }

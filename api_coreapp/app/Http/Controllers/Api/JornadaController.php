@@ -25,25 +25,39 @@ class JornadaController extends Controller
             ], 422);
         }
 
-        $validated = $request->validate([
-            'numero' => [
-                'required',
-                'integer',
-                'min:1',
-                Rule::unique('jornadas')->where(function ($query) use ($torneo) {
-                    return $query->where('torneo_id', $torneo->id);
-                })
-            ],
+        $lastJornada = Jornada::where('torneo_id', $torneo->id)
+            ->orderBy('numero', 'desc')
+            ->first();
+
+        $numero = $lastJornada ? $lastJornada->numero + 1 : 1;
+
+        $request->validate([
             'fecha_inicio' => 'nullable|date',
             'fecha_fin' => 'nullable|date|after_or_equal:fecha_inicio',
         ]);
 
+        $fechaInicio = $request->fecha_inicio;
+        $fechaFin = $request->fecha_fin;
+
+        // Cálculo automático de fechas si no se proveen
+        if (!$fechaInicio) {
+            if ($numero === 1) {
+                $fechaInicio = $torneo->fecha_inicio ? $torneo->fecha_inicio->toDateString() : now()->toDateString();
+            } else {
+                $fechaInicio = \Illuminate\Support\Carbon::parse($lastJornada->fecha_fin)->addDay()->toDateString();
+            }
+        }
+
+        if (!$fechaFin) {
+            $fechaFin = \Illuminate\Support\Carbon::parse($fechaInicio)->addDays(6)->toDateString();
+        }
+
         $jornada = new Jornada();
         $jornada->id = \Illuminate\Support\Str::uuid()->toString();
         $jornada->torneo_id = $torneo->id;
-        $jornada->numero = $validated['numero'];
-        $jornada->fecha_inicio = $validated['fecha_inicio'] ?? null;
-        $jornada->fecha_fin = $validated['fecha_fin'] ?? null;
+        $jornada->numero = $numero;
+        $jornada->fecha_inicio = $fechaInicio;
+        $jornada->fecha_fin = $fechaFin;
         $jornada->cerrada = false;
         $jornada->save();
 
@@ -77,7 +91,6 @@ class JornadaController extends Controller
         }
 
         $jornada->cerrada = true;
-        // Podríamos también establecer fecha_fin si no la tiene
         $jornada->save();
 
         return response()->json([
@@ -87,12 +100,68 @@ class JornadaController extends Controller
     }
 
     /**
+     * Suspender una jornada con un motivo detallado.
+     */
+    public function suspender(Request $request, Jornada $jornada)
+    {
+        $validated = $request->validate([
+            'motivo' => 'required|string|max:500'
+        ]);
+
+        $jornada->suspendida = true;
+        $jornada->motivo = $validated['motivo'];
+        $jornada->save();
+
+        return response()->json([
+            'message' => 'Jornada suspendida oficialmente.',
+            'data' => $jornada
+        ]);
+    }
+
+    /**
+     * Reactivar una jornada suspendida.
+     */
+    public function reactivar(Jornada $jornada)
+    {
+        $jornada->suspendida = false;
+        // Mantenemos el motivo anterior como historial o lo limpiamos. Por ahora lo limpiamos.
+        $jornada->motivo = null;
+        $jornada->save();
+
+        return response()->json([
+            'message' => 'Jornada reactivada.',
+            'data' => $jornada
+        ]);
+    }
+
+    /**
+     * Eliminar una jornada.
+     * Solo si no tiene partidos registrados (integridad).
+     */
+    public function destroy(Jornada $jornada)
+    {
+        $count = $jornada->partidos()->count();
+        
+        if ($count > 0) {
+            return response()->json([
+                'message' => 'No se puede eliminar una jornada que ya tiene partidos programados. Elimina primero los partidos.'
+            ], 422);
+        }
+
+        $jornada->delete();
+
+        return response()->json([
+            'message' => 'Jornada eliminada correctamente.'
+        ]);
+    }
+
+    /**
      * Listar jornadas de un torneo.
      */
     public function indexByTorneo(Torneo $torneo)
     {
         $jornadas = $torneo->jornadas()
-            ->with(['partidos.equipoLocal', 'partidos.equipoVisitante', 'partidos.estado'])
+            ->with(['partidos.equipoLocal', 'partidos.equipoVisitante', 'partidos.estado', 'partidos.cancha', 'partidos.canchaHorario'])
             ->orderBy('numero', 'asc')
             ->get();
             

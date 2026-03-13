@@ -41,6 +41,8 @@ class TorneoController extends Controller
                 'costo_inscripcion' => 'numeric|min:0',
                 'costo_arbitraje_por_partido' => 'numeric|min:0',
                 'estatus' => 'string|max:50',
+                'dias_juego' => 'nullable|array',
+                'dias_juego.*' => 'integer|min:1|max:7',
             ]);
 
             $torneo = Torneo::create($validated);
@@ -86,6 +88,8 @@ class TorneoController extends Controller
                 'costo_inscripcion' => 'numeric|min:0',
                 'costo_arbitraje_por_partido' => 'numeric|min:0',
                 'estatus' => 'string|max:50',
+                'dias_juego' => 'nullable|array',
+                'dias_juego.*' => 'integer|min:1|max:7',
             ]);
 
             $torneo->update($validated);

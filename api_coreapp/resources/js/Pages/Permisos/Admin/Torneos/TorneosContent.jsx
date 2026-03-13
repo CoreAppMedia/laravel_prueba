@@ -17,6 +17,11 @@ export default function TorneosContent() {
     const [editingTorneo, setEditingTorneo] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
 
+    const diaSemanaMap = {
+        1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue',
+        5: 'Vie', 6: 'Sáb', 7: 'Dom'
+    };
+
     const fetchTorneos = async () => {
         setLoading(true);
         try {
@@ -126,6 +131,34 @@ export default function TorneosContent() {
                     </span>
                 );
             }
+        },
+        {
+            header: 'Días',
+            accessor: 'dias_juego',
+            render: (row) => (
+                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                    {row.dias_juego && row.dias_juego.length > 0 ? (
+                        row.dias_juego.map(diaId => (
+                            <span 
+                                key={diaId}
+                                style={{ 
+                                    fontSize: '9px', 
+                                    padding: '2px 6px', 
+                                    borderRadius: '4px', 
+                                    backgroundColor: 'var(--color-gold-light)', 
+                                    color: 'var(--color-slate)',
+                                    fontWeight: 800,
+                                    border: '1px solid rgba(212, 175, 55, 0.2)'
+                                }}
+                            >
+                                {diaSemanaMap[diaId]}
+                            </span>
+                        ))
+                    ) : (
+                        <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Toda la semana</span>
+                    )}
+                </div>
+            )
         }
     ];
 

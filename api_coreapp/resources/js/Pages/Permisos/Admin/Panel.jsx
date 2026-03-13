@@ -8,6 +8,8 @@ import TemporadasContent from './Temporadas/TemporadasContent';
 import TorneosContent from './Torneos/TorneosContent';
 import ClubesContent from './Clubes/ClubesContent';
 import EquiposContent from './Equipos/EquiposContent';
+import CanchasContent from './Canchas/CanchasContent';
+import { MapPin } from 'lucide-react';
 
 export default function PanelAdmin() {
     const [stats, setStats] = useState({
@@ -15,6 +17,7 @@ export default function PanelAdmin() {
         torneos: 0,
         clubes: 0,
         equipos: 0,
+        canchas: 0,
     });
     const [loading, setLoading] = useState(true);
     
@@ -24,17 +27,19 @@ export default function PanelAdmin() {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const [resTemp, resTor, resClub, resEqui] = await Promise.all([
+                const [resTemp, resTor, resClub, resEqui, resCanchas] = await Promise.all([
                     http.get('/api/temporadas'),
                     http.get('/api/torneos'),
                     http.get('/api/clubs'),
                     http.get('/api/equipos'),
+                    http.get('/api/canchas'),
                 ]);
                 setStats({
                     temporadas: resTemp.data.length,
                     torneos: resTor.data.length,
                     clubes: resClub.data.length,
                     equipos: resEqui.data.length,
+                    canchas: resCanchas.data.length,
                 });
             } catch (error) {
                 console.error("Error al cargar estadísticas:", error);
@@ -87,6 +92,16 @@ export default function PanelAdmin() {
             desc: 'Control de plantillas registradas por categoría.',
             count: stats.equipos
         },
+        {
+            id: 'canchas',
+            title: 'Sedes (Canchas)',
+            path: '/panel/admin/canchas',
+            icon: MapPin,
+            color: 'var(--color-navy)',
+            bg: 'var(--color-sky-light)',
+            desc: 'Catálogo de campos, ubicaciones y horarios.',
+            count: stats.canchas
+        },
     ];
 
     const renderContent = () => {
@@ -100,6 +115,8 @@ export default function PanelAdmin() {
                 return <ClubesContent />;
             case 'equipos':
                 return <EquiposContent />;
+            case 'canchas':
+                return <CanchasContent />;
             default:
                 return <TorneosContent />;
         }

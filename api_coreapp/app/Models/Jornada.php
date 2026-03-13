@@ -14,8 +14,19 @@ class Jornada extends Model
     protected $keyType = 'string';
     public $incrementing = false;
 
+    protected $fillable = [
+        'torneo_id',
+        'numero',
+        'fecha_inicio',
+        'fecha_fin',
+        'cerrada',
+        'suspendida',
+        'motivo'
+    ];
+
     protected $casts = [
         'cerrada' => 'boolean',
+        'suspendida' => 'boolean',
     ];
 
     public function torneo()

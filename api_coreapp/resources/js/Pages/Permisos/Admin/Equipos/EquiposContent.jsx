@@ -88,6 +88,26 @@ export default function EquiposContent() {
             )
         },
         {
+            header: 'Sede Oficial',
+            accessor: 'cancha_id',
+            render: (row) => {
+                const diaMap = { 1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue', 5: 'Vie', 6: 'Sáb', 7: 'Dom' };
+                const diaText = row.cancha_horario?.dia_semana ? diaMap[row.cancha_horario.dia_semana] : '-';
+                const horaText = row.cancha_horario?.hora ? row.cancha_horario.hora.substring(0, 5) : '-';
+
+                return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text-primary)' }}>
+                            {row.cancha?.nombre || 'Sin definir'}
+                        </span>
+                        <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: 500 }}>
+                            {row.cancha_horario ? `${diaText} ${horaText} hrs` : '-'}
+                        </span>
+                    </div>
+                );
+            }
+        },
+        {
             header: 'Estatus',
             accessor: 'activo',
             render: (row) => (

@@ -14,7 +14,7 @@ class EquipoController extends Controller
      */
     public function index()
     {
-        return response()->json(Equipo::with(['club', 'categoria'])->get());
+        return response()->json(Equipo::with(['club', 'categoria', 'cancha', 'canchaHorario'])->get());
     }
 
     /**
@@ -34,6 +34,8 @@ class EquipoController extends Controller
                 ],
                 'categoria_id' => 'required|uuid|exists:catalogo_categorias,id',
                 'nombre_mostrado' => 'required|string|max:255',
+                'cancha_id' => 'nullable|uuid|exists:canchas,id',
+                'cancha_horario_id' => 'nullable|uuid|exists:cancha_horarios,id',
                 'activo' => 'boolean',
             ], [
                 'club_id.unique' => 'Ya existe un equipo registrado para este club en la categoría seleccionada.',
@@ -52,7 +54,7 @@ class EquipoController extends Controller
      */
     public function show(string $id)
     {
-        $equipo = Equipo::with(['club', 'categoria'])->findOrFail($id);
+        $equipo = Equipo::with(['club', 'categoria', 'cancha', 'canchaHorario'])->findOrFail($id);
         return response()->json($equipo);
     }
 
@@ -75,6 +77,8 @@ class EquipoController extends Controller
                 ],
                 'categoria_id' => 'uuid|exists:catalogo_categorias,id',
                 'nombre_mostrado' => 'string|max:255',
+                'cancha_id' => 'nullable|uuid|exists:canchas,id',
+                'cancha_horario_id' => 'nullable|uuid|exists:cancha_horarios,id',
                 'activo' => 'boolean',
             ], [
                 'club_id.unique' => 'Ya existe un equipo registrado para este club en la categoría seleccionada.',

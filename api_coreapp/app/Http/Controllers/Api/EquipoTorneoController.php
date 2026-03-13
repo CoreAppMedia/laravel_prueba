@@ -121,7 +121,7 @@ class EquipoTorneoController extends Controller
      */
     public function obtenerEquiposInscritos(Torneo $torneo)
     {
-        $equipos = $torneo->equipos()->withPivot('fecha_inscripcion', 'pagado_inscripcion')->get();
+        $equipos = $torneo->equipos()->with(['cancha.horarios', 'canchaHorario'])->withPivot('fecha_inscripcion', 'pagado_inscripcion')->get();
         return response()->json($equipos);
     }
 }

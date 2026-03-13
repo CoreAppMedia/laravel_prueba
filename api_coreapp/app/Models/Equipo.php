@@ -20,6 +20,8 @@ class Equipo extends Model
         'categoria_id',
         'nombre_mostrado',
         'delegado_user_id',
+        'cancha_id',
+        'cancha_horario_id',
         'activo',
     ];
 
@@ -60,5 +62,15 @@ class Equipo extends Model
     public function multas()
     {
         return $this->hasMany(Multa::class);
+    }
+
+    public function cancha()
+    {
+        return $this->belongsTo(Cancha::class);
+    }
+
+    public function canchaHorario()
+    {
+        return $this->belongsTo(CanchaHorario::class);
     }
 }

@@ -17,6 +17,18 @@ use Illuminate\Validation\Rules\Password;
 class UserController extends Controller
 {
     /**
+     * Display a listing of the resource. (Lista los usuarios.)
+     */
+    public function index(Request $request)
+    {
+        $users = User::with(['permiso', 'rol'])
+            ->orderByDesc('id')
+            ->get();
+
+        return response()->json($users);
+    }
+
+    /**
      * Update the specified user in storage. (Actualiza el usuario especificado en el almacenamiento.)
      */
     public function update(Request $request, $id)

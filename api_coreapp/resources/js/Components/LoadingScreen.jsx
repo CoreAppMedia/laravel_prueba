@@ -42,22 +42,15 @@ export default function LoadingScreen({ label }) {
                         style={{
                             width: 48,
                             height: 48,
-                            background: 'var(--color-terra)',
-                            borderRadius: 'var(--radius-md)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             margin: '0 auto 20px',
                         }}
                     >
-                        <svg width="24" height="24" viewBox="0 0 20 20" fill="none">
-                            <circle cx="10" cy="10" r="9" stroke="#fff" strokeWidth="1.5" />
-                            <path
-                                d="M10 2 L12 7.5 H18 L13.5 11 L15.5 17 L10 13.5 L4.5 17 L6.5 11 L2 7.5 H8 Z"
-                                fill="#fff"
-                                opacity=".85"
-                            />
-                        </svg>
+                        <div className="brand-logo">
+                            <img src="/images/logo.png" alt="Logo" />
+                        </div>
                     </div>
 
                     {/* Texto */}

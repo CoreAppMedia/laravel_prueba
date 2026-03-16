@@ -156,7 +156,13 @@ class AuthController extends Controller
      */
     public function user(Request $request)
     {
-        return $request->user();
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json(['message' => 'No autenticado'], 401);
+        }
+
+        return $user->load(['permiso', 'rol']);
     }
 
     /**

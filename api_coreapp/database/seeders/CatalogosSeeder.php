@@ -43,7 +43,7 @@ class CatalogosSeeder extends Seeder
          */
         $categorias = [
             [
-                'nombre' => 'Amateur',
+                'nombre' => 'Amateur´s',
                 'descripcion' => 'Categoría libre amateur',
                 'activo' => true,
             ],

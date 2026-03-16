@@ -7,12 +7,15 @@ import EquiposInscritos from './EquiposInscritos';
 import JornadasManager from './JornadasManager';
 import { Users, CalendarDays, Activity, Settings, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../../../Auth/AuthContext';
+import { getHomePathForUser } from '../../../../lib/permissions';
 
 export default function TorneoDashboard() {
     const { id } = useParams();
+    const { user } = useAuth();
     const [torneo, setTorneo] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('resumen');
+    const [activeTab, setActiveTab] = useState('jornadas');
 
     useEffect(() => {
         const fetchTorneoInfo = async () => {
@@ -62,6 +65,31 @@ export default function TorneoDashboard() {
 
     return (
         <BasePanel titulo={`${torneo.nombre}`} backUrl="/panel/admin/torneos">
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 14 }}>
+                <Link
+                    to={getHomePathForUser(user)}
+                    style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        padding: '10px 14px',
+                        borderRadius: 'var(--radius-md)',
+                        border: '1px solid var(--color-border-subtle)',
+                        background: 'var(--color-bg-surface)',
+                        color: 'var(--color-text-secondary)',
+                        fontFamily: 'var(--font-body)',
+                        fontSize: 12,
+                        fontWeight: 800,
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px',
+                        boxShadow: 'var(--shadow-soft)',
+                        textDecoration: 'none',
+                    }}
+                >
+                    <ArrowLeft size={16} />
+                    Volver a mi Panel
+                </Link>
+            </div>
             {/* Nav Pestañas Premium */}
             <div style={{ backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-soft)', marginBottom: '32px', overflow: 'hidden' }}>
                 <div style={{ display: 'flex', overflowX: 'auto', borderBottom: '1px solid var(--color-border-subtle)', scrollbarWidth: 'none' }}>
@@ -106,23 +134,148 @@ export default function TorneoDashboard() {
             <div className="animate-fade-in-up">
                 {activeTab === 'resumen' && (
                     <Card title="Estado de Operación del Torneo">
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
-                            {/* Torneo Info Summary */}
-                            <div style={{ padding: '20px', backgroundColor: 'var(--color-bg-surface-alt)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
-                                <div style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 800, color: 'var(--color-text-muted)', marginBottom: '8px', letterSpacing: '0.5px' }}>Estatus Actual</div>
-                                <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--color-slate)' }}>{torneo.estatus || 'Sin estatus'}</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                justifyContent: 'space-between',
+                                gap: 16,
+                                padding: '18px 18px',
+                                background: 'linear-gradient(180deg, var(--color-bg-surface-alt), var(--color-bg-surface))',
+                                border: '1px solid var(--color-border-subtle)',
+                                borderRadius: 'var(--radius-lg)',
+                            }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                    <div style={{
+                                        fontFamily: 'var(--font-body)',
+                                        fontSize: 10,
+                                        fontWeight: 800,
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '1.6px',
+                                        color: 'var(--color-text-muted)',
+                                    }}>
+                                        Resumen ejecutivo
+                                    </div>
+                                    <div style={{
+                                        fontFamily: 'var(--font-display)',
+                                        fontSize: 22,
+                                        fontWeight: 700,
+                                        letterSpacing: '-0.2px',
+                                        color: 'var(--color-text-primary)',
+                                        lineHeight: 1.1,
+                                    }}>
+                                        {torneo.nombre}
+                                    </div>
+                                    <div style={{
+                                        display: 'flex',
+                                        flexWrap: 'wrap',
+                                        alignItems: 'center',
+                                        gap: 10,
+                                        marginTop: 2,
+                                    }}>
+                                        <span className={`status-pill ${torneo.estatus === 'En Inscripción' || torneo.estatus === 'En Inscripcion' ? 'active' : (torneo.estatus === 'En Curso' ? 'pending' : 'finished')}`}>
+                                            <span className="status-dot" />
+                                            {torneo.estatus || 'Sin estatus'}
+                                        </span>
+                                        <span style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 8,
+                                            padding: '6px 10px',
+                                            borderRadius: 999,
+                                            fontFamily: 'var(--font-body)',
+                                            fontSize: 11,
+                                            fontWeight: 700,
+                                            color: 'var(--color-text-secondary)',
+                                            background: 'var(--color-bg-surface)',
+                                            border: '1px solid var(--color-border-subtle)',
+                                        }}>
+                                            Temporada: {torneo.temporada?.nombre || 'General'}
+                                        </span>
+                                        <span style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 8,
+                                            padding: '6px 10px',
+                                            borderRadius: 999,
+                                            fontFamily: 'var(--font-body)',
+                                            fontSize: 11,
+                                            fontWeight: 700,
+                                            color: 'var(--color-text-secondary)',
+                                            background: 'var(--color-bg-surface)',
+                                            border: '1px solid var(--color-border-subtle)',
+                                        }}>
+                                            Tipo: {torneo.tipo?.nombre || 'General'}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                                    gap: 10,
+                                    minWidth: 260,
+                                }}>
+                                    <div style={{
+                                        padding: '12px 12px',
+                                        backgroundColor: 'var(--color-bg-surface)',
+                                        borderRadius: 'var(--radius-md)',
+                                        border: '1px solid var(--color-border-subtle)',
+                                        boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.02)',
+                                    }}>
+                                        <div style={{ fontSize: 10, textTransform: 'uppercase', fontWeight: 800, color: 'var(--color-text-muted)', letterSpacing: '1px' }}>Inicio</div>
+                                        <div style={{ marginTop: 4, fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--color-slate)' }}>{torneo.fecha_inicio}</div>
+                                    </div>
+                                    <div style={{
+                                        padding: '12px 12px',
+                                        backgroundColor: 'var(--color-bg-surface)',
+                                        borderRadius: 'var(--radius-md)',
+                                        border: '1px solid var(--color-border-subtle)',
+                                        boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.02)',
+                                    }}>
+                                        <div style={{ fontSize: 10, textTransform: 'uppercase', fontWeight: 800, color: 'var(--color-text-muted)', letterSpacing: '1px' }}>Fin</div>
+                                        <div style={{ marginTop: 4, fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--color-slate)' }}>{torneo.fecha_fin}</div>
+                                    </div>
+                                </div>
                             </div>
-                            <div style={{ padding: '20px', backgroundColor: 'var(--color-bg-surface-alt)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
-                                <div style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 800, color: 'var(--color-text-muted)', marginBottom: '8px', letterSpacing: '0.5px' }}>Categoría Oficial</div>
-                                <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--color-sage)' }}>{torneo.categoria?.nombre || 'General'}</div>
-                            </div>
-                            <div style={{ padding: '20px', backgroundColor: 'var(--color-bg-surface-alt)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
-                                <div style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 800, color: 'var(--color-text-muted)', marginBottom: '8px', letterSpacing: '0.5px' }}>Inscripción Base</div>
-                                <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--color-gold)' }}>${torneo.costo_inscripcion} MXN</div>
-                            </div>
-                            <div style={{ padding: '20px', backgroundColor: 'var(--color-bg-surface-alt)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
-                                <div style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 800, color: 'var(--color-text-muted)', marginBottom: '8px', letterSpacing: '0.5px' }}>Fecha de Apertura</div>
-                                <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--color-slate)' }}>{torneo.fecha_inicio}</div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
+                                <div style={{ padding: '18px', backgroundColor: 'var(--color-bg-surface-alt)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border-subtle)' }}>
+                                    <div style={{ fontSize: 10, textTransform: 'uppercase', fontWeight: 800, color: 'var(--color-text-muted)', letterSpacing: '1px' }}>Categoría</div>
+                                    <div style={{ marginTop: 8, fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--color-sage)' }}>{torneo.categoria?.nombre || 'General'}</div>
+                                </div>
+                                <div style={{ padding: '18px', backgroundColor: 'var(--color-bg-surface-alt)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border-subtle)' }}>
+                                    <div style={{ fontSize: 10, textTransform: 'uppercase', fontWeight: 800, color: 'var(--color-text-muted)', letterSpacing: '1px' }}>Inscripción</div>
+                                    <div style={{ marginTop: 8, fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--color-gold)' }}>${torneo.costo_inscripcion} MXN</div>
+                                    <div style={{ marginTop: 6, fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-text-muted)' }}>Costo base por equipo</div>
+                                </div>
+                                <div style={{ padding: '18px', backgroundColor: 'var(--color-bg-surface-alt)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border-subtle)' }}>
+                                    <div style={{ fontSize: 10, textTransform: 'uppercase', fontWeight: 800, color: 'var(--color-text-muted)', letterSpacing: '1px' }}>Arbitraje</div>
+                                    <div style={{ marginTop: 8, fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--color-terra)' }}>${torneo.costo_arbitraje_por_partido} MXN</div>
+                                    <div style={{ marginTop: 6, fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-text-muted)' }}>Por partido</div>
+                                </div>
+                                <div style={{ padding: '18px', backgroundColor: 'var(--color-bg-surface-alt)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border-subtle)' }}>
+                                    <div style={{ fontSize: 10, textTransform: 'uppercase', fontWeight: 800, color: 'var(--color-text-muted)', letterSpacing: '1px' }}>Inscripción abierta</div>
+                                    <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                                        <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: torneo.es_abierto ? 'var(--color-sage)' : 'var(--color-text-muted)' }}>
+                                            {torneo.es_abierto ? 'Sí' : 'No'}
+                                        </div>
+                                        <div style={{
+                                            fontFamily: 'var(--font-body)',
+                                            fontSize: 10,
+                                            fontWeight: 800,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '1px',
+                                            padding: '4px 10px',
+                                            borderRadius: 999,
+                                            border: '1px solid var(--color-border-subtle)',
+                                            background: torneo.es_abierto ? 'var(--color-sage-light)' : 'var(--color-bg-surface)',
+                                            color: torneo.es_abierto ? 'var(--color-sage)' : 'var(--color-text-muted)',
+                                        }}>
+                                            {torneo.es_abierto ? 'Inscripciones activas' : 'Cerrado'}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </Card>

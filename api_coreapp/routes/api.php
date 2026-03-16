@@ -19,13 +19,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class , 'user']);
     Route::post('/logout', [AuthController::class , 'logout']);
 
-    Route::middleware(CheckSuperAdmin::class)->group(function () {
-            Route::put('/users/{id}', [UserController::class , 'update']);
-            Route::put('/users/{id}/password', [UserController::class , 'changePassword']);
-            Route::patch('/users/{id}/status', [UserController::class , 'toggleStatus']);
-            Route::delete('/users/{id}', [UserController::class , 'destroy']);
-        }
-        );
+    Route::middleware('admin_or_dev')->group(function () {
+        Route::get('/users', [UserController::class , 'index']);
+        Route::put('/users/{id}', [UserController::class , 'update']);
+        Route::put('/users/{id}/password', [UserController::class , 'changePassword']);
+        Route::patch('/users/{id}/status', [UserController::class , 'toggleStatus']);
+        Route::delete('/users/{id}', [UserController::class , 'destroy']);
+    });
 
         // Phase 1 Controllers
         Route::middleware('can:temporadas.view')->group(function () {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import http from '../../../lib/http';
 import BasePanel from '../BasePanel';
-import { Calendar, Trophy, Shield, Users, ChevronRight } from 'lucide-react';
+import { Calendar, Trophy, Shield, Users, ChevronRight, Menu, X } from 'lucide-react';
 
 // Importar componentes content-only de cada sección
 import TemporadasContent from './Temporadas/TemporadasContent';
@@ -9,30 +9,38 @@ import TorneosContent from './Torneos/TorneosContent';
 import ClubesContent from './Clubes/ClubesContent';
 import EquiposContent from './Equipos/EquiposContent';
 import CanchasContent from './Canchas/CanchasContent';
+import UsersContent from './Users/UsersContent';
 import { MapPin } from 'lucide-react';
+import { useAuth } from '../../../Auth/AuthContext';
 
 export default function PanelAdmin() {
+    const { user } = useAuth();
+    const canManageUsers = ['admin', 'desarrollador'].includes(user?.permiso?.nombre);
     const [stats, setStats] = useState({
         temporadas: 0,
         torneos: 0,
         clubes: 0,
         equipos: 0,
         canchas: 0,
+        users: 0,
     });
     const [loading, setLoading] = useState(true);
     
     // Estado para la pestaña activa - Torneos por defecto
     const [activeTab, setActiveTab] = useState('torneos');
 
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const [resTemp, resTor, resClub, resEqui, resCanchas] = await Promise.all([
+                const [resTemp, resTor, resClub, resEqui, resCanchas, resUsers] = await Promise.all([
                     http.get('/api/temporadas'),
                     http.get('/api/torneos'),
                     http.get('/api/clubs'),
                     http.get('/api/equipos'),
                     http.get('/api/canchas'),
+                    canManageUsers ? http.get('/api/users') : Promise.resolve({ data: [] }),
                 ]);
                 setStats({
                     temporadas: resTemp.data.length,
@@ -40,6 +48,7 @@ export default function PanelAdmin() {
                     clubes: resClub.data.length,
                     equipos: resEqui.data.length,
                     canchas: resCanchas.data.length,
+                    users: resUsers.data.length,
                 });
             } catch (error) {
                 console.error("Error al cargar estadísticas:", error);
@@ -48,7 +57,7 @@ export default function PanelAdmin() {
             }
         };
         fetchStats();
-    }, []);
+    }, [canManageUsers]);
 
     // Menú en el orden especificado: Temporadas, Torneos, Clubes, Equipos
     const menuItems = [
@@ -97,11 +106,25 @@ export default function PanelAdmin() {
             title: 'Sedes (Canchas)',
             path: '/panel/admin/canchas',
             icon: MapPin,
-            color: 'var(--color-navy)',
-            bg: 'var(--color-sky-light)',
+            color: '#6D28D9',
+            bg: '#F3E8FF',
             desc: 'Catálogo de campos, ubicaciones y horarios.',
             count: stats.canchas
         },
+        ...(canManageUsers
+            ? [
+                {
+                    id: 'users',
+                    title: 'Usuarios',
+                    path: '/panel/admin/users',
+                    icon: Users,
+                    color: 'var(--color-slate)',
+                    bg: 'var(--color-slate-light)',
+                    desc: 'Gestión de cuentas, permisos y acceso.',
+                    count: stats.users,
+                },
+            ]
+            : []),
     ];
 
     const renderContent = () => {
@@ -117,6 +140,8 @@ export default function PanelAdmin() {
                 return <EquiposContent />;
             case 'canchas':
                 return <CanchasContent />;
+            case 'users':
+                return <UsersContent />;
             default:
                 return <TorneosContent />;
         }
@@ -124,9 +149,37 @@ export default function PanelAdmin() {
 
     return (
         <BasePanel titulo="Panel de Administración">
-            <div style={{ display: 'flex', gap: '24px', minHeight: '600px' }}>
+            <div className="panel-admin__topbar">
+                <button
+                    type="button"
+                    className="panel-admin__menuBtn"
+                    onClick={() => setIsMenuOpen(true)}
+                    aria-label="Abrir menú"
+                >
+                    <Menu size={18} />
+                </button>
+                <div
+                    style={{
+                        fontFamily: 'var(--font-display)',
+                        fontSize: 16,
+                        fontWeight: 700,
+                        color: 'var(--color-text-primary)',
+                    }}
+                >
+                    Gestión
+                </div>
+            </div>
+
+            <div
+                className={`panel-admin__overlay ${isMenuOpen ? 'is-open' : ''}`}
+                onClick={() => setIsMenuOpen(false)}
+            />
+
+            <div className="panel-admin__layout" style={{ display: 'flex', gap: '24px', minHeight: '600px' }}>
                 {/* Menú lateral izquierdo */}
-                <div style={{ 
+                <div
+                    className={`panel-admin__sidebar ${isMenuOpen ? 'is-open' : ''}`}
+                    style={{ 
                     width: '280px', 
                     flexShrink: 0,
                     backgroundColor: 'var(--color-bg-surface)',
@@ -147,6 +200,17 @@ export default function PanelAdmin() {
                     }}>
                         Gestión
                     </h3>
+
+                    <div className="panel-admin__topbar" style={{ marginBottom: 12 }}>
+                        <button
+                            type="button"
+                            className="panel-admin__menuBtn"
+                            onClick={() => setIsMenuOpen(false)}
+                            aria-label="Cerrar menú"
+                        >
+                            <X size={18} />
+                        </button>
+                    </div>
                     
                     <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         {menuItems.map((item) => {
@@ -156,7 +220,10 @@ export default function PanelAdmin() {
                             return (
                                 <button
                                     key={item.id}
-                                    onClick={() => setActiveTab(item.id)}
+                                    onClick={() => {
+                                        setActiveTab(item.id);
+                                        setIsMenuOpen(false);
+                                    }}
                                     style={{
                                         display: 'flex',
                                         alignItems: 'center',

@@ -13,7 +13,9 @@ export default function ClubesContent() {
     const [clubes, setClubes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [editingClub, setEditingClub] = useState(null);
+    const [selectedClub, setSelectedClub] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
 
     const fetchClubes = async () => {
@@ -32,7 +34,6 @@ export default function ClubesContent() {
         fetchClubes();
     }, []);
 
-    // Filtrar clubes según el término de búsqueda
     const filteredClubes = clubes.filter(club =>
         club.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         club.correo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -49,6 +50,11 @@ export default function ClubesContent() {
         setIsModalOpen(true);
     };
 
+    const handleRowClick = (club) => {
+        setSelectedClub(club);
+        setIsDetailModalOpen(true);
+    };
+
     const handleDelete = async (id) => {
         if (!window.confirm('¿Seguro que deseas eliminar este club? Se perderá el historial de sus equipos.')) return;
 
@@ -63,49 +69,46 @@ export default function ClubesContent() {
 
     const columns = [
         {
-            header: 'Tipo',
-            accessor: 'es_club',
+            header: 'Entidad',
+            accessor: 'nombre',
             render: (row) => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'var(--font-body)', fontSize: '13px' }}>
-                    {row.es_club ? (
-                        <ShieldCheck size={16} style={{ color: 'var(--color-slate)' }} />
-                    ) : (
-                        <User size={16} style={{ color: 'var(--color-gold)' }} />
-                    )}
-                    <span style={{ fontWeight: 600, color: 'var(--color-text-secondary)' }}>
-                        {row.es_club ? 'Club' : 'Independiente'}
+                <div className="flex flex-col gap-1">
+                    <span className="font-black text-[15px] text-slate-800 tracking-tight leading-tight">
+                        {row.nombre}
                     </span>
+                    <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-black uppercase tracking-widest ${row.es_club ? 'text-slate-400' : 'text-orange-500'}`}>
+                            {row.es_club ? 'Club Oficial' : 'Independiente'}
+                        </span>
+                        <div className="md:hidden">
+                            {!row.activo && <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>}
+                        </div>
+                    </div>
                 </div>
             )
         },
-        { 
-            header: 'Nombre', 
-            accessor: 'nombre',
-            render: (row) => (
-                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--color-text-primary)' }}>
-                    {row.nombre}
-                </span>
-            )
+        {
+            header: 'Teléfono',
+            accessor: 'telefono',
+            hiddenMobile: true,
+            render: (row) => <span className="font-bold text-[13px] text-slate-500">{row.telefono || '-'}</span>
         },
-        { header: 'Teléfono', accessor: 'telefono' },
-        { header: 'Correo', accessor: 'correo' },
+        {
+            header: 'Correo',
+            accessor: 'correo',
+            hiddenMobile: true,
+            render: (row) => <span className="font-bold text-[13px] text-slate-500">{row.correo || '-'}</span>
+        },
         {
             header: 'Estado',
             accessor: 'activo',
+            hiddenMobile: true,
             render: (row) => (
-                <span 
-                    style={{ 
-                        display: 'inline-flex',
-                        padding: '4px 10px', 
-                        borderRadius: 'var(--radius-sm)', 
-                        fontSize: '11px', 
-                        fontWeight: 700, 
-                        letterSpacing: '0.5px',
-                        textTransform: 'uppercase',
-                        backgroundColor: row.activo ? 'var(--color-sage-light)' : 'var(--color-terra-light)',
-                        color: row.activo ? 'var(--color-sage)' : 'var(--color-terra)',
-                        border: `1px solid ${row.activo ? 'rgba(58, 107, 82, 0.15)' : 'rgba(192, 68, 42, 0.15)'}`
-                    }}
+                <span
+                    className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${row.activo
+                            ? 'bg-green-50 text-green-600 border-green-100'
+                            : 'bg-red-50 text-red-600 border-red-100'
+                        }`}
                 >
                     {row.activo ? 'Activo' : 'Suspendido'}
                 </span>
@@ -114,37 +117,17 @@ export default function ClubesContent() {
     ];
 
     const actions = (row) => (
-        <div style={{ display: 'flex', gap: '8px' }}>
-            <button 
-                onClick={() => handleEdit(row)} 
-                style={{ 
-                    padding: '6px', 
-                    color: 'var(--color-slate)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'opacity 0.2s',
-                    cursor: 'pointer',
-                    background: 'none',
-                    border: 'none'
-                }} 
+        <div className="flex items-center gap-1">
+            <button
+                onClick={(e) => { e.stopPropagation(); handleEdit(row); }}
+                className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all"
                 title="Editar"
             >
                 <Edit size={18} />
             </button>
-            <button 
-                onClick={() => handleDelete(row.id)} 
-                style={{ 
-                    padding: '6px', 
-                    color: 'var(--color-terra)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'opacity 0.2s',
-                    cursor: 'pointer',
-                    background: 'none',
-                    border: 'none'
-                }} 
+            <button
+                onClick={(e) => { e.stopPropagation(); handleDelete(row.id); }}
+                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                 title="Eliminar"
             >
                 <Trash2 size={18} />
@@ -155,20 +138,21 @@ export default function ClubesContent() {
     return (
         <>
             <Card title="Directorio de Clubes">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', gap: '16px' }}>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                     <SearchBar
                         value={searchTerm}
                         onChange={setSearchTerm}
                         placeholder="Buscar clubes..."
-                        width="280px"
+                        className="w-full md:w-80 shadow-sm"
                     />
-                    <GradientButton onClick={handleCreate} icon={Plus} variant="primary">
-                        Registrar Club / Equipo
+                    <GradientButton onClick={handleCreate} icon={Plus}>
+                        Registrar Club
                     </GradientButton>
                 </div>
+                <br />
 
                 {loading ? (
-                    <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--color-text-muted)', fontStyle: 'italic', fontFamily: 'var(--font-body)' }}>
+                    <div className="text-center py-12 text-slate-400 animate-pulse font-bold italic">
                         Cargando clubes...
                     </div>
                 ) : (
@@ -176,6 +160,7 @@ export default function ClubesContent() {
                         columns={columns}
                         data={filteredClubes}
                         actions={actions}
+                        onRowClick={handleRowClick}
                     />
                 )}
             </Card>
@@ -193,6 +178,63 @@ export default function ClubesContent() {
                     }}
                     onCancel={() => setIsModalOpen(false)}
                 />
+            </Modal>
+
+            <Modal
+                isOpen={isDetailModalOpen}
+                onClose={() => setIsDetailModalOpen(false)}
+                title="Ficha de Club / Equipo"
+            >
+                {selectedClub && (
+                    <div className="space-y-6">
+                        <div className="bg-slate-50 rounded-3xl p-6 border border-slate-200 shadow-inner">
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 text-slate-800">
+                                    <ShieldCheck size={32} />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5 italic">Razón social / Nombre</p>
+                                    <h3 className="text-2xl font-black text-slate-800 leading-tight">{selectedClub.nombre}</h3>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Tipo de Afiliación</p>
+                                    <span className={`font-black uppercase tracking-tight ${selectedClub.es_club ? 'text-blue-600' : 'text-orange-500'}`}>
+                                        {selectedClub.es_club ? 'Club Oficial' : 'Registro Independiente'}
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Teléfono</p>
+                                        <p className="font-bold text-slate-700">{selectedClub.telefono || 'Sin registro'}</p>
+                                    </div>
+                                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Estado</p>
+                                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-black uppercase ${selectedClub.activo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                            }`}>
+                                            {selectedClub.activo ? 'Vigente' : 'Suspendido'}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Correo Electrónico</p>
+                                    <p className="font-bold text-slate-700 truncate">{selectedClub.correo || 'Sin correo registrado'}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => { setIsDetailModalOpen(false); handleEdit(selectedClub); }}
+                            className="w-full bg-slate-800 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-900 transition-all shadow-premium"
+                        >
+                            Editar Información
+                        </button>
+                    </div>
+                )}
             </Modal>
         </>
     );

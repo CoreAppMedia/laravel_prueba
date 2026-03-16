@@ -1087,3 +1087,199 @@ section>h3 {
     transition-duration: 0.15s;
     transition-timing-function: ease;
 }
+
+/* =========================================================================
+   RESPONSIVE: DataTable (ui-table)
+========================================================================= */
+
+.ui-table {
+    max-width: 100%;
+}
+
+.ui-table__table {
+    min-width: 720px;
+}
+
+@media (max-width: 1024px) {
+    .ui-table__table {
+        min-width: 680px;
+    }
+}
+
+@media (max-width: 640px) {
+    .ui-table {
+        overflow-x: visible;
+    }
+
+    .ui-table__table {
+        min-width: 0;
+        display: block;
+    }
+
+    .ui-table__table thead {
+        display: none;
+    }
+
+    .ui-table__table tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .ui-table__row {
+        display: block;
+        border: 1px solid var(--color-border-subtle) !important;
+        border-radius: var(--radius-md);
+        background: var(--color-bg-surface);
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+    }
+
+    .ui-table__td {
+        display: grid;
+        grid-template-columns: 104px 1fr;
+        gap: 10px;
+        padding: 10px 12px !important;
+        white-space: normal !important;
+        border-bottom: 1px solid var(--color-border-subtle);
+        text-align: left !important;
+    }
+
+    .ui-table__td:last-child {
+        border-bottom: none;
+    }
+
+    .ui-table__td::before {
+        content: attr(data-label);
+        font-family: var(--font-body);
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        color: var(--color-text-muted);
+        align-self: center;
+    }
+
+    .ui-table__td--actions {
+        grid-template-columns: 120px 1fr;
+    }
+
+    .ui-table__actions {
+        justify-content: flex-start !important;
+        flex-wrap: wrap;
+    }
+
+    .ui-table__empty {
+        display: block;
+        padding: 22px 16px !important;
+    }
+}
+
+@media (max-width: 390px) {
+    .ui-table__table tbody {
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .ui-table__td {
+        grid-template-columns: 92px 1fr;
+        gap: 8px;
+        padding: 9px 10px !important;
+    }
+
+    .ui-table__td::before {
+        font-size: 9px;
+        letter-spacing: 1px;
+    }
+}
+
+/* =========================================================================
+   RESPONSIVE: Torneos toolbar stacking on very small screens
+========================================================================= */
+
+@media (max-width: 390px) {
+    .torneos-toolbar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .torneos-toolbar__search {
+        width: 100% !important;
+    }
+
+    .torneos-toolbar__action {
+        width: 100% !important;
+    }
+
+    .torneos-toolbar__action button {
+        width: 100% !important;
+        justify-content: center;
+    }
+}
+
+/* =========================================================================
+   RESPONSIVE: Admin Panel sidebar drawer
+========================================================================= */
+
+.panel-admin__topbar {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.panel-admin__menuBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border-subtle);
+    background: var(--color-bg-surface);
+    color: var(--color-text-primary);
+    box-shadow: var(--shadow-soft);
+    cursor: pointer;
+}
+
+.panel-admin__overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(17, 16, 16, 0.40);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+@media (max-width: 1024px) {
+    .panel-admin__layout {
+        gap: 16px !important;
+    }
+
+    .panel-admin__topbar {
+        display: flex;
+    }
+
+    .panel-admin__overlay.is-open {
+        display: block;
+    }
+
+    .panel-admin__sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: min(86vw, 320px);
+        z-index: 50;
+        overflow-y: auto;
+        transform: translateX(-105%);
+        transition: transform 0.2s ease;
+        border-radius: 0 !important;
+    }
+
+    .panel-admin__sidebar.is-open {
+        transform: translateX(0);
+    }
+}

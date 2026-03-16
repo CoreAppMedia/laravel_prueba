@@ -3,8 +3,10 @@ import React from 'react';
 export default function DataTable({ columns, data, actions, keyField = 'id' }) {
     return (
         <div
+            className="ui-table"
             style={{
                 overflowX: 'auto',
+                WebkitOverflowScrolling: 'touch',
                 background: 'var(--color-bg-surface)',
                 border: '1px solid var(--color-border-subtle)',
                 borderRadius: 'var(--radius-lg)',
@@ -12,14 +14,17 @@ export default function DataTable({ columns, data, actions, keyField = 'id' }) {
             }}
         >
             <table
+                className="ui-table__table"
                 style={{
                     width: '100%',
                     borderCollapse: 'collapse',
                     textAlign: 'left',
                 }}
             >
+
                 <thead>
                     <tr
+                        className="ui-table__headRow"
                         style={{
                             background: 'var(--color-bg-surface-alt)',
                             borderBottom: '2px solid var(--color-border-subtle)',
@@ -28,6 +33,7 @@ export default function DataTable({ columns, data, actions, keyField = 'id' }) {
                         {columns.map((col, idx) => (
                             <th
                                 key={idx}
+                                className="ui-table__th"
                                 style={{
                                     padding: '11px 20px',
                                     fontFamily: 'var(--font-body)',
@@ -44,6 +50,7 @@ export default function DataTable({ columns, data, actions, keyField = 'id' }) {
                         ))}
                         {actions && (
                             <th
+                                className="ui-table__th ui-table__th--actions"
                                 style={{
                                     padding: '11px 20px',
                                     fontFamily: 'var(--font-body)',
@@ -66,6 +73,7 @@ export default function DataTable({ columns, data, actions, keyField = 'id' }) {
                         <tr>
                             <td
                                 colSpan={columns.length + (actions ? 1 : 0)}
+                                className="ui-table__empty"
                                 style={{
                                     padding: '48px 24px',
                                     textAlign: 'center',
@@ -81,6 +89,7 @@ export default function DataTable({ columns, data, actions, keyField = 'id' }) {
                         data.map((row, rowIdx) => (
                             <tr
                                 key={row[keyField]}
+                                className="ui-table__row"
                                 style={{
                                     borderBottom: rowIdx < data.length - 1
                                         ? '1px solid var(--color-border-subtle)'
@@ -94,6 +103,8 @@ export default function DataTable({ columns, data, actions, keyField = 'id' }) {
                                 {columns.map((col, idx) => (
                                     <td
                                         key={idx}
+                                        className="ui-table__td"
+                                        data-label={col.header}
                                         style={{
                                             padding: '13px 20px',
                                             fontFamily: 'var(--font-body)',
@@ -108,6 +119,8 @@ export default function DataTable({ columns, data, actions, keyField = 'id' }) {
                                 ))}
                                 {actions && (
                                     <td
+                                        className="ui-table__td ui-table__td--actions"
+                                        data-label="Acciones"
                                         style={{
                                             padding: '13px 20px',
                                             textAlign: 'right',
@@ -115,6 +128,7 @@ export default function DataTable({ columns, data, actions, keyField = 'id' }) {
                                         }}
                                     >
                                         <div
+                                            className="ui-table__actions"
                                             style={{
                                                 display: 'flex',
                                                 justifyContent: 'flex-end',

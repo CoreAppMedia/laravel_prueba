@@ -13,7 +13,9 @@ export default function TemporadasContent() {
     const [temporadas, setTemporadas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [editingTemporada, setEditingTemporada] = useState(null);
+    const [selectedTemporada, setSelectedTemporada] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
 
     const fetchTemporadas = async () => {
@@ -32,7 +34,6 @@ export default function TemporadasContent() {
         fetchTemporadas();
     }, []);
 
-    // Filtrar temporadas según el término de búsqueda
     const filteredTemporadas = temporadas.filter(temporada =>
         temporada.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         temporada.fecha_inicio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -49,6 +50,11 @@ export default function TemporadasContent() {
         setIsModalOpen(true);
     };
 
+    const handleRowClick = (temporada) => {
+        setSelectedTemporada(temporada);
+        setIsDetailModalOpen(true);
+    };
+
     const handleDelete = async (id) => {
         if (!window.confirm('¿Seguro que deseas eliminar esta temporada?')) return;
 
@@ -62,29 +68,38 @@ export default function TemporadasContent() {
     };
 
     const columns = [
-        { 
-            header: 'Nombre de Edición', 
+        {
+            header: 'Edición',
             accessor: 'nombre',
             render: (row) => (
-                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '15px', color: 'var(--color-slate)' }}>
-                    {row.nombre}
-                </span>
+                <div className="flex flex-col gap-1">
+                    <span className="font-black text-[15px] text-slate-800 tracking-tight leading-tight">
+                        {row.nombre}
+                    </span>
+                    <div className="md:hidden flex items-center gap-2">
+                        <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">
+                            {row.activa ? 'Vigente' : 'Inactiva'}
+                        </span>
+                    </div>
+                </div>
             )
         },
-        { 
-            header: 'Fecha Inicio', 
+        {
+            header: 'Inicio',
             accessor: 'fecha_inicio',
+            hiddenMobile: true,
             render: (row) => (
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text-secondary)' }}>
+                <span className="font-bold text-[13px] text-slate-500">
                     {row.fecha_inicio}
                 </span>
             )
         },
-        { 
-            header: 'Fecha Fin', 
+        {
+            header: 'Término',
             accessor: 'fecha_fin',
+            hiddenMobile: true,
             render: (row) => (
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text-secondary)' }}>
+                <span className="font-bold text-[13px] text-slate-500">
                     {row.fecha_fin}
                 </span>
             )
@@ -92,20 +107,13 @@ export default function TemporadasContent() {
         {
             header: 'Estado',
             accessor: 'activa',
+            hiddenMobile: true,
             render: (row) => (
-                <span 
-                    style={{ 
-                        display: 'inline-flex',
-                        padding: '4px 10px', 
-                        borderRadius: 'var(--radius-sm)', 
-                        fontSize: '11px', 
-                        fontWeight: 700, 
-                        letterSpacing: '0.5px',
-                        textTransform: 'uppercase',
-                        backgroundColor: row.activa ? 'var(--color-sage-light)' : 'var(--color-bg-surface-alt)',
-                        color: row.activa ? 'var(--color-sage)' : 'var(--color-text-muted)',
-                        border: `1px solid ${row.activa ? 'rgba(58, 107, 82, 0.15)' : 'var(--color-border-subtle)'}`
-                    }}
+                <span
+                    className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${row.activa
+                        ? 'bg-green-50 text-green-600 border-green-100'
+                        : 'bg-slate-50 text-slate-400 border-slate-200'
+                        }`}
                 >
                     {row.activa ? 'Activa' : 'Inactiva'}
                 </span>
@@ -114,37 +122,17 @@ export default function TemporadasContent() {
     ];
 
     const actions = (row) => (
-        <div style={{ display: 'flex', gap: '8px' }}>
-            <button 
-                onClick={() => handleEdit(row)} 
-                style={{ 
-                    padding: '6px', 
-                    color: 'var(--color-slate)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'opacity 0.2s',
-                    cursor: 'pointer',
-                    background: 'none',
-                    border: 'none'
-                }} 
+        <div className="flex items-center gap-1">
+            <button
+                onClick={(e) => { e.stopPropagation(); handleEdit(row); }}
+                className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all"
                 title="Editar"
             >
                 <Edit size={18} />
             </button>
-            <button 
-                onClick={() => handleDelete(row.id)} 
-                style={{ 
-                    padding: '6px', 
-                    color: 'var(--color-terra)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'opacity 0.2s',
-                    cursor: 'pointer',
-                    background: 'none',
-                    border: 'none'
-                }} 
+            <button
+                onClick={(e) => { e.stopPropagation(); handleDelete(row.id); }}
+                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                 title="Eliminar"
             >
                 <Trash2 size={18} />
@@ -154,21 +142,22 @@ export default function TemporadasContent() {
 
     return (
         <>
-            <Card title="Listado de Temporadas">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', gap: '16px' }}>
+            <Card title="Temporadas">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                     <SearchBar
                         value={searchTerm}
                         onChange={setSearchTerm}
                         placeholder="Buscar temporadas..."
-                        width="280px"
+                        className="w-full md:w-80 shadow-sm"
                     />
-                    <GradientButton onClick={handleCreate} icon={Plus} variant="primary">
+                    <GradientButton onClick={handleCreate} icon={Plus}>
                         Nueva Temporada
                     </GradientButton>
                 </div>
+                <br />
 
                 {loading ? (
-                    <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--color-text-muted)', fontStyle: 'italic', fontFamily: 'var(--font-body)' }}>
+                    <div className="text-center py-12 text-slate-400 animate-pulse font-bold italic">
                         Cargando temporadas...
                     </div>
                 ) : (
@@ -176,6 +165,7 @@ export default function TemporadasContent() {
                         columns={columns}
                         data={filteredTemporadas}
                         actions={actions}
+                        onRowClick={handleRowClick}
                     />
                 )}
             </Card>
@@ -193,6 +183,56 @@ export default function TemporadasContent() {
                     }}
                     onCancel={() => setIsModalOpen(false)}
                 />
+            </Modal>
+
+            <Modal
+                isOpen={isDetailModalOpen}
+                onClose={() => setIsDetailModalOpen(false)}
+                title="Ficha de Temporada"
+            >
+                {selectedTemporada && (
+                    <div className="space-y-6">
+                        <div className="bg-slate-50 rounded-3xl p-6 border border-slate-200 shadow-inner">
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 text-orange-400">
+                                    <Calendar size={32} />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5 italic">Nombre de edición</p>
+                                    <h3 className="text-2xl font-black text-slate-800 leading-tight">{selectedTemporada.nombre}</h3>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Fecha Inicio</p>
+                                        <p className="font-bold text-slate-700">{selectedTemporada.fecha_inicio}</p>
+                                    </div>
+                                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Fecha Fin</p>
+                                        <p className="font-bold text-slate-700">{selectedTemporada.fecha_fin}</p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Situación actual</p>
+                                    <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${selectedTemporada.activa ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                        }`}>
+                                        {selectedTemporada.activa ? 'Vigente' : 'Concluida'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => { setIsDetailModalOpen(false); handleEdit(selectedTemporada); }}
+                            className="w-full bg-slate-800 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-900 transition-all shadow-premium"
+                        >
+                            Editar Temporada
+                        </button>
+                    </div>
+                )}
             </Modal>
         </>
     );

@@ -1,9 +1,10 @@
 import React from 'react';
 import { Search } from 'lucide-react';
 
-export default function SearchBar({ value, onChange, placeholder = 'Buscar...', width = '300px' }) {
+export default function SearchBar({ value, onChange, placeholder = 'Buscar...', width = '300px', className = '' }) {
     return (
         <div
+            className={className}
             style={{
                 position: 'relative',
                 width: width,

@@ -65,10 +65,10 @@ export default function CanchasContent() {
             render: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     {row.imagen_url ? (
-                        <img 
-                            src={row.imagen_url} 
-                            alt={row.nombre} 
-                            style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover', border: '1px solid var(--color-border-subtle)' }} 
+                        <img
+                            src={row.imagen_url}
+                            alt={row.nombre}
+                            style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover', border: '1px solid var(--color-border-subtle)' }}
                         />
                     ) : (
                         <div style={{ width: '40px', height: '40px', borderRadius: '6px', backgroundColor: 'var(--color-bg-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)' }}>
@@ -117,18 +117,18 @@ export default function CanchasContent() {
 
     const actions = (row) => (
         <div style={{ display: 'flex', gap: '8px' }}>
-            <button 
-                onClick={() => handleEdit(row)} 
+            <button
+                onClick={() => handleEdit(row)}
                 className="btn-ghost"
-                style={{ padding: '6px', color: 'var(--color-slate)', borderRadius: '4px' }} 
+                style={{ padding: '6px', color: 'var(--color-slate)', borderRadius: '4px' }}
                 title="Configurar Sede"
             >
                 <Edit size={18} />
             </button>
-            <button 
-                onClick={() => handleDelete(row.id)} 
+            <button
+                onClick={() => handleDelete(row.id)}
                 className="btn-ghost"
-                style={{ padding: '6px', color: 'var(--color-terra)', borderRadius: '4px' }} 
+                style={{ padding: '6px', color: 'var(--color-terra)', borderRadius: '4px' }}
                 title="Eliminar Sede"
             >
                 <Trash2 size={18} />
@@ -150,6 +150,7 @@ export default function CanchasContent() {
                         Declarar Nueva Sede
                     </GradientButton>
                 </div>
+                <br />
 
                 {loading ? (
                     <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>

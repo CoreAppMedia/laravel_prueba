@@ -13,7 +13,9 @@ export default function EquiposContent() {
     const [equipos, setEquipos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [editingEquipo, setEditingEquipo] = useState(null);
+    const [selectedEquipo, setSelectedEquipo] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
 
     const fetchEquipos = async () => {
@@ -32,7 +34,6 @@ export default function EquiposContent() {
         fetchEquipos();
     }, []);
 
-    // Filtrar equipos según el término de búsqueda
     const filteredEquipos = equipos.filter(equipo =>
         equipo.nombre_mostrado?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         equipo.club?.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -47,6 +48,11 @@ export default function EquiposContent() {
     const handleEdit = (equipo) => {
         setEditingEquipo(equipo);
         setIsModalOpen(true);
+    };
+
+    const handleRowClick = (equipo) => {
+        setSelectedEquipo(equipo);
+        setIsDetailModalOpen(true);
     };
 
     const handleDelete = async (id) => {
@@ -66,13 +72,20 @@ export default function EquiposContent() {
             header: 'Equipo',
             accessor: 'nombre_mostrado',
             render: (row) => (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '15px', color: 'var(--color-sage)' }}>
+                <div className="flex flex-col gap-1">
+                    <span className="font-black text-[15px] text-slate-800 tracking-tight leading-tight">
                         {row.nombre_mostrado}
                     </span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: 500 }}>
-                        <Users size={12} style={{ color: 'var(--color-gold)' }} />
-                        {row.club?.nombre || 'Independiente'}
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                            <Users size={10} className="text-blue-400" />
+                            {row.club?.nombre || 'Independiente'}
+                        </span>
+                        <div className="md:hidden">
+                            <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">
+                                {row.categoria?.nombre || 'General'}
+                            </span>
+                        </div>
                     </div>
                 </div>
             )
@@ -80,28 +93,30 @@ export default function EquiposContent() {
         {
             header: 'Categoría',
             accessor: 'categoria',
+            hiddenMobile: true,
             render: (row) => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text-secondary)' }}>
-                    <Star size={14} style={{ color: 'var(--color-gold)' }} />
-                    <span style={{ fontWeight: 600 }}>{row.categoria?.nombre || 'General'}</span>
+                <div className="flex items-center gap-2 font-black text-[12px] text-orange-500 uppercase tracking-tight">
+                    <Star size={14} className="text-orange-400" />
+                    <span>{row.categoria?.nombre || 'General'}</span>
                 </div>
             )
         },
         {
             header: 'Sede Oficial',
             accessor: 'cancha_id',
+            hiddenMobile: true,
             render: (row) => {
                 const diaMap = { 1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue', 5: 'Vie', 6: 'Sáb', 7: 'Dom' };
                 const diaText = row.cancha_horario?.dia_semana ? diaMap[row.cancha_horario.dia_semana] : '-';
                 const horaText = row.cancha_horario?.hora ? row.cancha_horario.hora.substring(0, 5) : '-';
 
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text-primary)' }}>
+                    <div className="flex flex-col gap-0.5">
+                        <span className="font-bold text-[13px] text-slate-600">
                             {row.cancha?.nombre || 'Sin definir'}
                         </span>
-                        <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: 500 }}>
-                            {row.cancha_horario ? `${diaText} ${horaText} hrs` : '-'}
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                            {row.cancha_horario ? `${diaText} ${horaText}` : '-'}
                         </span>
                     </div>
                 );
@@ -110,20 +125,13 @@ export default function EquiposContent() {
         {
             header: 'Estatus',
             accessor: 'activo',
+            hiddenMobile: true,
             render: (row) => (
-                <span 
-                    style={{ 
-                        display: 'inline-flex',
-                        padding: '4px 10px', 
-                        borderRadius: 'var(--radius-sm)', 
-                        fontSize: '11px', 
-                        fontWeight: 700, 
-                        letterSpacing: '0.5px',
-                        textTransform: 'uppercase',
-                        backgroundColor: row.activo ? 'var(--color-sage-light)' : 'var(--color-terra-light)',
-                        color: row.activo ? 'var(--color-sage)' : 'var(--color-terra)',
-                        border: `1px solid ${row.activo ? 'rgba(58, 107, 82, 0.15)' : 'rgba(192, 68, 42, 0.15)'}`
-                    }}
+                <span
+                    className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${row.activo
+                            ? 'bg-green-50 text-green-600 border-green-100'
+                            : 'bg-red-50 text-red-600 border-red-100'
+                        }`}
                 >
                     {row.activo ? 'Activo' : 'Baja'}
                 </span>
@@ -132,37 +140,17 @@ export default function EquiposContent() {
     ];
 
     const actions = (row) => (
-        <div style={{ display: 'flex', gap: '8px' }}>
-            <button 
-                onClick={() => handleEdit(row)} 
-                style={{ 
-                    padding: '6px', 
-                    color: 'var(--color-slate)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'opacity 0.2s',
-                    cursor: 'pointer',
-                    background: 'none',
-                    border: 'none'
-                }} 
+        <div className="flex items-center gap-1">
+            <button
+                onClick={(e) => { e.stopPropagation(); handleEdit(row); }}
+                className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all"
                 title="Editar"
             >
                 <Edit size={18} />
             </button>
-            <button 
-                onClick={() => handleDelete(row.id)} 
-                style={{ 
-                    padding: '6px', 
-                    color: 'var(--color-terra)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'opacity 0.2s',
-                    cursor: 'pointer',
-                    background: 'none',
-                    border: 'none'
-                }} 
+            <button
+                onClick={(e) => { e.stopPropagation(); handleDelete(row.id); }}
+                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                 title="Eliminar"
             >
                 <Trash2 size={18} />
@@ -172,21 +160,22 @@ export default function EquiposContent() {
 
     return (
         <>
-            <Card title="Plantilla de Equipos Registrados">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', gap: '16px' }}>
+            <Card title="Plantilla de Equipos">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                     <SearchBar
                         value={searchTerm}
                         onChange={setSearchTerm}
                         placeholder="Buscar equipos..."
-                        width="280px"
+                        className="w-full md:w-80 shadow-sm"
                     />
-                    <GradientButton onClick={handleCreate} icon={Plus} variant="primary">
-                        Registrar Nuevo Equipo
+                    <GradientButton onClick={handleCreate} icon={Plus}>
+                        Nuevo Equipo
                     </GradientButton>
                 </div>
+                <br />
 
                 {loading ? (
-                    <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--color-text-muted)', fontStyle: 'italic', fontFamily: 'var(--font-body)' }}>
+                    <div className="text-center py-12 text-slate-400 animate-pulse font-bold italic">
                         Cargando equipos...
                     </div>
                 ) : (
@@ -194,6 +183,7 @@ export default function EquiposContent() {
                         columns={columns}
                         data={filteredEquipos}
                         actions={actions}
+                        onRowClick={handleRowClick}
                     />
                 )}
             </Card>
@@ -211,6 +201,70 @@ export default function EquiposContent() {
                     }}
                     onCancel={() => setIsModalOpen(false)}
                 />
+            </Modal>
+
+            <Modal
+                isOpen={isDetailModalOpen}
+                onClose={() => setIsDetailModalOpen(false)}
+                title="Expediente de Equipo"
+            >
+                {selectedEquipo && (
+                    <div className="space-y-6">
+                        <div className="bg-slate-50 rounded-3xl p-6 border border-slate-200 shadow-inner">
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 text-blue-500">
+                                    <Users size={32} />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5 italic">Nombre del equipo</p>
+                                    <h3 className="text-2xl font-black text-slate-800 leading-tight">{selectedEquipo.nombre_mostrado}</h3>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Club de Pertenencia</p>
+                                    <span className="font-black text-slate-700 uppercase tracking-tight">
+                                        {selectedEquipo.club?.nombre || 'Registro Independiente'}
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Categoría</p>
+                                        <p className="font-black text-orange-500 uppercase">{selectedEquipo.categoria?.nombre || 'General'}</p>
+                                    </div>
+                                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Estado</p>
+                                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-black uppercase ${selectedEquipo.activo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                            }`}>
+                                            {selectedEquipo.activo ? 'Activo' : 'Baja'}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 italic">Sede y Horario Oficial</p>
+                                    <div className="flex items-center justify-between">
+                                        <p className="font-bold text-slate-700">{selectedEquipo.cancha?.nombre || 'Sin definir'}</p>
+                                        <p className="text-xs font-black text-slate-400">
+                                            {selectedEquipo.cancha_horario
+                                                ? `${{ 1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue', 5: 'Vie', 6: 'Sáb', 7: 'Dom' }[selectedEquipo.cancha_horario.dia_semana]} ${selectedEquipo.cancha_horario.hora.substring(0, 5)}`
+                                                : '-'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => { setIsDetailModalOpen(false); handleEdit(selectedEquipo); }}
+                            className="w-full bg-slate-800 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-900 transition-all shadow-premium"
+                        >
+                            Editar Expediente
+                        </button>
+                    </div>
+                )}
             </Modal>
         </>
     );

@@ -4,6 +4,7 @@ import Card from '../../../../Components/UI/Card';
 import DataTable from '../../../../Components/UI/DataTable';
 import GradientButton from '../../../../Components/UI/GradientButton';
 import Modal from '../../../../Components/UI/Modal';
+import SearchBar from '../../../../Components/UI/SearchBar';
 import { Plus, Check, X, Shield, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -11,6 +12,8 @@ export default function EquiposInscritos({ torneo }) {
     const [equipos, setEquipos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Form state
     const [equiposDisponibles, setEquiposDisponibles] = useState([]);
@@ -165,6 +168,17 @@ export default function EquiposInscritos({ torneo }) {
         ed => !equipos.some(ei => ei.id === ed.id)
     );
 
+    const equiposInscritosFiltrados = equipos.filter((equipo) => {
+        const q = searchTerm.trim().toLowerCase();
+        if (!q) return true;
+
+        const byNombre = equipo.nombre_mostrado?.toLowerCase().includes(q);
+        const byClub = equipo.club?.nombre?.toLowerCase().includes(q);
+        const byCategoria = equipo.categoria?.nombre?.toLowerCase().includes(q);
+
+        return Boolean(byNombre || byClub || byCategoria);
+    });
+
     const inputStyle = {
         width: '100%',
         backgroundColor: 'var(--color-bg-surface)',
@@ -181,7 +195,13 @@ export default function EquiposInscritos({ torneo }) {
 
     return (
         <Card title="Plantilla de Equipos Oficiales">
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', gap: '16px', flexWrap: 'wrap' }}>
+                <SearchBar
+                    value={searchTerm}
+                    onChange={setSearchTerm}
+                    placeholder="Buscar equipo (nombre, club o categoría)..."
+                    width="280px"
+                />
                 <GradientButton 
                     onClick={() => setIsModalOpen(true)} 
                     icon={Plus}
@@ -196,7 +216,7 @@ export default function EquiposInscritos({ torneo }) {
             ) : (
                 <DataTable
                     columns={columns}
-                    data={equipos}
+                    data={equiposInscritosFiltrados}
                 />
             )}
 

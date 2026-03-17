@@ -48,12 +48,12 @@ class CatalogosSeeder extends Seeder
                 'activo' => true,
             ],
             [
-                'nombre' => 'Primera',
+                'nombre' => 'Primera Especial',
                 'descripcion' => 'Categoría primera especial',
                 'activo' => true,
             ],
             [
-                'nombre' => 'Reserva',
+                'nombre' => 'Reserva Especial',
                 'descripcion' => 'Categoría reserva especial',
                 'activo' => true,
             ],

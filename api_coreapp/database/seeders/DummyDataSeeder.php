@@ -43,24 +43,35 @@ class DummyDataSeeder extends Seeder
                 [
                     'temporada_id' => $temporadaIds[1], // Clausura
                     'tipo_torneo_id' => $tiposTorneo->firstWhere('nombre', 'Liga')->id ?? $tiposTorneo->first()->id,
-                    'nombre' => 'Liga Premier Zapotlán',
+                    'nombre' => 'Liga amateur',
                     'fecha_inicio' => '2026-07-15',
                     'fecha_fin' => '2026-12-15',
                     'es_abierto' => true,
-                    'costo_inscripcion' => 2500.00,
-                    'costo_arbitraje_por_partido' => 350.50,
+                    'costo_inscripcion' => 3000.00,
+                    'costo_arbitraje_por_partido' => 280.00,
                     'estatus' => 'En Inscripción',
                 ],
                 [
                     'temporada_id' => $temporadaIds[1], // Clausura
-                    'tipo_torneo_id' => $tiposTorneo->firstWhere('nombre', 'Copa')->id ?? $tiposTorneo->first()->id,
-                    'nombre' => 'Copa Independencia',
+                    'tipo_torneo_id' => $tiposTorneo->firstWhere('nombre', 'Liga')->id ?? $tiposTorneo->first()->id,
+                    'nombre' => 'Liga Primera Especial',
                     'fecha_inicio' => '2026-09-01',
                     'fecha_fin' => '2026-09-30',
                     'es_abierto' => false,
-                    'costo_inscripcion' => 1000.00,
-                    'costo_arbitraje_por_partido' => 400.00,
-                    'estatus' => 'Planeación',
+                    'costo_inscripcion' => 3000.00,
+                    'costo_arbitraje_por_partido' => 280.00,
+                    'estatus' => 'En Inscripción',
+                ],
+                [
+                    'temporada_id' => $temporadaIds[1], // Clausura
+                    'tipo_torneo_id' => $tiposTorneo->firstWhere('nombre', 'Liga')->id ?? $tiposTorneo->first()->id,
+                    'nombre' => 'Liga Reserva Especial',
+                    'fecha_inicio' => '2026-09-01',
+                    'fecha_fin' => '2026-09-30',
+                    'es_abierto' => false,
+                    'costo_inscripcion' => 3000.00,
+                    'costo_arbitraje_por_partido' => 280.00,
+                    'estatus' => 'En Inscripción',
                 ],
             ];
 
@@ -75,6 +86,7 @@ class DummyDataSeeder extends Seeder
         // 3. Clubs
         $clubs = [
             ['nombre' => 'Record FC', 'es_club' => true, 'telefono' => '3411234567', 'correo' => 'contacto@laestacion.com', 'activo' => true],
+            ['nombre' => 'Zapotlán FC', 'es_club' => true, 'telefono' => '3419876543', 'correo' => 'info@realzapotlan.com', 'activo' => true],
             ['nombre' => 'Zapotlán FC', 'es_club' => true, 'telefono' => '3419876543', 'correo' => 'info@realzapotlan.com', 'activo' => true],
         ];
 

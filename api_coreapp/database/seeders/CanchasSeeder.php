@@ -15,37 +15,39 @@ class CanchasSeeder extends Seeder
     {
         $canchasData = [
             [
-                'nombre' => 'Estadio Municipal Zapotlán',
-                'direccion' => 'Calle Principal #100, Centro',
+                'nombre' => 'Campo Zapotilan #1',
+                'direccion' => 'Sebastián Trejo, Santiago Sur, Tláhuac, 13300 Ciudad de México, CDMX',
                 'imagen_url' => 'https://images.unsplash.com/photo-1518605368461-1ee7c191a039?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
                 'activa' => true,
                 'horarios' => [
-                    ['dia_semana' => 6, 'hora' => '10:00:00'],
-                    ['dia_semana' => 6, 'hora' => '12:00:00'],
+                    ['dia_semana' => 7, 'hora' => '07:30:00'],
                     ['dia_semana' => 7, 'hora' => '09:00:00'],
-                    ['dia_semana' => 7, 'hora' => '11:00:00'],
-                ]
-            ],
-            [
-                'nombre' => 'Cancha La Reforma',
-                'direccion' => 'Av. Reforma Esq. 5 de Mayo, Col. La Lazo',
-                'imagen_url' => 'https://images.unsplash.com/photo-1513128034602-7814ccbccd4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-                'activa' => true,
-                'horarios' => [
-                    ['dia_semana' => 7, 'hora' => '08:00:00'],
-                    ['dia_semana' => 7, 'hora' => '10:00:00'],
+                    ['dia_semana' => 7, 'hora' => '10:30:00'],
                     ['dia_semana' => 7, 'hora' => '12:00:00'],
                 ]
             ],
             [
-                'nombre' => 'Complejo Deportivo Norte',
-                'direccion' => 'Carretera Norte Km 5',
+                'nombre' => 'Campo Zapotilan #2',
+                'direccion' => 'Sebastián Trejo, Santiago Sur, Tláhuac, 13300 Ciudad de México, CDMX',
+                'imagen_url' => 'https://images.unsplash.com/photo-1513128034602-7814ccbccd4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+                'activa' => true,
+                'horarios' => [
+                    ['dia_semana' => 7, 'hora' => '07:30:00'],
+                    ['dia_semana' => 7, 'hora' => '09:00:00'],
+                    ['dia_semana' => 7, 'hora' => '10:30:00'],
+                    ['dia_semana' => 7, 'hora' => '12:00:00'],
+                ]
+            ],
+            [
+                'nombre' => 'Campo Los tres Martinez',
+                'direccion' => 'Cuitláhuac, Tláhuac, 13419 Ciudad de México, CDMX',
                 'imagen_url' => 'https://images.unsplash.com/photo-1552667466-07770ae110d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
                 'activa' => true,
                 'horarios' => [
-                    ['dia_semana' => 6, 'hora' => '16:00:00'],
-                    ['dia_semana' => 6, 'hora' => '18:00:00'],
-                    ['dia_semana' => 4, 'hora' => '20:00:00'],
+                    ['dia_semana' => 7, 'hora' => '07:30:00'],
+                    ['dia_semana' => 7, 'hora' => '09:00:00'],
+                    ['dia_semana' => 7, 'hora' => '10:30:00'],
+                    ['dia_semana' => 7, 'hora' => '12:00:00'],
                 ]
             ]
         ];

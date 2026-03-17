@@ -20,6 +20,7 @@ class PartidoArbitro extends Pivot
         'rol',
         'pago',
         'pagado',
+        'motivo_pago',
     ];
 
     protected $casts = [

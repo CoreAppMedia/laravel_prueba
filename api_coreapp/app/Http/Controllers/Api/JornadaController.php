@@ -169,8 +169,8 @@ class JornadaController extends Controller
     public function indexByTorneo(Torneo $torneo)
     {
         $jornadas = $torneo->jornadas()
-            ->with(['partidos.equipoLocal', 'partidos.equipoVisitante', 'partidos.estado', 'partidos.cancha', 'partidos.canchaHorario'])
-            ->orderBy('numero', 'asc')
+            ->with(['partidos.equipoLocal', 'partidos.equipoVisitante', 'partidos.estado', 'partidos.cancha', 'partidos.canchaHorario', 'partidos.arbitros'])
+            ->orderBy('numero', 'desc')
             ->get();
             
         return response()->json($jornadas);

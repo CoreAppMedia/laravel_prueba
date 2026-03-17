@@ -9,8 +9,9 @@ import TorneosContent from './Torneos/TorneosContent';
 import ClubesContent from './Clubes/ClubesContent';
 import EquiposContent from './Equipos/EquiposContent';
 import CanchasContent from './Canchas/CanchasContent';
+import ArbitrosContent from './Torneos/ArbitrosContent';
 import UsersContent from './Users/UsersContent';
-import { MapPin } from 'lucide-react';
+import { MapPin, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../../../Auth/AuthContext';
 
 export default function PanelAdmin() {
@@ -22,6 +23,7 @@ export default function PanelAdmin() {
         clubes: 0,
         equipos: 0,
         canchas: 0,
+        arbitros: 0,
         users: 0,
     });
     const [loading, setLoading] = useState(true);
@@ -34,12 +36,13 @@ export default function PanelAdmin() {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const [resTemp, resTor, resClub, resEqui, resCanchas, resUsers] = await Promise.all([
+                const [resTemp, resTor, resClub, resEqui, resCanchas, resArbitros, resUsers] = await Promise.all([
                     http.get('/api/temporadas'),
                     http.get('/api/torneos'),
                     http.get('/api/clubs'),
                     http.get('/api/equipos'),
                     http.get('/api/canchas'),
+                    http.get('/api/arbitros'),
                     canManageUsers ? http.get('/api/users') : Promise.resolve({ data: [] }),
                 ]);
                 setStats({
@@ -48,6 +51,7 @@ export default function PanelAdmin() {
                     clubes: resClub.data.length,
                     equipos: resEqui.data.length,
                     canchas: resCanchas.data.length,
+                    arbitros: resArbitros.data.length,
                     users: resUsers.data.length,
                 });
             } catch (error) {
@@ -111,6 +115,16 @@ export default function PanelAdmin() {
             desc: 'Catálogo de campos, ubicaciones y horarios.',
             count: stats.canchas
         },
+        {
+            id: 'arbitros',
+            title: 'Cuerpo Arbitral',
+            path: '/panel/admin/arbitros',
+            icon: ShieldCheck,
+            color: '#10B981',
+            bg: '#ECFDF5',
+            desc: 'Catálogo oficial de árbitros y jueces de línea.',
+            count: stats.arbitros
+        },
         ...(canManageUsers
             ? [
                 {
@@ -140,6 +154,8 @@ export default function PanelAdmin() {
                 return <EquiposContent />;
             case 'canchas':
                 return <CanchasContent />;
+            case 'arbitros':
+                return <ArbitrosContent />;
             case 'users':
                 return <UsersContent />;
             default:
@@ -327,7 +343,7 @@ export default function PanelAdmin() {
                                     fontWeight: 700,
                                     color: 'var(--color-text-primary)'
                                 }}>
-                                    {loading ? '...' : stats.temporadas + stats.torneos + stats.clubes + stats.equipos}
+                                    {loading ? '...' : stats.temporadas + stats.torneos + stats.clubes + stats.equipos + stats.arbitros}
                                 </span>
                             </div>
                         </div>

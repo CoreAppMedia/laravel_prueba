@@ -112,6 +112,17 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::patch('partidos/{partido}/cerrar', [\App\Http\Controllers\Api\PartidoController::class, 'cerrarPartido']);
             Route::patch('partidos/{partido}/suspender', [\App\Http\Controllers\Api\PartidoController::class, 'suspenderPartido']);
             Route::patch('partidos/{partido}/reactivar', [\App\Http\Controllers\Api\PartidoController::class, 'reactivarPartido']);
+
+            // Phase 3: Árbitros y Pagos
+            Route::apiResource('arbitros', \App\Http\Controllers\Api\ArbitroController::class);
+            Route::post('partidos/{partido}/arbitros', [\App\Http\Controllers\Api\PartidoArbitroController::class, 'asignar']);
+            Route::delete('partidos/{partido}/arbitros/{arbitro}', [\App\Http\Controllers\Api\PartidoArbitroController::class, 'desasignar']);
+            Route::patch('partido-arbitro/{id}/pago', [\App\Http\Controllers\Api\PartidoArbitroController::class, 'registrarPago']);
+
+            // Torneo - Arbitro assignment
+            Route::get('torneos/{torneo}/arbitros', [\App\Http\Controllers\Api\TorneoArbitroController::class, 'obtenerArbitrosTorneo']);
+            Route::post('torneos/{torneo}/arbitros', [\App\Http\Controllers\Api\TorneoArbitroController::class, 'inscribirArbitro']);
+            Route::delete('torneos/{torneo}/arbitros/{arbitro}', [\App\Http\Controllers\Api\TorneoArbitroController::class, 'desinscribirArbitro']);
         });
 
         // Catalogos

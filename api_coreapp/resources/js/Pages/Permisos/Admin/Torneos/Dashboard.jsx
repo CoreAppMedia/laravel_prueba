@@ -5,7 +5,8 @@ import BasePanel from '../../BasePanel';
 import Card from '../../../../Components/UI/Card';
 import EquiposInscritos from './EquiposInscritos';
 import JornadasManager from './JornadasManager';
-import { Users, CalendarDays, Activity, Settings, ArrowLeft } from 'lucide-react';
+import ArbitrosContent from './ArbitrosContent';
+import { Users, CalendarDays, Activity, Settings, ArrowLeft, Shield } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../../../Auth/AuthContext';
 import { getHomePathForUser } from '../../../../lib/permissions';
@@ -60,6 +61,7 @@ export default function TorneoDashboard() {
         { id: 'resumen', name: 'Resumen General', icon: Activity },
         { id: 'equipos', name: 'Plantilla de Equipos', icon: Users },
         { id: 'jornadas', name: 'Calendario y Jornadas', icon: CalendarDays },
+        { id: 'arbitros', name: 'Cuerpo Arbitral', icon: Shield },
         { id: 'configuracion', name: 'Preferencias', icon: Settings },
     ];
 
@@ -287,6 +289,10 @@ export default function TorneoDashboard() {
 
                 {activeTab === 'jornadas' && (
                     <JornadasManager torneo={torneo} />
+                )}
+
+                {activeTab === 'arbitros' && (
+                    <ArbitrosContent torneo={torneo} />
                 )}
 
                 {activeTab === 'configuracion' && (

@@ -61,7 +61,7 @@ class Partido extends Model
             Arbitro::class,
             'partido_arbitro'
         )->using(PartidoArbitro::class)
-         ->withPivot('rol', 'pago', 'pagado')
+         ->withPivot('id', 'rol', 'pago', 'pagado', 'motivo_pago')
          ->withTimestamps();
     }
 

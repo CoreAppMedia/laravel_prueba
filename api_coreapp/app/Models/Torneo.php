@@ -76,4 +76,10 @@ class Torneo extends Model
     {
         return $this->hasMany(Egreso::class);
     }
+
+    public function arbitros()
+    {
+        return $this->belongsToMany(Arbitro::class, 'torneo_arbitro')
+            ->withTimestamps();
+    }
 }

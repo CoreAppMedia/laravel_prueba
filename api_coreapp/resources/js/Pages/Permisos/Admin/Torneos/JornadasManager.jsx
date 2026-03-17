@@ -3,7 +3,7 @@ import http from '../../../../lib/http';
 import Card from '../../../../Components/UI/Card';
 import GradientButton from '../../../../Components/UI/GradientButton';
 import Modal from '../../../../Components/UI/Modal';
-import { Plus, Check, Calendar, Trophy, Trash2, Pause, Play, AlertCircle, ArrowLeft, Lock } from 'lucide-react';
+import { Plus, Check, Calendar, Trophy, Trash2, Pause, Play, AlertCircle, ArrowLeft, Lock, Shield, User, DollarSign, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 // ────────────────────────────────────────────────
@@ -21,21 +21,48 @@ function JornadaDetail({
     const [isSuspensionModalOpen, setIsSuspensionModalOpen] = useState(false);
     const [isPartidoSuspensionModalOpen, setIsPartidoSuspensionModalOpen] = useState(false);
     const [isCierreModalOpen, setIsCierreModalOpen] = useState(false);
+    const [isArbitroModalOpen, setIsArbitroModalOpen] = useState(false);
+    const [isPagoModalOpen, setIsPagoModalOpen] = useState(false);
     const [pendingList, setPendingList] = useState([]);
+    const [arbitrosCatalog, setArbitrosCatalog] = useState([]);
 
-    const [partidoForm, setPartidoForm] = useState({ equipo_local_id: '', equipo_visitante_id: '', cancha_id: '', cancha_horario_id: '' });
+    const [partidoForm, setPartidoForm] = useState({
+        equipo_local_id: '',
+        equipo_visitante_id: '',
+        cancha_id: '',
+        cancha_horario_id: '',
+        arbitro_id: '',
+        pago_arbitro: torneo.costo_arbitraje_por_partido || 0,
+        rol: 'Central'
+    });
     const [resultadoForm, setResultadoForm] = useState({ goles_local: 0, goles_visitante: 0 });
     const [selectedPartido, setSelectedPartido] = useState(null);
     const [motivo, setMotivo] = useState('');
     const [motivoPartido, setMotivoPartido] = useState('');
     const [suspendPartidoId, setSuspendPartidoId] = useState(null);
+    const [arbitroForm, setArbitroForm] = useState({ arbitro_id: '', rol: 'Central', pago: torneo.costo_arbitraje_por_partido || 0 });
+    const [targetPartidoId, setTargetPartidoId] = useState(null);
+    const [paymentForm, setPaymentForm] = useState({ pivotId: null, pagado: false, motivo_pago: '' });
     const [saving, setSaving] = useState(false);
+    const [formError, setFormError] = useState(null);
 
     const selectedLocalForm = equiposInscritos.find(e => e.id === partidoForm.equipo_local_id);
     const selectedVisitForm = equiposInscritos.find(e => e.id === partidoForm.equipo_visitante_id);
 
     const diaSemanaMap = { 1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado', 7: 'Domingo' };
     const formatHora = (t) => (typeof t === 'string' ? t.substring(0, 5) + ' hrs' : '');
+
+    useEffect(() => {
+        const fetchArbitros = async () => {
+            try {
+                const res = await http.get(`/api/torneos/${torneo.id}/arbitros`);
+                setArbitrosCatalog(res.data.filter(a => a.activo));
+            } catch (error) {
+                console.error('Error fetching arbitros', error);
+            }
+        };
+        fetchArbitros();
+    }, [torneo.id]);
 
     const inputStyle = {
         width: '100%',
@@ -54,13 +81,38 @@ function JornadaDetail({
     const handlePartidoSubmit = async (e) => {
         e.preventDefault();
         setSaving(true);
+        setFormError(null);
         try {
-            await http.post(`/api/jornadas/${jornada.id}/partidos`, partidoForm);
+            // Limpiamos los campos de arbitraje si no se seleccionó árbitro
+            const dataToSend = { ...partidoForm };
+            if (!dataToSend.arbitro_id) {
+                delete dataToSend.arbitro_id;
+                delete dataToSend.rol;
+                delete dataToSend.pago_arbitro;
+            }
+            await http.post(`/api/jornadas/${jornada.id}/partidos`, dataToSend);
             toast.success('Partido programado con éxito');
             setIsPartidoModalOpen(false);
             onRefresh();
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Error al programar el partido');
+            console.error('Error al programar partido:', error.response?.data);
+            const msg = error.response?.data?.message || 'Error al programar el partido';
+            setFormError(msg);
+            toast.error(msg, {
+                duration: 5000,
+                position: 'top-center',
+                style: {
+                    border: '1px solid var(--color-terra)',
+                    padding: '16px',
+                    color: 'var(--color-slate)',
+                    backgroundColor: 'var(--color-terra-light)',
+                    fontWeight: '700',
+                },
+                iconTheme: {
+                    primary: 'var(--color-terra)',
+                    secondary: '#FFFAEE',
+                },
+            });
         } finally {
             setSaving(false);
         }
@@ -167,6 +219,56 @@ function JornadaDetail({
         }
     };
 
+    const handleArbitroSubmit = async (e) => {
+        e.preventDefault();
+        setSaving(true);
+        try {
+            await http.post(`/api/partidos/${targetPartidoId}/arbitros`, arbitroForm);
+            toast.success('Árbitro asignado con éxito');
+            setIsArbitroModalOpen(false);
+            onRefresh();
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Error al asignar árbitro');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDesasignarArbitro = async (partidoId, arbitroId) => {
+        if (!window.confirm('¿Deseas remover a este árbitro del encuentro?')) return;
+        try {
+            await http.delete(`/api/partidos/${partidoId}/arbitros/${arbitroId}`);
+            toast.success('Árbitro removido');
+            onRefresh();
+        } catch (error) {
+            toast.error('Error al remover árbitro');
+        }
+    };
+
+    const handleTogglePago = (pivotId, currentStatus, currentMotivo) => {
+        // Al abrir el modal, cargamos los valores actuales para que el usuario pueda verlos o editarlos.
+        setPaymentForm({ pivotId, pagado: !!currentStatus, motivo_pago: currentMotivo || '' });
+        setIsPagoModalOpen(true);
+    };
+
+    const handlePaymentSubmit = async (e) => {
+        e.preventDefault();
+        setSaving(true);
+        try {
+            await http.patch(`/api/partido-arbitro/${paymentForm.pivotId}/pago`, {
+                pagado: paymentForm.pagado,
+                motivo_pago: paymentForm.motivo_pago
+            });
+            toast.success('Estatus de pago actualizado');
+            setIsPagoModalOpen(false);
+            onRefresh();
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Error al actualizar pago');
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const openResultadoModal = (partido) => {
         setSelectedPartido(partido);
         setResultadoForm({ goles_local: partido.goles_local ?? 0, goles_visitante: partido.goles_visitante ?? 0 });
@@ -222,7 +324,23 @@ function JornadaDetail({
                     )}
 
                     {!jornada.cerrada && !jornada.suspendida && (
-                        <GradientButton onClick={() => { setPartidoForm({ equipo_local_id: '', equipo_visitante_id: '', cancha_id: '', cancha_horario_id: '' }); setIsPartidoModalOpen(true); }} icon={Plus} variant="primary">
+                        <GradientButton
+                            onClick={() => {
+                                setPartidoForm({
+                                    equipo_local_id: '',
+                                    equipo_visitante_id: '',
+                                    cancha_id: '',
+                                    cancha_horario_id: '',
+                                    arbitro_id: '',
+                                    pago_arbitro: torneo.costo_arbitraje_por_partido || 0,
+                                    rol: 'Central'
+                                });
+                                setFormError(null);
+                                setIsPartidoModalOpen(true);
+                            }}
+                            icon={Plus}
+                            variant="primary"
+                        >
                             Programar Encuentro
                         </GradientButton>
                     )}
@@ -283,212 +401,366 @@ function JornadaDetail({
                     </div>
                 ) : (
                     jornada.partidos.map(partido => {
-                                // A match is "done" if it's closed, suspended, or has a Jugado/Suspendido estado
-                                const esJugado = ['Jugado', 'jugado', 'finalizado', 'Finalizado'].includes(partido.estado?.nombre);
-                                const esFinalizado = esJugado || partido.cerrado;
-                                const hayEmpate = esFinalizado && Number(partido.goles_local) === Number(partido.goles_visitante);
-                                const ganaLocal = esFinalizado && Number(partido.goles_local) > Number(partido.goles_visitante);
-                                const ganaVisita = esFinalizado && Number(partido.goles_visitante) > Number(partido.goles_local);
+                        // A match is "done" if it's closed, suspended, or has a Jugado/Suspendido estado
+                        const esJugado = ['Jugado', 'jugado', 'finalizado', 'Finalizado'].includes(partido.estado?.nombre);
+                        const esFinalizado = esJugado || partido.cerrado;
+                        const hayEmpate = esFinalizado && Number(partido.goles_local) === Number(partido.goles_visitante);
+                        const ganaLocal = esFinalizado && Number(partido.goles_local) > Number(partido.goles_visitante);
+                        const ganaVisita = esFinalizado && Number(partido.goles_visitante) > Number(partido.goles_local);
 
-                                const colorLocal = hayEmpate ? '#c9a227' : ganaLocal ? '#2d8653' : 'var(--color-slate)';
-                                const colorVisita = hayEmpate ? '#c9a227' : ganaVisita ? '#2d8653' : 'var(--color-slate)';
+                        const colorLocal = hayEmpate ? '#c9a227' : ganaLocal ? '#2d8653' : 'var(--color-slate)';
+                        const colorVisita = hayEmpate ? '#c9a227' : ganaVisita ? '#2d8653' : 'var(--color-slate)';
 
-                                return (
-                        <div key={partido.id} style={{
-                            backgroundColor: partido.suspendido ? 'rgba(192,68,42,0.03)' : 'var(--color-bg-surface)',
-                            borderRadius: 'var(--radius-md)',
-                            border: partido.suspendido ? '1px solid rgba(192,68,42,0.2)' : '1px solid var(--color-border-subtle)',
-                            boxShadow: 'var(--shadow-soft)',
-                            transition: 'all 0.2s ease',
-                            overflow: 'hidden'
-                        }}>
-                            {/* Suspension Banner */}
-                            {partido.suspendido && (
-                                <div style={{ padding: '8px 20px', backgroundColor: 'rgba(192,68,42,0.06)', borderBottom: '1px solid rgba(192,68,42,0.15)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--color-terra)', fontWeight: 700 }}>
-                                        <AlertCircle size={14} />
-                                        Partido Suspendido: <em style={{ fontWeight: 400 }}>"{partido.motivo_suspension}"</em>
-                                    </div>
-                                    {!jornada.cerrada && !jornada.suspendida && (
-                                        <button
-                                            onClick={() => handleReactivarPartido(partido.id)}
-                                            style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '4px 10px', color: 'var(--color-sage)', background: 'var(--color-sage-light)', border: '1px solid rgba(58,107,82,0.15)', borderRadius: '6px', cursor: 'pointer', fontSize: '11px', fontWeight: 700 }}
-                                        >
-                                            <Play size={12} /> Reactivar
-                                        </button>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Match Row */}
-                            <div style={{ padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '24px' }}>
-                                {/* Team Local */}
-                                <div style={{ flex: 1, textAlign: 'right' }}>
-                                    <div style={{ fontWeight: ganaLocal || hayEmpate ? 900 : 700, color: colorLocal, fontSize: '16px', fontFamily: 'var(--font-display)', transition: 'color 0.3s' }}>
-                                        {partido.equipo_local?.nombre_mostrado}
-                                    </div>
-                                </div>
-
-                                {/* Center Score/VS */}
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '160px' }}>
-                                    {esFinalizado ? (
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <div style={{
-                                                fontSize: '28px', fontWeight: 900,
-                                                backgroundColor: ganaLocal ? 'rgba(45,134,83,0.9)' : hayEmpate ? 'rgba(201,162,39,0.9)' : 'var(--color-slate)',
-                                                color: 'white', padding: '4px 16px', borderRadius: '8px',
-                                                minWidth: '54px', textAlign: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                                                transition: 'background-color 0.3s'
-                                            }}>{partido.goles_local}</div>
-                                            <span style={{ color: 'var(--color-gold)', fontWeight: 900, fontSize: '22px' }}>:</span>
-                                            <div style={{
-                                                fontSize: '28px', fontWeight: 900,
-                                                backgroundColor: ganaVisita ? 'rgba(45,134,83,0.9)' : hayEmpate ? 'rgba(201,162,39,0.9)' : 'var(--color-slate)',
-                                                color: 'white', padding: '4px 16px', borderRadius: '8px',
-                                                minWidth: '54px', textAlign: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                                                transition: 'background-color 0.3s'
-                                            }}>{partido.goles_visitante}</div>
+                        return (
+                            <div key={partido.id} style={{
+                                backgroundColor: partido.suspendido ? 'rgba(192,68,42,0.03)' : 'var(--color-bg-surface)',
+                                borderRadius: 'var(--radius-md)',
+                                border: partido.suspendido ? '1px solid rgba(192,68,42,0.2)' : '1px solid var(--color-border-subtle)',
+                                boxShadow: 'var(--shadow-soft)',
+                                transition: 'all 0.2s ease',
+                                overflow: 'hidden'
+                            }}>
+                                {/* Suspension Banner */}
+                                {partido.suspendido && (
+                                    <div style={{ padding: '8px 20px', backgroundColor: 'rgba(192,68,42,0.06)', borderBottom: '1px solid rgba(192,68,42,0.15)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--color-terra)', fontWeight: 700 }}>
+                                            <AlertCircle size={14} />
+                                            Partido Suspendido: <em style={{ fontWeight: 400 }}>"{partido.motivo_suspension}"</em>
                                         </div>
-                                    ) : (
-                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                            {partido.suspendido ? (
-                                                <div style={{ fontSize: '10px', color: 'var(--color-terra)', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '2px', textAlign: 'center' }}>NO<br/>REALIZADO</div>
-                                            ) : (
-                                                <>
-                                                    <div style={{ fontSize: '11px', color: 'var(--color-gold)', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '3px', marginBottom: '4px' }}>VS</div>
-                                                    {partido.fecha && (
-                                                        <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-secondary)' }}>
-                                                            {new Date(partido.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} HRS
-                                                        </div>
-                                                    )}
-                                                </>
+                                        {!jornada.cerrada && !jornada.suspendida && (
+                                            <button
+                                                onClick={() => handleReactivarPartido(partido.id)}
+                                                style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '4px 10px', color: 'var(--color-sage)', background: 'var(--color-sage-light)', border: '1px solid rgba(58,107,82,0.15)', borderRadius: '6px', cursor: 'pointer', fontSize: '11px', fontWeight: 700 }}
+                                            >
+                                                <Play size={12} /> Reactivar
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Match Row */}
+                                <div style={{ padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '24px' }}>
+                                    {/* Team Local */}
+                                    <div style={{ flex: 1, textAlign: 'right' }}>
+                                        <div style={{ fontWeight: ganaLocal || hayEmpate ? 900 : 700, color: colorLocal, fontSize: '16px', fontFamily: 'var(--font-display)', transition: 'color 0.3s' }}>
+                                            {partido.equipo_local?.nombre_mostrado}
+                                        </div>
+                                    </div>
+
+                                    {/* Center Score/VS */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '160px' }}>
+                                        {esFinalizado ? (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <div style={{
+                                                    fontSize: '28px', fontWeight: 900,
+                                                    backgroundColor: ganaLocal ? 'rgba(45,134,83,0.9)' : hayEmpate ? 'rgba(201,162,39,0.9)' : 'var(--color-slate)',
+                                                    color: 'white', padding: '4px 16px', borderRadius: '8px',
+                                                    minWidth: '54px', textAlign: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                                                    transition: 'background-color 0.3s'
+                                                }}>{partido.goles_local}</div>
+                                                <span style={{ color: 'var(--color-gold)', fontWeight: 900, fontSize: '22px' }}>:</span>
+                                                <div style={{
+                                                    fontSize: '28px', fontWeight: 900,
+                                                    backgroundColor: ganaVisita ? 'rgba(45,134,83,0.9)' : hayEmpate ? 'rgba(201,162,39,0.9)' : 'var(--color-slate)',
+                                                    color: 'white', padding: '4px 16px', borderRadius: '8px',
+                                                    minWidth: '54px', textAlign: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                                                    transition: 'background-color 0.3s'
+                                                }}>{partido.goles_visitante}</div>
+                                            </div>
+                                        ) : (
+                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                {partido.suspendido ? (
+                                                    <div style={{ fontSize: '10px', color: 'var(--color-terra)', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '2px', textAlign: 'center' }}>NO<br />REALIZADO</div>
+                                                ) : (
+                                                    <>
+                                                        <div style={{ fontSize: '11px', color: 'var(--color-gold)', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '3px', marginBottom: '4px' }}>VS</div>
+                                                        {partido.fecha && (
+                                                            <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-secondary)' }}>
+                                                                {new Date(partido.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} HRS
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </div>
+                                        )}
+                                        <div style={{
+                                            marginTop: '10px', fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', padding: '2px 10px', borderRadius: '20px',
+                                            backgroundColor: partido.cerrado ? 'var(--color-terra-light)' : partido.suspendido ? 'rgba(192,68,42,0.08)' : esFinalizado ? 'rgba(45,134,83,0.1)' : 'var(--color-border-subtle)',
+                                            color: partido.cerrado ? 'var(--color-terra)' : partido.suspendido ? 'var(--color-terra)' : esFinalizado ? '#2d8653' : 'var(--color-text-muted)',
+                                            border: '1px solid rgba(0,0,0,0.05)'
+                                        }}>
+                                            {partido.cerrado ? 'ACTA CERRADA' : partido.suspendido ? 'SUSPENDIDO' : (partido.estado?.nombre?.toUpperCase() || 'PROGRAMADO')}
+                                        </div>
+                                        <div style={{ marginTop: '8px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                            <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-slate)' }}>📍 {partido.cancha?.nombre || 'Sede por definir'}</div>
+                                            {partido.canchaHorario && (
+                                                <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-text-muted)' }}>
+                                                    🕒 {diaSemanaMap[partido.canchaHorario.dia_semana]} - {formatHora(partido.canchaHorario.hora)}
+                                                </div>
+                                            )}
+                                            {(!partido.arbitros || partido.arbitros.length === 0) && (
+                                                <div style={{
+                                                    marginTop: '4px',
+                                                    fontSize: '10px',
+                                                    fontWeight: 800,
+                                                    color: 'var(--color-terra)',
+                                                    backgroundColor: 'var(--color-terra-light)',
+                                                    padding: '2px 8px',
+                                                    borderRadius: '4px',
+                                                    textTransform: 'uppercase',
+                                                    display: 'inline-block'
+                                                }}>
+                                                    ⚠️ por asignar árbitro
+                                                </div>
                                             )}
                                         </div>
-                                    )}
-                                    <div style={{ marginTop: '10px', fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', padding: '2px 10px', borderRadius: '20px',
-                                        backgroundColor: partido.cerrado ? 'var(--color-terra-light)' : partido.suspendido ? 'rgba(192,68,42,0.08)' : esFinalizado ? 'rgba(45,134,83,0.1)' : 'var(--color-border-subtle)',
-                                        color: partido.cerrado ? 'var(--color-terra)' : partido.suspendido ? 'var(--color-terra)' : esFinalizado ? '#2d8653' : 'var(--color-text-muted)',
-                                        border: '1px solid rgba(0,0,0,0.05)' }}>
-                                        {partido.cerrado ? 'ACTA CERRADA' : partido.suspendido ? 'SUSPENDIDO' : (partido.estado?.nombre?.toUpperCase() || 'PROGRAMADO')}
                                     </div>
-                                    <div style={{ marginTop: '8px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                        <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-slate)' }}>📍 {partido.cancha?.nombre || 'Sede por definir'}</div>
-                                        {partido.canchaHorario && (
-                                            <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-text-muted)' }}>
-                                                🕒 {diaSemanaMap[partido.canchaHorario.dia_semana]} - {formatHora(partido.canchaHorario.hora)}
-                                            </div>
+
+                                    {/* Team Visitor */}
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ fontWeight: ganaVisita || hayEmpate ? 900 : 700, color: colorVisita, fontSize: '16px', fontFamily: 'var(--font-display)', transition: 'color 0.3s' }}>
+                                            {partido.equipo_visitante?.nombre_mostrado}
+                                        </div>
+                                    </div>
+
+                                    {/* Actions */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '6px', minWidth: '100px' }}>
+                                        {!partido.cerrado && !jornada.cerrada && !jornada.suspendida && !partido.suspendido && (
+                                            <>
+                                                <button
+                                                    onClick={() => openResultadoModal(partido)}
+                                                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '7px 12px', color: 'var(--color-sage)', border: '1px solid rgba(58,107,82,0.1)', background: 'var(--color-sage-light)', borderRadius: '6px', fontSize: '10px', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase' }}
+                                                    title="Capturar Marcador"
+                                                >
+                                                    <Trophy size={14} /> <span>Marcador</span>
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setTargetPartidoId(partido.id);
+                                                        setArbitroForm({ arbitro_id: '', rol: 'Central', pago: torneo.costo_arbitraje_por_partido || 0 });
+                                                        setIsArbitroModalOpen(true);
+                                                    }}
+                                                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '7px 12px', color: 'var(--color-gold)', border: '1px solid rgba(212,175,55,0.1)', background: 'var(--color-gold-light)', borderRadius: '6px', fontSize: '10px', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase' }}
+                                                    title="Asignar Árbitro"
+                                                >
+                                                    <Shield size={14} /> <span>Árbitro</span>
+                                                </button>
+                                                {esFinalizado && (
+                                                    <button
+                                                        onClick={() => handleClosePartido(partido.id)}
+                                                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '7px 12px', color: 'var(--color-terra)', border: '1px solid rgba(192,68,42,0.1)', background: 'var(--color-terra-light)', borderRadius: '6px', fontSize: '10px', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase' }}
+                                                        title="Cerrar Partido (Acta)"
+                                                    >
+                                                        <Check size={14} /> <span>Cerrar</span>
+                                                    </button>
+                                                )}
+                                                <button
+                                                    onClick={() => { setSuspendPartidoId(partido.id); setMotivoPartido(''); setIsPartidoSuspensionModalOpen(true); }}
+                                                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '7px 12px', color: 'var(--color-text-muted)', border: '1px solid var(--color-border-subtle)', background: 'var(--color-bg-surface)', borderRadius: '6px', fontSize: '10px', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase' }}
+                                                    title="Marcar como No Realizado"
+                                                >
+                                                    <Pause size={14} /> <span>Suspender</span>
+                                                </button>
+                                            </>
                                         )}
                                     </div>
                                 </div>
 
-                                {/* Team Visitor */}
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontWeight: ganaVisita || hayEmpate ? 900 : 700, color: colorVisita, fontSize: '16px', fontFamily: 'var(--font-display)', transition: 'color 0.3s' }}>
-                                        {partido.equipo_visitante?.nombre_mostrado}
-                                    </div>
-                                </div>
+                                {/* Referee Section */}
+                                {(partido.arbitros && partido.arbitros.length > 0) && (
+                                    <div style={{ padding: '12px 24px', backgroundColor: 'var(--color-bg-surface-alt)', borderTop: '1px solid var(--color-border-subtle)', display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                        <div style={{ fontSize: '10px', fontWeight: 900, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <Shield size={12} /> Cuerpo Arbitral:
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                            {partido.arbitros.map(arb => (
+                                                <div key={arb.id} style={{
+                                                    display: 'flex', alignItems: 'center', gap: '8px',
+                                                    padding: '6px 10px', backgroundColor: 'var(--color-bg-surface)',
+                                                    borderRadius: '8px', border: '1px solid var(--color-border-subtle)',
+                                                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                                                }}>
+                                                    <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-slate)' }}>{arb.nombre}</div>
+                                                    <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-gold)', backgroundColor: 'var(--color-gold-light)', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>{arb.pivot.rol}</div>
 
-                                {/* Actions */}
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', minWidth: '44px' }}>
-                                    {!partido.cerrado && !jornada.cerrada && !jornada.suspendida && !partido.suspendido && (
-                                        <>
-                                            <button
-                                                onClick={() => openResultadoModal(partido)}
-                                                style={{ padding: '7px 10px', color: 'var(--color-sage)', border: '1px solid rgba(58,107,82,0.1)', background: 'var(--color-sage-light)', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
-                                                title="Capturar Marcador"
-                                            ><Trophy size={14} /></button>
-                                            {esFinalizado && (
-                                                <button
-                                                    onClick={() => handleClosePartido(partido.id)}
-                                                    style={{ padding: '7px 10px', color: 'var(--color-terra)', border: '1px solid rgba(192,68,42,0.1)', background: 'var(--color-terra-light)', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
-                                                    title="Cerrar Partido (Acta)"
-                                                ><Check size={14} /></button>
-                                            )}
-                                            <button
-                                                onClick={() => { setSuspendPartidoId(partido.id); setMotivoPartido(''); setIsPartidoSuspensionModalOpen(true); }}
-                                                style={{ padding: '7px 10px', color: 'var(--color-text-muted)', border: '1px solid var(--color-border-subtle)', background: 'var(--color-bg-surface)', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
-                                                title="Marcar como No Realizado"
-                                            ><Pause size={14} /></button>
-                                        </>
-                                    )}
-                                </div>
+                                                    {arb.pivot.motivo_pago && (
+                                                        <div title={arb.pivot.motivo_pago} style={{ cursor: 'help', color: 'var(--color-terra)', display: 'flex', alignItems: 'center' }}>
+                                                            <AlertCircle size={12} />
+                                                        </div>
+                                                    )}
+
+                                                    {!partido.cerrado && !jornada.cerrada && (
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '4px', borderLeft: '1px solid var(--color-border-subtle)', paddingLeft: '8px' }}>
+                                                            <button
+                                                                onClick={() => handleTogglePago(arb.pivot.id, arb.pivot.pagado, arb.pivot.motivo_pago)}
+                                                                style={{
+                                                                    padding: '4px', borderRadius: '4px', border: 'none', cursor: 'pointer',
+                                                                    color: arb.pivot.pagado ? 'var(--color-sage)' : 'var(--color-text-muted)',
+                                                                    backgroundColor: arb.pivot.pagado ? 'var(--color-sage-light)' : 'transparent',
+                                                                    display: 'flex', alignItems: 'center', gap: '4px'
+                                                                }}
+                                                                title={arb.pivot.pagado ? 'Editar pago / Reporte' : 'Registrar pago / Reporte'}
+                                                            >
+                                                                <DollarSign size={12} />
+                                                                {arb.pivot.pagado && <span style={{ fontSize: '9px', fontWeight: 800 }}>PAGADO</span>}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDesasignarArbitro(partido.id, arb.id)}
+                                                                style={{ padding: '4px', borderRadius: '4px', border: 'none', cursor: 'pointer', color: 'var(--color-danger)', backgroundColor: 'transparent' }}
+                                                                title="Remover árbitro"
+                                                            >
+                                                                <X size={12} />
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                    {(partido.cerrado || jornada.cerrada) && arb.pivot.pagado && (
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', paddingLeft: '4px', color: 'var(--color-sage)' }}>
+                                                            <Check size={12} />
+                                                            <span style={{ fontSize: '9px', fontWeight: 800 }}>PAGADO</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        </div>
-                                );
-                            })
+                        );
+                    })
                 )}
             </div>
 
             {/* ── Modal: Programar Partido ── */}
-            <Modal isOpen={isPartidoModalOpen} onClose={() => setIsPartidoModalOpen(false)} title="Programación de Encuentro">
-                <form onSubmit={handlePartidoSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label className="text-label" style={{ marginLeft: '4px' }}>Escuadra Local</label>
-                        <select style={inputStyle} value={partidoForm.equipo_local_id} onChange={e => setPartidoForm({ ...partidoForm, equipo_local_id: e.target.value })} required>
-                            <option value="">-- Seleccione equipo --</option>
-                            {equiposInscritos.map(eq => <option key={eq.id} value={eq.id} disabled={eq.id === partidoForm.equipo_visitante_id}>{eq.nombre_mostrado}</option>)}
-                        </select>
-                    </div>
-                    <div style={{ textAlign: 'center', fontSize: '10px', fontWeight: 900, color: 'var(--color-gold)', letterSpacing: '4px' }}>VS</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label className="text-label" style={{ marginLeft: '4px' }}>Escuadra Visitante</label>
-                        <select style={inputStyle} value={partidoForm.equipo_visitante_id} onChange={e => setPartidoForm({ ...partidoForm, equipo_visitante_id: e.target.value })} required>
-                            <option value="">-- Seleccione equipo --</option>
-                            {equiposInscritos.map(eq => <option key={eq.id} value={eq.id} disabled={eq.id === partidoForm.equipo_local_id}>{eq.nombre_mostrado}</option>)}
-                        </select>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '4px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <label className="text-label" style={{ marginLeft: '4px' }}>Sede del Encuentro</label>
-                            <select style={{ ...inputStyle, fontSize: '13px', padding: '10px 14px' }} value={partidoForm.cancha_id} onChange={e => {
-                                const value = e.target.value;
-                                setPartidoForm(prev => {
-                                    let nuevoHorarioId = '';
-                                    if (value && selectedLocalForm && value === selectedLocalForm.cancha_id) nuevoHorarioId = selectedLocalForm.cancha_horario_id || '';
-                                    else if (value && selectedVisitForm && value === selectedVisitForm.cancha_id) nuevoHorarioId = selectedVisitForm.cancha_horario_id || '';
-                                    return { ...prev, cancha_id: value, cancha_horario_id: nuevoHorarioId };
-                                });
-                            }}>
-                                <option value="">-- Seleccione una opción --</option>
-                                {selectedLocalForm?.cancha && <option value={selectedLocalForm.cancha_id}>Sede Local ({selectedLocalForm.cancha.nombre})</option>}
-                                {selectedVisitForm?.cancha && <option value={selectedVisitForm.cancha_id} disabled={selectedLocalForm?.cancha_id === selectedVisitForm.cancha_id}>Sede Visitante ({selectedVisitForm.cancha.nombre})</option>}
-                            </select>
+            <Modal isOpen={isPartidoModalOpen} onClose={() => setIsPartidoModalOpen(false)} title="Programación de Encuentro" maxWidth="max-w-4xl">
+                <form onSubmit={handlePartidoSubmit} style={{ display: 'flex', flexDirection: 'column', height: 'auto', maxHeight: 'calc(100vh - 160px)' }}>
+                    {/* Scrollable Content Area */}
+                    <div style={{ flex: 1, overflowY: 'auto', paddingRight: '8px', paddingBottom: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        
+                        {/* Team Selection Row */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '20px', padding: '10px 0' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <label className="text-label" style={{ marginLeft: '4px' }}>Escuadra Local</label>
+                                <select style={inputStyle} value={partidoForm.equipo_local_id} onChange={e => setPartidoForm({ ...partidoForm, equipo_local_id: e.target.value })} required>
+                                    <option value="">-- Seleccione equipo --</option>
+                                    {equiposInscritos.map(eq => <option key={eq.id} value={eq.id} disabled={eq.id === partidoForm.equipo_visitante_id}>{eq.nombre_mostrado}</option>)}
+                                </select>
+                            </div>
+                            <div style={{ padding: '24px 10px 0 10px', fontSize: '10px', fontWeight: 900, color: 'var(--color-gold)', letterSpacing: '2px' }}>VS</div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <label className="text-label" style={{ marginLeft: '4px' }}>Escuadra Visitante</label>
+                                <select style={inputStyle} value={partidoForm.equipo_visitante_id} onChange={e => setPartidoForm({ ...partidoForm, equipo_visitante_id: e.target.value })} required>
+                                    <option value="">-- Seleccione equipo --</option>
+                                    {equiposInscritos.map(eq => <option key={eq.id} value={eq.id} disabled={eq.id === partidoForm.equipo_local_id}>{eq.nombre_mostrado}</option>)}
+                                </select>
+                            </div>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <label className="text-label" style={{ marginLeft: '4px' }}>Horario de Juego</label>
-                            {(() => {
-                                // Find whichever team owns the selected cancha (local or visitor)
-                                const ownerEquipo = partidoForm.cancha_id
-                                    ? ([selectedLocalForm, selectedVisitForm].find(eq => eq?.cancha_id === partidoForm.cancha_id))
-                                    : null;
-                                const horarios = ownerEquipo?.cancha?.horarios ?? [];
-                                const habitualId = ownerEquipo?.cancha_horario_id ?? null;
-                                const filtered = horarios.filter(h =>
-                                    !torneo.dias_juego || torneo.dias_juego.length === 0 || torneo.dias_juego.includes(h.dia_semana)
-                                );
-                                return (
+
+                        {/* Venue and Schedule Row */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <label className="text-label" style={{ marginLeft: '4px' }}>Sede del Encuentro</label>
+                                <select style={{ ...inputStyle, fontSize: '13px', padding: '10px 14px' }} value={partidoForm.cancha_id} onChange={e => {
+                                    const value = e.target.value;
+                                    setPartidoForm(prev => {
+                                        let nuevoHorarioId = '';
+                                        if (value && selectedLocalForm && value === selectedLocalForm.cancha_id) nuevoHorarioId = selectedLocalForm.cancha_horario_id || '';
+                                        else if (value && selectedVisitForm && value === selectedVisitForm.cancha_id) nuevoHorarioId = selectedVisitForm.cancha_horario_id || '';
+                                        return { ...prev, cancha_id: value, cancha_horario_id: nuevoHorarioId };
+                                    });
+                                }}>
+                                    <option value="">-- Seleccione una sede --</option>
+                                    {selectedLocalForm?.cancha && <option value={selectedLocalForm.cancha_id}>Sede Local ({selectedLocalForm.cancha.nombre})</option>}
+                                    {selectedVisitForm?.cancha && <option value={selectedVisitForm.cancha_id} disabled={selectedLocalForm?.cancha_id === selectedVisitForm.cancha_id}>Sede Visitante ({selectedVisitForm.cancha.nombre})</option>}
+                                </select>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <label className="text-label" style={{ marginLeft: '4px' }}>Horario de Juego</label>
+                                {(() => {
+                                    const ownerEquipo = partidoForm.cancha_id
+                                        ? ([selectedLocalForm, selectedVisitForm].find(eq => eq?.cancha_id === partidoForm.cancha_id))
+                                        : null;
+                                    const horarios = ownerEquipo?.cancha?.horarios ?? [];
+                                    const habitualId = ownerEquipo?.cancha_horario_id ?? null;
+                                    const filtered = horarios.filter(h =>
+                                        !torneo.dias_juego || torneo.dias_juego.length === 0 || torneo.dias_juego.includes(h.dia_semana)
+                                    );
+                                    return (
+                                        <select
+                                            style={{ ...inputStyle, fontSize: '13px', padding: '10px 14px' }}
+                                            value={partidoForm.cancha_horario_id}
+                                            onChange={e => setPartidoForm({ ...partidoForm, cancha_horario_id: e.target.value })}
+                                            disabled={!partidoForm.cancha_id}
+                                        >
+                                            <option value="">-- Seleccione un horario --</option>
+                                            {filtered.map(h => (
+                                                <option key={h.id} value={h.id}>
+                                                    {diaSemanaMap[h.dia_semana]} - {formatHora(h.hora)} {h.id === habitualId ? '(Habitual)' : ''}
+                                                </option>
+                                            ))}
+                                            {filtered.length === 0 && partidoForm.cancha_id && (
+                                                <option disabled value="">Sin horarios disponibles para esta sede</option>
+                                            )}
+                                        </select>
+                                    );
+                                })()}
+                            </div>
+                        </div>
+
+                        {/* Referee Assignment Section */}
+                        <div style={{ padding: '20px', backgroundColor: 'var(--color-bg-surface-alt)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', marginTop: '4px' }}>
+                            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-gold)', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px' }}>Asignación de Árbitros (Opcional)</div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <label className="text-label" style={{ fontSize: '12px' }}>Seleccionar Árbitro</label>
                                     <select
-                                        style={{ ...inputStyle, fontSize: '13px', padding: '10px 14px' }}
-                                        value={partidoForm.cancha_horario_id}
-                                        onChange={e => setPartidoForm({ ...partidoForm, cancha_horario_id: e.target.value })}
-                                        disabled={!partidoForm.cancha_id}
+                                        style={{ ...inputStyle, padding: '10px 14px' }}
+                                        value={partidoForm.arbitro_id}
+                                        onChange={e => setPartidoForm({ ...partidoForm, arbitro_id: e.target.value })}
                                     >
-                                        <option value="">-- Seleccione una opción --</option>
-                                        {filtered.map(h => (
-                                            <option key={h.id} value={h.id}>
-                                                {diaSemanaMap[h.dia_semana]} - {formatHora(h.hora)} {h.id === habitualId ? '(Habitual)' : ''}
-                                            </option>
+                                        <option value="">-- Sin asignar —-</option>
+                                        {arbitrosCatalog.map(arb => (
+                                            <option key={arb.id} value={arb.id}>{arb.nombre}</option>
                                         ))}
-                                        {filtered.length === 0 && partidoForm.cancha_id && (
-                                            <option disabled value="">Sin horarios disponibles para esta sede</option>
-                                        )}
                                     </select>
-                                );
-                            })()}
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <label className="text-label" style={{ fontSize: '12px' }}>Rol</label>
+                                        <select
+                                            style={{ ...inputStyle, padding: '10px 14px' }}
+                                            value={partidoForm.rol}
+                                            onChange={e => setPartidoForm({ ...partidoForm, rol: e.target.value })}
+                                            disabled={!partidoForm.arbitro_id}
+                                        >
+                                            <option value="Central">Central</option>
+                                            <option value="Asistente 1">Asistente 1</option>
+                                            <option value="Asistente 2">Asistente 2</option>
+                                        </select>
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <label className="text-label" style={{ fontSize: '12px' }}>Pago ($)</label>
+                                        <input
+                                            type="number"
+                                            style={{ ...inputStyle, padding: '10px 14px' }}
+                                            value={partidoForm.pago_arbitro}
+                                            onChange={e => setPartidoForm({ ...partidoForm, pago_arbitro: e.target.value })}
+                                            disabled={!partidoForm.arbitro_id}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '12px', paddingTop: '24px', borderTop: '1px solid var(--color-border-subtle)' }}>
-                        <button type="button" onClick={() => setIsPartidoModalOpen(false)} className="btn btn-ghost">Cancelar</button>
+
+                    {/* Sticky Footer */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '16px', marginTop: '12px', paddingTop: '24px', borderTop: '1px solid var(--color-border-subtle)', backgroundColor: 'var(--color-bg-surface-alt)', margin: '0 -24px -24px -24px', padding: '16px 24px' }}>
+                        {formError && (
+                            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-terra)', backgroundColor: 'var(--color-terra-light)', padding: '10px 16px', borderRadius: 'var(--radius-md)', border: '1px solid rgba(192,68,42,0.2)', fontSize: '13px', fontWeight: 700, animation: 'shake 0.4s ease-in-out' }}>
+                                <AlertCircle size={16} />
+                                {formError}
+                            </div>
+                        )}
+                        <button type="button" onClick={() => { setIsPartidoModalOpen(false); setFormError(null); }} className="btn btn-ghost">Cancelar</button>
                         <GradientButton type="submit" disabled={saving} isLoading={saving} variant="primary">Agendar Partido</GradientButton>
                     </div>
                 </form>
@@ -634,6 +906,93 @@ function JornadaDetail({
                     )}
                 </div>
             </Modal>
+
+            {/* ── Modal: Asignar Árbitro ── */}
+            <Modal isOpen={isArbitroModalOpen} onClose={() => setIsArbitroModalOpen(false)} title="Asignación de Cuerpo Arbitral">
+                <form onSubmit={handleArbitroSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label className="text-label" style={{ marginLeft: '4px' }}>Seleccionar Árbitro</label>
+                        <select
+                            style={inputStyle}
+                            value={arbitroForm.arbitro_id}
+                            onChange={e => setArbitroForm({ ...arbitroForm, arbitro_id: e.target.value })}
+                            required
+                        >
+                            <option value="">-- Seleccione un árbitro --</option>
+                            {arbitrosCatalog.map(arb => (
+                                <option key={arb.id} value={arb.id}>{arb.nombre}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <label className="text-label" style={{ marginLeft: '4px' }}>Rol en el Encuentro</label>
+                            <select
+                                style={inputStyle}
+                                value={arbitroForm.rol}
+                                onChange={e => setArbitroForm({ ...arbitroForm, rol: e.target.value })}
+                                required
+                            >
+                                <option value="Central">Central (Principal)</option>
+                                <option value="Asistente 1">Asistente 1</option>
+                                <option value="Asistente 2">Asistente 2</option>
+                                <option value="Cuarto Árbitro">Cuarto Árbitro</option>
+                                <option value="Anotador">Anotador</option>
+                            </select>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <label className="text-label" style={{ marginLeft: '4px' }}>Pago Acordado ($)</label>
+                            <input
+                                type="number"
+                                style={inputStyle}
+                                value={arbitroForm.pago}
+                                onChange={e => setArbitroForm({ ...arbitroForm, pago: e.target.value })}
+                                required
+                                step="0.01"
+                            />
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '12px', paddingTop: '24px', borderTop: '1px solid var(--color-border-subtle)' }}>
+                        <button type="button" onClick={() => setIsArbitroModalOpen(false)} className="btn btn-ghost">Cancelar</button>
+                        <GradientButton type="submit" disabled={saving} isLoading={saving} variant="primary">Asignar al Encuentro</GradientButton>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* ── Modal: Pago de Arbitraje / Reporte ── */}
+            <Modal isOpen={isPagoModalOpen} onClose={() => setIsPagoModalOpen(false)} title="Seguimiento de Pago de Arbitraje">
+                <form onSubmit={handlePaymentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div style={{ padding: '12px 16px', backgroundColor: 'var(--color-bg-surface-alt)', border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-md)' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>Estatus del Pago</div>
+                        <div style={{ display: 'flex', gap: '24px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 600, color: paymentForm.pagado ? 'var(--color-sage)' : 'var(--color-text-primary)' }}>
+                                <input type="radio" checked={paymentForm.pagado === true} onChange={() => setPaymentForm({ ...paymentForm, pagado: true })} /> Sí, se efectuó el pago
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 600, color: !paymentForm.pagado ? 'var(--color-terra)' : 'var(--color-text-primary)' }}>
+                                <input type="radio" checked={paymentForm.pagado === false} onChange={() => setPaymentForm({ ...paymentForm, pagado: false })} /> No se realizó pago
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label className="text-label" style={{ marginLeft: '4px' }}>Motivo / Reporte de Incidencia</label>
+                        <textarea
+                            style={{ width: '100%', minHeight: '100px', resize: 'none', backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-text-primary)', outline: 'none' }}
+                            value={paymentForm.motivo_pago}
+                            onChange={e => setPaymentForm({ ...paymentForm, motivo_pago: e.target.value })}
+                            placeholder="Escribe aquí si hubo alguna situación especial, sanción o motivo por el cual no se pagó completo/nada."
+                        />
+                        <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Este reporte es interno para administración.</p>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '4px', paddingTop: '20px', borderTop: '1px solid var(--color-border-subtle)' }}>
+                        <button type="button" onClick={() => setIsPagoModalOpen(false)} className="btn btn-ghost">Cancelar</button>
+                        <GradientButton type="submit" disabled={saving} isLoading={saving} variant="primary">Guardar Estatus</GradientButton>
+                    </div>
+                </form>
+            </Modal>
         </div>
     );
 }
@@ -644,7 +1003,7 @@ function JornadaDetail({
 export default function JornadasManager({ torneo }) {
     const [jornadas, setJornadas] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedJornada, setSelectedJornada] = useState(null);
+    const [selectedJornadaId, setSelectedJornadaId] = useState(null);
 
     const [isJornadaModalOpen, setIsJornadaModalOpen] = useState(false);
     const [jornadaForm, setJornadaForm] = useState({ numero: '', fecha_inicio: '', fecha_fin: '' });
@@ -659,11 +1018,6 @@ export default function JornadasManager({ torneo }) {
         try {
             const response = await http.get(`/api/torneos/${torneo.id}/jornadas`);
             setJornadas(response.data);
-            // Refresh selected jornada if any
-            if (selectedJornada) {
-                const updated = response.data.find(j => j.id === selectedJornada.id);
-                if (updated) setSelectedJornada(updated);
-            }
         } catch (error) {
             toast.error('Error al cargar jornadas');
         } finally {
@@ -763,20 +1117,22 @@ export default function JornadasManager({ torneo }) {
 
     // ── Status badge helper ──
     const StatusBadge = ({ jornada }) => {
-        if (jornada.cerrada) return <span style={{ fontSize: '10px', backgroundColor: 'var(--color-border-subtle)', color: 'var(--color-text-muted)', padding: '3px 10px', borderRadius: '10px', textTransform: 'uppercase', fontWeight: 700 }}>Finalizada</span>;
-        if (jornada.suspendida) return <span style={{ fontSize: '10px', backgroundColor: 'rgba(212,175,55,0.15)', color: 'var(--color-gold)', padding: '3px 10px', borderRadius: '10px', textTransform: 'uppercase', fontWeight: 700 }}>Suspendida</span>;
-        return <span style={{ fontSize: '10px', backgroundColor: 'rgba(58,107,82,0.12)', color: 'var(--color-sage)', padding: '3px 10px', borderRadius: '10px', textTransform: 'uppercase', fontWeight: 700 }}>En Curso</span>;
+        if (jornada.cerrada) return <span style={{ fontSize: '10px', backgroundColor: 'var(--color-slate-light)', color: 'var(--color-slate)', padding: '3px 10px', borderRadius: '10px', textTransform: 'uppercase', fontWeight: 800 }}>Finalizada</span>;
+        if (jornada.suspendida) return <span style={{ fontSize: '10px', backgroundColor: 'var(--color-terra-light)', color: 'var(--color-terra)', padding: '3px 10px', borderRadius: '10px', textTransform: 'uppercase', fontWeight: 800 }}>Suspendida</span>;
+        return <span style={{ fontSize: '10px', backgroundColor: 'rgba(58,107,82,0.12)', color: 'var(--color-sage)', padding: '3px 10px', borderRadius: '10px', textTransform: 'uppercase', fontWeight: 800 }}>En Curso</span>;
     };
 
     // ── Detail‑view is active ──
-    if (selectedJornada) {
+    const selectedJornadaData = jornadas.find(j => j.id === selectedJornadaId);
+
+    if (selectedJornadaData) {
         return (
             <Card title={`Torneo · ${torneo.nombre}`}>
                 <JornadaDetail
-                    jornada={selectedJornada}
+                    jornada={selectedJornadaData}
                     torneo={torneo}
                     equiposInscritos={equiposInscritos}
-                    onBack={() => setSelectedJornada(null)}
+                    onBack={() => setSelectedJornadaId(null)}
                     onRefresh={fetchJornadas}
                 />
             </Card>
@@ -803,7 +1159,7 @@ export default function JornadasManager({ torneo }) {
                     {jornadas.map(jornada => (
                         <div
                             key={jornada.id}
-                            onClick={() => setSelectedJornada(jornada)}
+                            onClick={() => setSelectedJornadaId(jornada.id)}
                             style={{
                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                 padding: '18px 24px',
@@ -821,7 +1177,7 @@ export default function JornadasManager({ torneo }) {
                             {/* Number badge */}
                             <div style={{
                                 width: '44px', height: '44px', borderRadius: 'var(--radius-sm)',
-                                backgroundColor: jornada.cerrada ? 'var(--color-text-muted)' : 'var(--color-gold)',
+                                backgroundColor: jornada.cerrada ? 'var(--color-slate)' : jornada.suspendida ? 'var(--color-terra)' : 'var(--color-gold)',
                                 color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 fontWeight: 900, fontSize: '18px', fontFamily: 'var(--font-display)',
                                 flexShrink: 0, boxShadow: '0 4px 8px rgba(0,0,0,0.1)'

@@ -9,6 +9,7 @@ use App\Models\Partido;
 use App\Models\EquipoTorneo;
 use App\Models\CatalogoEstadoPartido;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
 
 class PartidoController extends Controller
 {
@@ -20,6 +21,8 @@ class PartidoController extends Controller
      */
     public function store(Request $request, Jornada $jornada)
     {
+        Log::info('Tentativa de programar partido en jornada ' . $jornada->id, $request->all());
+
         // Validar que la jornada no esté cerrada
         if ($jornada->cerrada) {
             return response()->json([
@@ -27,16 +30,27 @@ class PartidoController extends Controller
             ], 422);
         }
 
-        $validated = $request->validate([
-            'equipo_local_id' => 'required|uuid|exists:equipos,id',
-            'equipo_visitante_id' => 'required|uuid|exists:equipos,id|different:equipo_local_id',
-            'fecha' => 'nullable|date',
-            'estado_partido_id' => 'nullable|uuid|exists:catalogo_estados_partido,id',
-            'cancha_id' => 'nullable|uuid|exists:canchas,id',
-            'cancha_horario_id' => 'nullable|uuid|exists:cancha_horarios,id'
-        ], [
-            'equipo_visitante_id.different' => 'Un equipo no puede jugar contra sí mismo.'
-        ]);
+        try {
+            $validated = $request->validate([
+                'equipo_local_id' => 'required|uuid|exists:equipos,id',
+                'equipo_visitante_id' => 'required|uuid|exists:equipos,id|different:equipo_local_id',
+                'fecha' => 'nullable|date',
+                'estado_partido_id' => 'nullable|uuid|exists:catalogo_estados_partido,id',
+                'cancha_id' => 'nullable|uuid|exists:canchas,id',
+                'cancha_horario_id' => 'nullable|uuid|exists:cancha_horarios,id',
+                'arbitro_id' => 'nullable|uuid|exists:arbitros,id',
+                'rol' => 'nullable|string|max:50',
+                'pago_arbitro' => 'nullable|numeric|min:0'
+            ], [
+                'equipo_visitante_id.different' => 'Un equipo no puede jugar contra sí mismo.'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('Error de validación al crear partido:', $e->errors());
+            return response()->json([
+                'message' => 'Datos inválidos.',
+                'errors' => $e->errors()
+            ], 422);
+        }
 
         $torneo_id = $jornada->torneo_id;
 
@@ -47,6 +61,18 @@ class PartidoController extends Controller
         if (!$localInscrito || !$visitanteInscrito) {
             return response()->json([
                 'message' => 'Ambos equipos deben estar inscritos en el torneo para poder enfrentarse.'
+            ], 422);
+        }
+
+        // VALIDACIÓN: Evitar duplicados antes de insertar (Unique Constraint Check)
+        $existePartido = Partido::where('jornada_id', $jornada->id)
+            ->where('equipo_local_id', $validated['equipo_local_id'])
+            ->where('equipo_visitante_id', $validated['equipo_visitante_id'])
+            ->exists();
+
+        if ($existePartido) {
+            return response()->json([
+                'message' => 'Este encuentro ya ha sido programado en esta jornada.'
             ], 422);
         }
 
@@ -100,26 +126,94 @@ class PartidoController extends Controller
             ], 422);
         }
 
-        $partido = new Partido();
-        $partido->id = \Illuminate\Support\Str::uuid()->toString();
-        $partido->jornada_id = $jornada->id;
-        $partido->equipo_local_id = $validated['equipo_local_id'];
-        $partido->equipo_visitante_id = $validated['equipo_visitante_id'];
-        $partido->estado_partido_id = $estadoId;
-        $partido->fecha = $fechaFinal;
-        
-        // Asignar cancha y horario explícitos, o intentar usar los del equipo local
+        // Obtener el equipo local para deducir cancha si es necesario
         $equipoLocal = \App\Models\Equipo::find($validated['equipo_local_id']);
-        $partido->cancha_id = $validated['cancha_id'] ?? $equipoLocal?->cancha_id;
-        $partido->cancha_horario_id = $validated['cancha_horario_id'] ?? $equipoLocal?->cancha_horario_id;
-        
-        $partido->cerrado = false;
-        $partido->save();
 
-        return response()->json([
-            'message' => 'Partido programado con éxito.',
-            'data' => $partido
-        ], 201);
+        // VALIDACIÓN: Evitar que se empalmen encuentros en la misma cancha/horario el mismo día
+        // Nota: fechaFinal ya trae hora si se calculó desde horario
+        $canchaId = $validated['cancha_id'] ?? $equipoLocal?->cancha_id;
+        $conflictVenue = Partido::where('fecha', $fechaFinal)
+            ->where('cancha_id', $canchaId)
+            ->exists();
+
+        if ($conflictVenue) {
+            return response()->json([
+                'message' => 'Esta sede y horario ya se encuentran ocupados por otro encuentro programado en esta fecha exacta.'
+            ], 422);
+        }
+
+        // VALIDACIÓN: Evitar que los equipos tengan otro encuentro a la misma hora
+        $conflictTeam = Partido::where('fecha', $fechaFinal)
+            ->where(function($q) use ($validated) {
+                $q->where('equipo_local_id', $validated['equipo_local_id'])
+                  ->orWhere('equipo_visitante_id', $validated['equipo_local_id'])
+                  ->orWhere('equipo_local_id', $validated['equipo_visitante_id'])
+                  ->orWhere('equipo_visitante_id', $validated['equipo_visitante_id']);
+            })->exists();
+
+        if ($conflictTeam) {
+            return response()->json([
+                'message' => 'Uno o ambos equipos ya tienen un encuentro programado en esta misma fecha y horario.'
+            ], 422);
+        }
+
+        return \Illuminate\Support\Facades\DB::transaction(function() use ($request, $jornada, $validated, $estadoId, $fechaFinal, $torneo_id) {
+            try {
+                $partido = new Partido();
+                $partido->id = \Illuminate\Support\Str::uuid()->toString();
+                $partido->jornada_id = $jornada->id;
+                $partido->equipo_local_id = $validated['equipo_local_id'];
+                $partido->equipo_visitante_id = $validated['equipo_visitante_id'];
+                $partido->estado_partido_id = $estadoId;
+                $partido->fecha = $fechaFinal;
+                
+                // Asignar cancha y horario explícitos, o intentar usar los del equipo local
+                $equipoLocal = \App\Models\Equipo::find($validated['equipo_local_id']);
+                $partido->cancha_id = $validated['cancha_id'] ?? $equipoLocal?->cancha_id;
+                $partido->cancha_horario_id = $validated['cancha_horario_id'] ?? $equipoLocal?->cancha_horario_id;
+                
+                $partido->cerrado = false;
+                $partido->save();
+
+                // Asignar árbitro si se provee en la creación
+                if (!empty($validated['arbitro_id'])) {
+                    // Validar que el árbitro esté inscrito EN ESTE TORNEO
+                    $inscrito = \Illuminate\Support\Facades\DB::table('torneo_arbitro')
+                        ->where('torneo_id', $torneo_id)
+                        ->where('arbitro_id', $validated['arbitro_id'])
+                        ->exists();
+
+                    if (!$inscrito) {
+                        return response()->json([
+                            'message' => 'El árbitro seleccionado no está registrado en este torneo.'
+                        ], 422);
+                    }
+
+                    $partido->arbitros()->attach($validated['arbitro_id'], [
+                        'id' => \Illuminate\Support\Str::uuid()->toString(),
+                        'rol' => $validated['rol'] ?? 'Central',
+                        'pago' => (float)($validated['pago_arbitro'] ?: 0),
+                        'pagado' => false
+                    ]);
+                }
+
+                Log::info('Partido creado con éxito: ' . $partido->id);
+
+                return response()->json([
+                    'message' => 'Partido programado con éxito.',
+                    'data' => $partido->load('arbitros')
+                ], 201);
+
+            } catch (\Exception $e) {
+                Log::error('Excepción al crear partido: ' . $e->getMessage(), [
+                    'trace' => $e->getTraceAsString()
+                ]);
+                return response()->json([
+                    'message' => 'Error interno al procesar el registro del partido.',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+        });
     }
 
     /**

@@ -34,4 +34,10 @@ class Arbitro extends Model
          ->withPivot('rol', 'pago', 'pagado')
          ->withTimestamps();
     }
+
+    public function torneos()
+    {
+        return $this->belongsToMany(Torneo::class, 'torneo_arbitro')
+            ->withTimestamps();
+    }
 }

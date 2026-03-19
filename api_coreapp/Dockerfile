@@ -1,41 +1,45 @@
-FROM php:8.2-cli
+# ======================
+# STAGE 1: Build assets
+# ======================
+FROM node:18 as node
 
-# Dependencias sistema + Node + PHP extensions
+WORKDIR /app
+COPY . .
+
+RUN npm install
+RUN npm run build
+
+# ======================
+# STAGE 2: PHP
+# ======================
+FROM php:8.2-fpm
+
 RUN apt-get update && apt-get install -y \
     git unzip curl libpq-dev libzip-dev libonig-dev \
-    nodejs npm \
-    && docker-php-ext-install pdo pdo_pgsql zip mbstring \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && docker-php-ext-install pdo pdo_pgsql zip mbstring
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
-# Copiar proyecto
 COPY . .
 
-# Instalar dependencias PHP
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Instalar dependencias frontend
-RUN npm install
+# Copiar assets compilados
+COPY --from=node /app/public/build /var/www/public/build
 
-# Build Vite producción
-RUN npm run build
-
-# Permisos Laravel
+# Permisos
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Puerto Render
-ENV PORT=10000
-EXPOSE 10000
+# ======================
+# NGINX
+# ======================
+FROM nginx:alpine
 
-# Arranque
-CMD php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan view:cache && \
-    php artisan migrate --force && \
-    php artisan db:seed --force && \
-    php artisan serve --host=0.0.0.0 --port=$PORT
+COPY --from=php:8.2-fpm /var/www /var/www
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80

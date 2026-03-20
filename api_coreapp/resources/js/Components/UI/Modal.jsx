@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 export default function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl' }) {
@@ -9,13 +10,13 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
 
     if (!isOpen) return null;
 
-    return (
+    const modalContent = (
         <div
             className="animate-fade-in"
             style={{
                 position: 'fixed',
                 inset: 0,
-                zIndex: 50,
+                zIndex: 9999,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -45,7 +46,8 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
                     overflow: 'hidden',
                     maxHeight: 'calc(100vh - 40px)',
                     display: 'flex',
-                    flexDirection: 'column'
+                    flexDirection: 'column',
+                    minWidth: '800px'
                 }}
             >
                 {/* Banda tricolor */}
@@ -103,10 +105,12 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
                 </div>
 
                 {/* Contenido */}
-                <div style={{ padding: 24, overflowY: 'auto' }}>
+                <div style={{ padding: 24, overflowY: 'auto', minWidth: '800px' }}>
                     {children}
                 </div>
             </div>
         </div>
     );
+
+    return createPortal(modalContent, document.getElementById('modal-root'));
 }

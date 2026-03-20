@@ -7,7 +7,7 @@ export default function AppLayout({ children }) {
         <div className="min-h-screen bg-[--color-bg-main] flex flex-col justify-between font-sans text-[--color-text-primary]">
             <div>
                 <Header />
-                <main>
+                <main style={{ width: '100%', minWidth: '800px' }}>
                     {children}
                 </main>
             </div>

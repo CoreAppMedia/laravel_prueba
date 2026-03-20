@@ -191,7 +191,7 @@ export default function PanelAdmin() {
                 onClick={() => setIsMenuOpen(false)}
             />
 
-            <div className="panel-admin__layout" style={{ display: 'flex', gap: '24px', minHeight: '600px' }}>
+            <div className="panel-admin__layout" style={{ display: 'flex', gap: '24px', minHeight: '600px', width: '100%', minWidth: '800px' }}>
                 {/* Menú lateral izquierdo */}
                 <div
                     className={`panel-admin__sidebar ${isMenuOpen ? 'is-open' : ''}`}
@@ -351,7 +351,7 @@ export default function PanelAdmin() {
                 </div>
 
                 {/* Área de contenido principal */}
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, width: '100%', minWidth: '800px' }}>
                     {renderContent()}
                 </div>
             </div>

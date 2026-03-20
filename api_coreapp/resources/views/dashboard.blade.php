@@ -11,5 +11,6 @@
 </head>
 <body class="bg-gray-100">
     <div id="app"></div>
+    <div id="modal-root"></div>
 </body>
 </html>

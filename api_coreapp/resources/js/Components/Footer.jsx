@@ -4,7 +4,7 @@ const LINKS = ['Reglamento', 'Equipos', 'Resultados', 'Estadísticas'];
 
 export default function Footer() {
     return (
-        <footer>
+        <footer style={{ width: '100%', minWidth: '800px' }}>
             {/* Banda tricolor superior — coherencia con header */}
             <div className="brand-bar" />
 

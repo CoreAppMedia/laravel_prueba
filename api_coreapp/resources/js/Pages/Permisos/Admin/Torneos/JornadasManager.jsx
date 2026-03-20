@@ -48,6 +48,10 @@ function JornadaDetail({
 
     const selectedLocalForm = equiposInscritos.find(e => e.id === partidoForm.equipo_local_id);
     const selectedVisitForm = equiposInscritos.find(e => e.id === partidoForm.equipo_visitante_id);
+    // IDs de equipos que ya tienen un partido en esta jornada
+    const usedTeamIds = new Set(
+        (jornada.partidos || []).flatMap(p => [p.equipo_local_id, p.equipo_visitante_id].filter(Boolean))
+    );
 
     const diaSemanaMap = { 1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado', 7: 'Domingo' };
     const formatHora = (t) => (typeof t === 'string' ? t.substring(0, 5) + ' hrs' : '');
@@ -274,6 +278,15 @@ function JornadaDetail({
         setResultadoForm({ goles_local: partido.goles_local ?? 0, goles_visitante: partido.goles_visitante ?? 0 });
         setIsResultadoModalOpen(true);
     };
+    // Auto-clear si el equipo seleccionado ya está usado en la jornada
+    useEffect(() => {
+        if (usedTeamIds.has(partidoForm.equipo_local_id)) {
+            setPartidoForm(prev => ({ ...prev, equipo_local_id: '' }));
+        }
+        if (usedTeamIds.has(partidoForm.equipo_visitante_id)) {
+            setPartidoForm(prev => ({ ...prev, equipo_visitante_id: '' }));
+        }
+    }, [usedTeamIds]);
 
     return (
         <div>
@@ -642,7 +655,15 @@ function JornadaDetail({
                                 <label className="text-label" style={{ marginLeft: '4px' }}>Escuadra Local</label>
                                 <select style={inputStyle} value={partidoForm.equipo_local_id} onChange={e => setPartidoForm({ ...partidoForm, equipo_local_id: e.target.value })} required>
                                     <option value="">-- Seleccione equipo --</option>
-                                    {equiposInscritos.map(eq => <option key={eq.id} value={eq.id} disabled={eq.id === partidoForm.equipo_visitante_id}>{eq.nombre_mostrado}</option>)}
+                                    {equiposInscritos.map(eq => {
+                                        const isOpponent = eq.id === partidoForm.equipo_visitante_id;
+                                        const isUsed = usedTeamIds.has(eq.id);
+                                        return (
+                                            <option key={eq.id} value={eq.id} disabled={isOpponent || isUsed}>
+                                                {eq.nombre_mostrado}{isUsed ? ' (ya usado en esta jornada)' : ''}
+                                            </option>
+                                        );
+                                    })}
                                 </select>
                             </div>
                             <div style={{ padding: '24px 10px 0 10px', fontSize: '10px', fontWeight: 900, color: 'var(--color-gold)', letterSpacing: '2px' }}>VS</div>
@@ -650,7 +671,15 @@ function JornadaDetail({
                                 <label className="text-label" style={{ marginLeft: '4px' }}>Escuadra Visitante</label>
                                 <select style={inputStyle} value={partidoForm.equipo_visitante_id} onChange={e => setPartidoForm({ ...partidoForm, equipo_visitante_id: e.target.value })} required>
                                     <option value="">-- Seleccione equipo --</option>
-                                    {equiposInscritos.map(eq => <option key={eq.id} value={eq.id} disabled={eq.id === partidoForm.equipo_local_id}>{eq.nombre_mostrado}</option>)}
+                                    {equiposInscritos.map(eq => {
+                                        const isOpponent = eq.id === partidoForm.equipo_local_id;
+                                        const isUsed = usedTeamIds.has(eq.id);
+                                        return (
+                                            <option key={eq.id} value={eq.id} disabled={isOpponent || isUsed}>
+                                                {eq.nombre_mostrado}{isUsed ? ' (ya usado en esta jornada)' : ''}
+                                            </option>
+                                        );
+                                    })}
                                 </select>
                             </div>
                         </div>
@@ -1142,20 +1171,20 @@ export default function JornadasManager({ torneo }) {
     // ── List view ──
     return (
         <Card title="Calendario y Organización de Jornadas">
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px', width: '100%', minWidth: '800px' }}>
                 <GradientButton onClick={openCrearJornada} icon={Plus} variant="primary">
                     Crear Jornada {nextNum}
                 </GradientButton>
             </div>
 
             {loading ? (
-                <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Cargando jornadas oficiales...</div>
+                <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--color-text-muted)', fontStyle: 'italic', width: '100%', minWidth: '800px' }}>Cargando jornadas oficiales...</div>
             ) : jornadas.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px 0', border: '2px dashed var(--color-border-subtle)', borderRadius: 'var(--radius-md)', color: 'var(--color-text-muted)' }}>
+                <div style={{ textAlign: 'center', padding: '60px 0', border: '2px dashed var(--color-border-subtle)', borderRadius: 'var(--radius-md)', color: 'var(--color-text-muted)', width: '100%', minWidth: '800px' }}>
                     No se han generado jornadas para este torneo todavía.
                 </div>
             ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', minWidth: '800px' }}>
                     {jornadas.map(jornada => (
                         <div
                             key={jornada.id}
@@ -1169,7 +1198,9 @@ export default function JornadasManager({ torneo }) {
                                 boxShadow: 'var(--shadow-soft)',
                                 cursor: 'pointer',
                                 transition: 'all 0.2s ease',
-                                gap: '16px'
+                                gap: '16px',
+                                width: '100%',
+                                minWidth: '800px'
                             }}
                             onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-gold)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(212,175,55,0.1)'; }}
                             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border-subtle)'; e.currentTarget.style.boxShadow = 'var(--shadow-soft)'; }}

@@ -10,6 +10,8 @@ export default function Card({ children, className = '', title }) {
                 borderRadius: 'var(--radius-lg)',
                 overflow: 'hidden',
                 boxShadow: 'var(--shadow-soft)',
+                width: '100%',
+                minWidth: '800px',
             }}
         >
             {title && (

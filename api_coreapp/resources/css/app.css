@@ -235,6 +235,19 @@ body {
     border: 1px solid var(--color-border-subtle);
     border-radius: var(--radius-lg);
     overflow: hidden;
+    width: 100%;
+    min-width: 800px;
+}
+
+.match-card {
+    background-color: var(--color-bg-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    transition: box-shadow 0.15s ease;
+    width: 100%;
+    min-width: 800px;
 }
 
 .card-padded {
@@ -242,6 +255,8 @@ body {
     border: 1px solid var(--color-border-subtle);
     border-radius: var(--radius-lg);
     padding: 24px;
+    width: 100%;
+    min-width: 800px;
 }
 
 /* Card con acento superior de color */
@@ -291,12 +306,14 @@ body {
     height: 3px;
     background: var(--gradient-brand);
     width: 100%;
+    min-width: 800px;
 }
 
 .brand-bar-thick {
     height: 4px;
     background: var(--gradient-brand);
     width: 100%;
+    min-width: 800px;
 }
 
 /* Franja vertical lateral (para rows de tabla / partidos) */
@@ -341,6 +358,8 @@ body {
     top: 0;
     z-index: 100;
     box-shadow: var(--shadow-soft);
+    width: 100%;
+    min-width: 800px;
 }
 
 .app-header-inner {
@@ -568,6 +587,8 @@ body {
     align-items: stretch;
     min-height: 72px;
     transition: box-shadow 0.15s ease;
+    width: 100%;
+    min-width: 800px;
 }
 
 .match-card:hover {
@@ -887,7 +908,8 @@ main {
 
 footer {
     width: 100%;
-    padding: 24px 28px
+    padding: 24px 28px;
+    min-width: 800px;
 }
 
 /* =========================================================================
@@ -956,6 +978,8 @@ section>h3 {
     border: 1px solid var(--color-border-subtle);
     border-radius: var(--radius-lg);
     overflow: hidden;
+    width: 100%;
+    min-width: 800px;
 }
 
 .hero-body {

@@ -11,6 +11,8 @@ export default function DataTable({ columns, data, actions, keyField = 'id' }) {
                 border: '1px solid var(--color-border-subtle)',
                 borderRadius: 'var(--radius-lg)',
                 boxShadow: 'var(--shadow-soft)',
+                width: '100%',
+                minWidth: '800px',
             }}
         >
             <table

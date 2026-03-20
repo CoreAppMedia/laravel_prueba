@@ -172,12 +172,12 @@ export default function PanelAdmin() {
                     onClick={() => setIsMenuOpen(true)}
                     aria-label="Abrir menú"
                 >
-                    <Menu size={18} />
+                    <Menu size={16} />
                 </button>
                 <div
                     style={{
                         fontFamily: 'var(--font-display)',
-                        fontSize: 16,
+                        fontSize: 18,
                         fontWeight: 700,
                         color: 'var(--color-text-primary)',
                     }}
@@ -191,7 +191,7 @@ export default function PanelAdmin() {
                 onClick={() => setIsMenuOpen(false)}
             />
 
-            <div className="panel-admin__layout" style={{ display: 'flex', gap: '24px', minHeight: '600px', width: '100%', minWidth: '800px' }}>
+            <div className="panel-admin__layout" style={{ display: 'flex', gap: '24px', minHeight: '600px', width: '100%' }}>
                 {/* Menú lateral izquierdo */}
                 <div
                     className={`panel-admin__sidebar ${isMenuOpen ? 'is-open' : ''}`}
@@ -224,7 +224,7 @@ export default function PanelAdmin() {
                             onClick={() => setIsMenuOpen(false)}
                             aria-label="Cerrar menú"
                         >
-                            <X size={18} />
+                            <X size={16} />
                         </button>
                     </div>
                     
@@ -351,7 +351,7 @@ export default function PanelAdmin() {
                 </div>
 
                 {/* Área de contenido principal */}
-                <div style={{ flex: 1, width: '100%', minWidth: '800px' }}>
+                <div style={{ flex: 1, width: '100%', minWidth: '0' }}>
                     {renderContent()}
                 </div>
             </div>

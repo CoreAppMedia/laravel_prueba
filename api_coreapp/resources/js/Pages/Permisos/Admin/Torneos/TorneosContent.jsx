@@ -117,6 +117,7 @@ export default function TorneosContent() {
             accessor: 'estatus',
             hiddenMobile: true,
             render: (row) => {
+
                 const styles = {
                     'En Inscripción': 'bg-green-50 text-green-600 border-green-100',
                     'En Curso': 'bg-orange-50 text-orange-600 border-orange-100',
@@ -124,9 +125,11 @@ export default function TorneosContent() {
                     'Planeación': 'bg-blue-50 text-blue-600 border-blue-100'
                 };
                 return (
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${styles[row.estatus] || styles['Planeación']}`}>
-                        {row.estatus}
-                    </span>
+                    <div className="flex items-center gap-3">
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${styles[row.estatus] || styles['Planeación']}`}>
+                            {row.estatus}
+                        </span>
+                    </div>
                 );
             }
         },

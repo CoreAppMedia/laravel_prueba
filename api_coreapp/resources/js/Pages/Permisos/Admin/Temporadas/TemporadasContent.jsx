@@ -110,10 +110,7 @@ export default function TemporadasContent() {
             hiddenMobile: true,
             render: (row) => (
                 <span
-                    className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${row.activa
-                        ? 'bg-green-50 text-green-600 border-green-100'
-                        : 'bg-slate-50 text-slate-400 border-slate-200'
-                        }`}
+                    className="p-2 text-slate-400 hover:text-green-500 hover:bg-green-50 rounded-lg transition-all"
                 >
                     {row.activa ? 'Activa' : 'Inactiva'}
                 </span>

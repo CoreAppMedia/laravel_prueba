@@ -113,7 +113,8 @@ export default function EquiposInscritos({ torneo }) {
                             borderRadius: 'var(--radius-sm)',
                             backgroundColor: isCompatible ? 'var(--color-sage-light)' : 'var(--color-terra-light)',
                             color: isCompatible ? 'var(--color-sage)' : 'var(--color-terra)',
-                            border: `1px solid ${isCompatible ? 'rgba(58, 107, 82, 0.1)' : 'rgba(192, 68, 42, 0.1)'}`
+                            border: `1px solid ${isCompatible ? 'rgba(58, 107, 82, 0.1)' : 'rgba(192, 68, 42, 0.1)'}`,
+                            whiteSpace: 'nowrap'
                         }}
                     >
                         {row.categoria?.nombre || 'General'}
@@ -138,7 +139,7 @@ export default function EquiposInscritos({ torneo }) {
                     <button 
                         onClick={() => togglePago(row.id, isPaid)}
                         style={{ 
-                            display: 'flex',
+                            display: 'inline-flex',
                             alignItems: 'center',
                             gap: '6px',
                             padding: '6px 12px',
@@ -151,7 +152,8 @@ export default function EquiposInscritos({ torneo }) {
                             backgroundColor: isPaid ? 'var(--color-sage-light)' : 'var(--color-gold-light)',
                             color: isPaid ? 'var(--color-sage)' : 'var(--color-gold)',
                             border: `1px solid ${isPaid ? 'rgba(58, 107, 82, 0.2)' : 'rgba(212, 175, 55, 0.2)'}`,
-                            outline: 'none'
+                            outline: 'none',
+                            whiteSpace: 'nowrap'
                         }}
                         title="Haz clic para actualizar estatus de pago"
                     >
@@ -160,7 +162,7 @@ export default function EquiposInscritos({ torneo }) {
                     </button>
                 );
             }
-        }
+        },
     ];
 
     // Filter out teams that are already inscribed to avoiding showing them in the dropdown

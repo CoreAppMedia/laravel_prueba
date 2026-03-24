@@ -112,17 +112,30 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::patch('partidos/{partido}/cerrar', [\App\Http\Controllers\Api\PartidoController::class, 'cerrarPartido']);
             Route::patch('partidos/{partido}/suspender', [\App\Http\Controllers\Api\PartidoController::class, 'suspenderPartido']);
             Route::patch('partidos/{partido}/reactivar', [\App\Http\Controllers\Api\PartidoController::class, 'reactivarPartido']);
+            Route::patch('partidos/{partido}/pago-arbitraje', [\App\Http\Controllers\Api\PartidoController::class, 'registrarPagoArbitraje']);
 
             // Phase 3: Árbitros y Pagos
-            Route::apiResource('arbitros', \App\Http\Controllers\Api\ArbitroController::class);
-            Route::post('partidos/{partido}/arbitros', [\App\Http\Controllers\Api\PartidoArbitroController::class, 'asignar']);
-            Route::delete('partidos/{partido}/arbitros/{arbitro}', [\App\Http\Controllers\Api\PartidoArbitroController::class, 'desasignar']);
-            Route::patch('partido-arbitro/{id}/pago', [\App\Http\Controllers\Api\PartidoArbitroController::class, 'registrarPago']);
+            Route::apiResource('arbitros', \App\Http\Controllers\Api\ArbitroController::class)->middleware('can:torneos.view');
+            Route::post('partidos/{partido}/arbitros', [\App\Http\Controllers\Api\PartidoArbitroController::class, 'asignar'])->middleware('can:torneos.create');
+            Route::delete('partidos/{partido}/arbitros/{arbitro}', [\App\Http\Controllers\Api\PartidoArbitroController::class, 'desasignar'])->middleware('can:torneos.create');
+            Route::patch('partido-arbitro/{id}/pago', [\App\Http\Controllers\Api\PartidoArbitroController::class, 'registrarPago'])->middleware('can:torneos.create');
 
             // Torneo - Arbitro assignment
-            Route::get('torneos/{torneo}/arbitros', [\App\Http\Controllers\Api\TorneoArbitroController::class, 'obtenerArbitrosTorneo']);
-            Route::post('torneos/{torneo}/arbitros', [\App\Http\Controllers\Api\TorneoArbitroController::class, 'inscribirArbitro']);
-            Route::delete('torneos/{torneo}/arbitros/{arbitro}', [\App\Http\Controllers\Api\TorneoArbitroController::class, 'desinscribirArbitro']);
+            Route::get('torneos/{torneo}/arbitros', [\App\Http\Controllers\Api\TorneoArbitroController::class, 'obtenerArbitrosTorneo'])->middleware('can:torneos.view');
+            Route::post('torneos/{torneo}/arbitros', [\App\Http\Controllers\Api\TorneoArbitroController::class, 'inscribirArbitro'])->middleware('can:torneos.create');
+            Route::delete('torneos/{torneo}/arbitros/{arbitro}', [\App\Http\Controllers\Api\TorneoArbitroController::class, 'desinscribirArbitro'])->middleware('can:torneos.create');
+
+            // Phase 4: Finanzas
+            Route::apiResource('multas', \App\Http\Controllers\Api\MultaController::class)->middleware('can:torneos.view');
+            Route::patch('multas/{multa}/pago', [\App\Http\Controllers\Api\MultaController::class, 'registrarPago'])->middleware('can:torneos.create');
+            
+            Route::apiResource('ingresos', \App\Http\Controllers\Api\IngresoController::class)->only(['index', 'store', 'destroy'])->middleware('can:torneos.view');
+            Route::apiResource('egresos', \App\Http\Controllers\Api\EgresoController::class)->only(['index', 'store', 'destroy'])->middleware('can:torneos.view');
+
+            // Phase 5: Finanzas Avanzadas y Reportes
+            Route::get('finanzas/balance-global', [\App\Http\Controllers\Api\FinanzasReporteController::class, 'balanceGlobal'])->middleware('can:torneos.view');
+            Route::get('finanzas/resumen-torneo/{torneo}', [\App\Http\Controllers\Api\FinanzasReporteController::class, 'resumenTorneo'])->middleware('can:torneos.view');
+            Route::get('finanzas/resumen-jornada/{torneo}/{jornada}', [\App\Http\Controllers\Api\FinanzasReporteController::class, 'resumenJornada'])->middleware('can:torneos.view');
         });
 
         // Catalogos

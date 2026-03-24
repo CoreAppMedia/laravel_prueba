@@ -17,6 +17,7 @@ export default function TorneoForm({ torneo, onSuccess, onCancel }) {
         fecha_fin: torneo?.fecha_fin || "",
         costo_inscripcion: torneo?.costo_inscripcion || 0,
         costo_arbitraje_por_partido: torneo?.costo_arbitraje_por_partido || 0,
+        monto_pago_arbitro: torneo?.monto_pago_arbitro || 0,
         estatus: torneo?.estatus || "Planeación",
         es_abierto: torneo?.es_abierto ?? true,
         dias_juego: torneo?.dias_juego || [],
@@ -329,7 +330,7 @@ export default function TorneoForm({ torneo, onSuccess, onCancel }) {
                     {errors.costo_inscripcion && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.costo_inscripcion[0]}</p>}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <label className={labelClass} style={{ marginLeft: '4px' }}>Arbitraje por Partido ($)</label>
+                    <label className={labelClass} style={{ marginLeft: '4px' }}>Arbitraje por Equipo ($)</label>
                     <input
                         type="number"
                         step="0.01"
@@ -347,6 +348,26 @@ export default function TorneoForm({ torneo, onSuccess, onCancel }) {
                         }}
                     />
                     {errors.costo_arbitraje_por_partido && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.costo_arbitraje_por_partido[0]}</p>}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label className={labelClass} style={{ marginLeft: '4px' }}>Pago a Árbitro (Base ($))</label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        name="monto_pago_arbitro"
+                        value={formData.monto_pago_arbitro}
+                        onChange={handleChange}
+                        style={inputStyle}
+                        onFocus={(e) => {
+                            e.target.style.borderColor = 'var(--color-gold)';
+                            e.target.style.boxShadow = '0 0 0 4px var(--color-gold-light)';
+                        }}
+                        onBlur={(e) => {
+                            e.target.style.borderColor = 'var(--color-border-subtle)';
+                            e.target.style.boxShadow = 'var(--shadow-soft)';
+                        }}
+                    />
+                    {errors.monto_pago_arbitro && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.monto_pago_arbitro[0]}</p>}
                 </div>
             </div>
 

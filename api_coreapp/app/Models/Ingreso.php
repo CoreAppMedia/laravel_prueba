@@ -16,7 +16,9 @@ class Ingreso extends Model
 
     protected $fillable = [
         'torneo_id',
+        'jornada_id',
         'concepto',
+        'categoria',
         'monto',
         'fecha',
     ];

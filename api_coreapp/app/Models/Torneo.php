@@ -25,6 +25,7 @@ class Torneo extends Model
         'es_abierto',
         'costo_inscripcion',
         'costo_arbitraje_por_partido',
+        'monto_pago_arbitro',
         'estatus',
     ];
 
@@ -35,6 +36,7 @@ class Torneo extends Model
         'es_abierto' => 'boolean',
         'costo_inscripcion' => 'decimal:2',
         'costo_arbitraje_por_partido' => 'decimal:2',
+        'monto_pago_arbitro' => 'decimal:2',
     ];
 
     public function temporada()

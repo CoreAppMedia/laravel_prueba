@@ -16,7 +16,9 @@ class Egreso extends Model
 
     protected $fillable = [
         'torneo_id',
+        'jornada_id',
         'concepto',
+        'categoria',
         'monto',
         'fecha',
     ];
@@ -29,5 +31,10 @@ class Egreso extends Model
     public function torneo()
     {
         return $this->belongsTo(Torneo::class);
+    }
+
+    public function jornada()
+    {
+        return $this->belongsTo(Jornada::class);
     }
 }

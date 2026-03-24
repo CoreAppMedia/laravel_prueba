@@ -8,8 +8,11 @@ use App\Models\Jornada;
 use App\Models\Partido;
 use App\Models\EquipoTorneo;
 use App\Models\CatalogoEstadoPartido;
+use App\Models\Ingreso;
+use App\Models\Egreso;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class PartidoController extends Controller
 {
@@ -331,6 +334,58 @@ class PartidoController extends Controller
         return response()->json([
             'message' => 'Partido reactivado.',
             'data' => $partido
+        ]);
+    }
+
+    /**
+     * Registrar el cobro de arbitraje a los equipos y generar ingresos.
+     */
+    public function registrarPagoArbitraje(Request $request, Partido $partido)
+    {
+        $validated = $request->validate([
+            'pago_arbitro_local' => 'required|boolean',
+            'pago_arbitro_visitante' => 'required|boolean',
+        ]);
+
+        $partido->load(['equipoLocal', 'equipoVisitante', 'jornada.torneo']);
+        $torneo = $partido->jornada->torneo;
+        
+        // El costo por equipo es lo que se definió en el torneo (fijo)
+        $costoPorEquipo = ($torneo->costo_arbitraje_por_partido ?? 0);
+
+        // Registrar ingreso local
+        if ($validated['pago_arbitro_local'] && !$partido->pago_arbitro_local) {
+            $ingreso = new Ingreso();
+            $ingreso->id = (string) Str::uuid();
+            $ingreso->torneo_id = $torneo->id;
+            $ingreso->jornada_id = $partido->jornada_id;
+            $ingreso->concepto = "Arbitraje (Local): " . ($partido->equipoLocal->nombre_mostrado ?? 'Equipo') . " - J" . $partido->jornada->numero;
+            $ingreso->categoria = 'arbitraje';
+            $ingreso->monto = $costoPorEquipo;
+            $ingreso->fecha = now();
+            $ingreso->save();
+        }
+
+        // Registrar ingreso visitante
+        if ($validated['pago_arbitro_visitante'] && !$partido->pago_arbitro_visitante) {
+            $ingreso = new Ingreso();
+            $ingreso->id = (string) Str::uuid();
+            $ingreso->torneo_id = $torneo->id;
+            $ingreso->jornada_id = $partido->jornada_id;
+            $ingreso->concepto = "Arbitraje (Visita): " . ($partido->equipoVisitante->nombre_mostrado ?? 'Equipo') . " - J" . $partido->jornada->numero;
+            $ingreso->categoria = 'arbitraje';
+            $ingreso->monto = $costoPorEquipo;
+            $ingreso->fecha = now();
+            $ingreso->save();
+        }
+
+        $partido->pago_arbitro_local = $validated['pago_arbitro_local'];
+        $partido->pago_arbitro_visitante = $validated['pago_arbitro_visitante'];
+        $partido->save();
+
+        return response()->json([
+            'message' => 'Pagos de equipos registrados correctamente.',
+            'partido' => $partido
         ]);
     }
 }

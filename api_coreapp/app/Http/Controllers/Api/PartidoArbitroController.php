@@ -62,7 +62,7 @@ class PartidoArbitroController extends Controller
     public function registrarPago(Request $request, $partidoArbitroId)
     {
         $assignment = PartidoArbitro::findOrFail($partidoArbitroId);
-        $partido = \App\Models\Partido::find($assignment->partido_id);
+        $partido = \App\Models\Partido::with(['equipoLocal', 'equipoVisitante'])->findOrFail($assignment->partido_id);
 
         // Permitir pago si el partido ya concluyó, está suspendido, o si tiene estatus de jugado/finalizado
         $esConcluido = $partido->cerrado || $partido->suspendido || in_array(strtolower($partido->estado?->nombre), ['jugado', 'finalizado']);
@@ -78,12 +78,27 @@ class PartidoArbitroController extends Controller
             'motivo_pago' => 'nullable|string|max:1000'
         ]);
 
+        // Si se marca como pagado y antes no lo estaba, generamos el Egreso automático
+        if ($validated['pagado'] && !$assignment->pagado) {
+            $arbitro = \App\Models\Arbitro::find($assignment->arbitro_id);
+            
+            $egreso = new \App\Models\Egreso();
+            $egreso->id = (string) Str::uuid();
+            $egreso->torneo_id = $partido->torneo_id;
+            $egreso->jornada_id = $partido->jornada_id;
+            $egreso->concepto = "Pago de Arbitraje: " . ($arbitro->nombre ?? 'Árbitro') . " - Partido: " . ($partido->equipoLocal->nombre_mostrado ?? 'Local') . " vs " . ($partido->equipoVisitante->nombre_mostrado ?? 'Visitante');
+            $egreso->categoria = 'arbitraje';
+            $egreso->monto = $assignment->pago ?? 0;
+            $egreso->fecha = now();
+            $egreso->save();
+        }
+
         $assignment->pagado = $validated['pagado'];
         $assignment->motivo_pago = $validated['motivo_pago'];
         $assignment->save();
 
         return response()->json([
-            'message' => 'Estado de pago actualizado.',
+            'message' => 'Estado de pago actualizado y egreso registrado.',
             'data' => $assignment
         ]);
     }

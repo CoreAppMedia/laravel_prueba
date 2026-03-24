@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Torneo;
 use App\Models\Jornada;
+use App\Models\Egreso;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class JornadaController extends Controller
 {
@@ -100,6 +103,29 @@ class JornadaController extends Controller
 
         $jornada->cerrada = true;
         $jornada->save();
+
+        // Agrupar pagos por ROL de árbitro para tener un desglose detallado en los egresos
+        $pagosPorRol = DB::table('partido_arbitro')
+            ->join('partidos', 'partido_arbitro.partido_id', '=', 'partidos.id')
+            ->where('partidos.jornada_id', $jornada->id)
+            ->where('partido_arbitro.pagado', true)
+            ->select('partido_arbitro.rol', DB::raw('SUM(partido_arbitro.pago) as total'))
+            ->groupBy('partido_arbitro.rol')
+            ->get();
+            
+        foreach ($pagosPorRol as $pago) {
+            if ($pago->total > 0) {
+                $egreso = new Egreso();
+                $egreso->id = (string) Str::uuid();
+                $egreso->torneo_id = $jornada->torneo_id;
+                $egreso->jornada_id = $jornada->id;
+                $egreso->concepto = "Pago Arbitraje (" . ($pago->rol ?: 'Central') . ") - Jornada " . $jornada->numero;
+                $egreso->categoria = 'arbitraje';
+                $egreso->monto = $pago->total;
+                $egreso->fecha = now();
+                $egreso->save();
+            }
+        }
 
         return response()->json([
             'message' => 'Jornada cerrada correctamente.',

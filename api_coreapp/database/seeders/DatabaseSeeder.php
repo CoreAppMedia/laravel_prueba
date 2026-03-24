@@ -180,6 +180,7 @@ class DatabaseSeeder extends Seeder
             CatalogosSeeder::class,
             CanchasSeeder::class,
             DummyDataSeeder::class,
+            TorneoCompletoDemoSeeder::class,
         ]);
 
     }

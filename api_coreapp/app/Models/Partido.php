@@ -27,12 +27,18 @@ class Partido extends Model
         'cerrado',
         'suspendido',
         'motivo_suspension',
+        'pago_arbitro_local',
+        'pago_arbitro_visitante',
+        'costo_arbitraje_total',
     ];
 
     protected $casts = [
         'fecha' => 'datetime',
         'cerrado' => 'boolean',
         'suspendido' => 'boolean',
+        'pago_arbitro_local' => 'boolean',
+        'pago_arbitro_visitante' => 'boolean',
+        'costo_arbitraje_total' => 'decimal:2',
     ];
 
     public function jornada()
@@ -42,27 +48,27 @@ class Partido extends Model
 
     public function equipoLocal()
     {
-        return $this->belongsTo(Equipo::class, 'equipo_local_id');
+        return $this->belongsTo(Equipo::class , 'equipo_local_id');
     }
 
     public function equipoVisitante()
     {
-        return $this->belongsTo(Equipo::class, 'equipo_visitante_id');
+        return $this->belongsTo(Equipo::class , 'equipo_visitante_id');
     }
 
     public function estado()
     {
-        return $this->belongsTo(CatalogoEstadoPartido::class, 'estado_partido_id');
+        return $this->belongsTo(CatalogoEstadoPartido::class , 'estado_partido_id');
     }
 
     public function arbitros()
     {
         return $this->belongsToMany(
-            Arbitro::class,
+            Arbitro::class ,
             'partido_arbitro'
         )->using(PartidoArbitro::class)
-         ->withPivot('id', 'rol', 'pago', 'pagado', 'motivo_pago')
-         ->withTimestamps();
+            ->withPivot('id', 'rol', 'pago', 'pagado', 'motivo_pago')
+            ->withTimestamps();
     }
 
     public function multas()

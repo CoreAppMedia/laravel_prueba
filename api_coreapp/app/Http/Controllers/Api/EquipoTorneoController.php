@@ -7,7 +7,9 @@ use Illuminate\Http\Request;
 use App\Models\Torneo;
 use App\Models\Equipo;
 use App\Models\EquipoTorneo;
+use App\Models\Ingreso;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 class EquipoTorneoController extends Controller
 {
@@ -64,12 +66,24 @@ class EquipoTorneoController extends Controller
         $pagado = $validated['pagado_inscripcion'] ?? false;
         
         $torneo->equipos()->attach($equipo->id, [
-            'id' => \Illuminate\Support\Str::uuid()->toString(),
+            'id' => Str::uuid()->toString(),
             'fecha_inscripcion' => now(),
             'pagado_inscripcion' => $pagado,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        // Registrar ingreso automático si ya está pagado
+        if ($pagado) {
+            $ingreso = new Ingreso();
+            $ingreso->id = (string) Str::uuid();
+            $ingreso->torneo_id = $torneo->id;
+            $ingreso->concepto = "Inscripción: " . $equipo->nombre_mostrado . " - " . $torneo->nombre;
+            $ingreso->categoria = 'inscripcion';
+            $ingreso->monto = $torneo->costo_inscripcion ?? 0;
+            $ingreso->fecha = now();
+            $ingreso->save();
+        }
 
         return response()->json([
             'message' => 'Equipo inscrito con éxito al torneo.',
@@ -108,7 +122,17 @@ class EquipoTorneoController extends Controller
         $equipoTorneo->pagado_inscripcion = $validated['pagado_inscripcion'];
         $equipoTorneo->save();
 
-        // Opcionalmente, aquí se podría registrar un registro en la tabla `ingresos` si se registra como pagado.
+        // Registrar ingreso automático si se marca como pagado
+        if ($validated['pagado_inscripcion']) {
+            $ingreso = new Ingreso();
+            $ingreso->id = (string) Str::uuid();
+            $ingreso->torneo_id = $torneo->id;
+            $ingreso->concepto = "Pago Inscripción: " . ($equipo->nombre_mostrado ?? 'Equipo') . " - " . $torneo->nombre;
+            $ingreso->categoria = 'inscripcion';
+            $ingreso->monto = $torneo->costo_inscripcion ?? 0;
+            $ingreso->fecha = now();
+            $ingreso->save();
+        }
 
         return response()->json([
             'message' => 'Estado de pago actualizado correctamente.',

@@ -11,7 +11,8 @@ import EquiposContent from './Equipos/EquiposContent';
 import CanchasContent from './Canchas/CanchasContent';
 import ArbitrosContent from './Torneos/ArbitrosContent';
 import UsersContent from './Users/UsersContent';
-import { MapPin, ShieldCheck } from 'lucide-react';
+import FinanzasContent from './Finanzas/FinanzasContent';
+import { MapPin, ShieldCheck, Banknote } from 'lucide-react';
 import { useAuth } from '../../../Auth/AuthContext';
 
 export default function PanelAdmin() {
@@ -24,6 +25,7 @@ export default function PanelAdmin() {
         equipos: 0,
         canchas: 0,
         arbitros: 0,
+        finanzas: 0,
         users: 0,
     });
     const [loading, setLoading] = useState(true);
@@ -36,23 +38,27 @@ export default function PanelAdmin() {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const [resTemp, resTor, resClub, resEqui, resCanchas, resArbitros, resUsers] = await Promise.all([
-                    http.get('/api/temporadas'),
-                    http.get('/api/torneos'),
-                    http.get('/api/clubs'),
-                    http.get('/api/equipos'),
-                    http.get('/api/canchas'),
-                    http.get('/api/arbitros'),
-                    canManageUsers ? http.get('/api/users') : Promise.resolve({ data: [] }),
+                // Usamos Promise.all con catch individual para que un fallo no bloquee todo
+                const [resTemp, resTor, resClub, resEqui, resCanchas, resArbitros, resMultas, resUsers] = await Promise.all([
+                    http.get('/api/temporadas').catch(() => ({ data: [] })),
+                    http.get('/api/torneos').catch(() => ({ data: [] })),
+                    http.get('/api/clubs').catch(() => ({ data: [] })),
+                    http.get('/api/equipos').catch(() => ({ data: [] })),
+                    http.get('/api/canchas').catch(() => ({ data: [] })),
+                    http.get('/api/arbitros').catch(() => ({ data: [] })),
+                    http.get('/api/multas').catch(() => ({ data: [] })),
+                    canManageUsers ? http.get('/api/users').catch(() => ({ data: [] })) : Promise.resolve({ data: [] }),
                 ]);
+
                 setStats({
-                    temporadas: resTemp.data.length,
-                    torneos: resTor.data.length,
-                    clubes: resClub.data.length,
-                    equipos: resEqui.data.length,
-                    canchas: resCanchas.data.length,
-                    arbitros: resArbitros.data.length,
-                    users: resUsers.data.length,
+                    temporadas: resTemp.data?.length || 0,
+                    torneos: resTor.data?.length || 0,
+                    clubes: resClub.data?.length || 0,
+                    equipos: resEqui.data?.length || 0,
+                    canchas: resCanchas.data?.length || 0,
+                    arbitros: resArbitros.data?.length || 0,
+                    finanzas: resMultas.data?.length || 0,
+                    users: resUsers.data?.length || 0,
                 });
             } catch (error) {
                 console.error("Error al cargar estadísticas:", error);
@@ -125,6 +131,16 @@ export default function PanelAdmin() {
             desc: 'Catálogo oficial de árbitros y jueces de línea.',
             count: stats.arbitros
         },
+        {
+            id: 'finanzas',
+            title: 'Finanzas',
+            path: '/panel/admin/finanzas',
+            icon: Banknote,
+            color: '#059669',
+            bg: '#D1FAE5',
+            desc: 'Control de multas, ingresos y egresos del torneo.',
+            count: stats.finanzas
+        },
         ...(canManageUsers
             ? [
                 {
@@ -156,6 +172,8 @@ export default function PanelAdmin() {
                 return <CanchasContent />;
             case 'arbitros':
                 return <ArbitrosContent />;
+            case 'finanzas':
+                return <FinanzasContent />;
             case 'users':
                 return <UsersContent />;
             default:
@@ -343,7 +361,7 @@ export default function PanelAdmin() {
                                     fontWeight: 700,
                                     color: 'var(--color-text-primary)'
                                 }}>
-                                    {loading ? '...' : stats.temporadas + stats.torneos + stats.clubes + stats.equipos + stats.arbitros}
+                                    {loading ? '...' : stats.temporadas + stats.torneos + stats.clubes + stats.equipos + stats.arbitros + stats.finanzas}
                                 </span>
                             </div>
                         </div>

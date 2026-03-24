@@ -32,7 +32,7 @@ function JornadaDetail({
         cancha_id: '',
         cancha_horario_id: '',
         arbitro_id: '',
-        pago_arbitro: torneo.costo_arbitraje_por_partido || 0,
+        pago_arbitro: torneo.monto_pago_arbitro || 0,
         rol: 'Central'
     });
     const [resultadoForm, setResultadoForm] = useState({ goles_local: 0, goles_visitante: 0 });
@@ -40,9 +40,10 @@ function JornadaDetail({
     const [motivo, setMotivo] = useState('');
     const [motivoPartido, setMotivoPartido] = useState('');
     const [suspendPartidoId, setSuspendPartidoId] = useState(null);
-    const [arbitroForm, setArbitroForm] = useState({ arbitro_id: '', rol: 'Central', pago: torneo.costo_arbitraje_por_partido || 0 });
+    const [arbitroForm, setArbitroForm] = useState({ arbitro_id: '', rol: 'Central', pago: torneo.monto_pago_arbitro || 0 });
     const [targetPartidoId, setTargetPartidoId] = useState(null);
     const [paymentForm, setPaymentForm] = useState({ pivotId: null, pagado: false, motivo_pago: '' });
+    const [summaryData, setSummaryData] = useState({ totalCobrado: 0, totalEgresosArbitros: 0 });
     const [saving, setSaving] = useState(false);
     const [formError, setFormError] = useState(null);
 
@@ -176,10 +177,23 @@ function JornadaDetail({
     };
 
     const handleCloseJornada = async () => {
-        // First open summary modal
-        const allDone = jornada.partidos?.every(p => p.cerrado || p.suspendido);
         const pending = (jornada.partidos || []).filter(p => !p.cerrado && !p.suspendido);
+        
+        // Calcular sumas para el resumen visual en el modal
+        const totalCobrado = (jornada.partidos || []).reduce((acc, p) => {
+            let suma = 0;
+            if (p.pago_arbitro_local) suma += (torneo.costo_arbitraje_por_partido || 0);
+            if (p.pago_arbitro_visitante) suma += (torneo.costo_arbitraje_por_partido || 0);
+            return acc + suma;
+        }, 0);
+
+        const totalEgresosArbitros = (jornada.partidos || []).reduce((acc, p) => {
+            const pagosArb = (p.arbitros || []).filter(a => a.pivot.pagado).reduce((sum, a) => sum + parseFloat(a.pivot.pago || 0), 0);
+            return acc + pagosArb;
+        }, 0);
+
         setPendingList(pending);
+        setSummaryData({ totalCobrado, totalEgresosArbitros });
         setIsCierreModalOpen(true);
     };
 
@@ -278,6 +292,19 @@ function JornadaDetail({
         setResultadoForm({ goles_local: partido.goles_local ?? 0, goles_visitante: partido.goles_visitante ?? 0 });
         setIsResultadoModalOpen(true);
     };
+
+    const handleTogglePagoEquipo = async (partidoId, lado, currentStatus) => {
+        try {
+            await http.patch(`/api/partidos/${partidoId}/pago-arbitraje`, {
+                [`pago_arbitro_${lado}`]: !currentStatus,
+                [`pago_arbitro_${lado === 'local' ? 'visitante' : 'local'}`]: !!jornada.partidos.find(p => p.id === partidoId)[`pago_arbitro_${lado === 'local' ? 'visitante' : 'local'}`]
+            });
+            toast.success(`Pago de equipo ${lado} actualizado`);
+            onRefresh();
+        } catch (error) {
+            toast.error('Error al actualizar pago de equipo');
+        }
+    };
     // Auto-clear si el equipo seleccionado ya está usado en la jornada
     useEffect(() => {
         if (usedTeamIds.has(partidoForm.equipo_local_id)) {
@@ -345,7 +372,7 @@ function JornadaDetail({
                                     cancha_id: '',
                                     cancha_horario_id: '',
                                     arbitro_id: '',
-                                    pago_arbitro: torneo.costo_arbitraje_por_partido || 0,
+                                    pago_arbitro: torneo.monto_pago_arbitro || 0,
                                     rol: 'Central'
                                 });
                                 setFormError(null);
@@ -455,8 +482,19 @@ function JornadaDetail({
                                 <div style={{ padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '24px' }}>
                                     {/* Team Local */}
                                     <div style={{ flex: 1, textAlign: 'right' }}>
-                                        <div style={{ fontWeight: ganaLocal || hayEmpate ? 900 : 700, color: colorLocal, fontSize: '16px', fontFamily: 'var(--font-display)', transition: 'color 0.3s' }}>
-                                            {partido.equipo_local?.nombre_mostrado}
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
+                                            {!jornada.cerrada && !jornada.suspendida && !partido.suspendido && (
+                                                <button
+                                                    onClick={() => handleTogglePagoEquipo(partido.id, 'local', partido.pago_arbitro_local)}
+                                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 4px', color: partido.pago_arbitro_local ? 'var(--color-sage)' : 'var(--color-text-muted)', display: 'flex', alignItems: 'center' }}
+                                                    title={partido.pago_arbitro_local ? 'Pago arbitraje local: SI' : '¿Ya pagó local?'}
+                                                >
+                                                    <DollarSign size={12} strokeWidth={partido.pago_arbitro_local ? 4 : 2} />
+                                                </button>
+                                            )}
+                                            <div style={{ fontWeight: ganaLocal || hayEmpate ? 900 : 700, color: colorLocal, fontSize: '16px', fontFamily: 'var(--font-display)', transition: 'color 0.3s' }}>
+                                                {partido.equipo_local?.nombre_mostrado}
+                                            </div>
                                         </div>
                                     </div>
 
@@ -531,8 +569,19 @@ function JornadaDetail({
 
                                     {/* Team Visitor */}
                                     <div style={{ flex: 1 }}>
-                                        <div style={{ fontWeight: ganaVisita || hayEmpate ? 900 : 700, color: colorVisita, fontSize: '16px', fontFamily: 'var(--font-display)', transition: 'color 0.3s' }}>
-                                            {partido.equipo_visitante?.nombre_mostrado}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <div style={{ fontWeight: ganaVisita || hayEmpate ? 900 : 700, color: colorVisita, fontSize: '16px', fontFamily: 'var(--font-display)', transition: 'color 0.3s' }}>
+                                                {partido.equipo_visitante?.nombre_mostrado}
+                                            </div>
+                                            {!jornada.cerrada && !jornada.suspendida && !partido.suspendido && (
+                                                <button
+                                                    onClick={() => handleTogglePagoEquipo(partido.id, 'visitante', partido.pago_arbitro_visitante)}
+                                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 4px', color: partido.pago_arbitro_visitante ? 'var(--color-sage)' : 'var(--color-text-muted)', display: 'flex', alignItems: 'center' }}
+                                                    title={partido.pago_arbitro_visitante ? 'Pago arbitraje visitante: SI' : '¿Ya pagó visita?'}
+                                                >
+                                                    <DollarSign size={12} strokeWidth={partido.pago_arbitro_visitante ? 4 : 2} />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
 
@@ -550,15 +599,15 @@ function JornadaDetail({
                                                 <button
                                                     onClick={() => {
                                                         setTargetPartidoId(partido.id);
-                                                        setArbitroForm({ arbitro_id: '', rol: 'Central', pago: torneo.costo_arbitraje_por_partido || 0 });
+                                                        setArbitroForm({ arbitro_id: '', rol: 'Central', pago: torneo.monto_pago_arbitro || 0 });
                                                         setIsArbitroModalOpen(true);
                                                     }}
                                                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '7px 12px', color: 'var(--color-gold)', border: '1px solid rgba(212,175,55,0.1)', background: 'var(--color-gold-light)', borderRadius: '6px', fontSize: '10px', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase' }}
                                                     title="Asignar Árbitro"
                                                 >
                                                     <Shield size={14} /> <span>Árbitro</span>
-                                                </button>
-                                                {esFinalizado && (
+                                                 </button>
+                                                 {esFinalizado && (
                                                     <button
                                                         onClick={() => handleClosePartido(partido.id)}
                                                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '7px 12px', color: 'var(--color-terra)', border: '1px solid rgba(192,68,42,0.1)', background: 'var(--color-terra-light)', borderRadius: '6px', fontSize: '10px', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase' }}
@@ -897,6 +946,25 @@ function JornadaDetail({
                                 ✅ Todos los encuentros de esta jornada han concluido. Puedes cerrarla oficialmente.
                             </div>
 
+                            {/* Resumen Financiero Visual */}
+                            <div style={{ marginTop: '20px', padding: '16px', backgroundColor: 'var(--color-bg-surface-alt)', borderRadius: '8px', border: '1px solid var(--color-border-subtle)' }}>
+                                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-gold)', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '1px' }}>Reporte de Caja: Jornada {jornada.numero}</div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                    <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>Ingresos por Cobros (Equipos):</span>
+                                    <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-sage)' }}>${summaryData.totalCobrado.toLocaleString()}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                    <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>Pagos Efectuados (Árbitros):</span>
+                                    <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-terra)' }}>${summaryData.totalEgresosArbitros.toLocaleString()}</span>
+                                </div>
+                                <div style={{ borderTop: '1px solid var(--color-border-subtle)', marginTop: '8px', paddingTop: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-slate)' }}>Utilidad Proyectada:</span>
+                                    <span style={{ fontSize: '15px', fontWeight: 900, color: (summaryData.totalCobrado - summaryData.totalEgresosArbitros) >= 0 ? 'var(--color-gold)' : 'var(--color-terra)' }}>
+                                        ${ (summaryData.totalCobrado - summaryData.totalEgresosArbitros).toLocaleString() }
+                                    </span>
+                                </div>
+                            </div>
+
                             {/* Score summary */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                 <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-slate)', textTransform: 'uppercase', letterSpacing: '1px' }}>Resultados Finales</div>
@@ -1022,6 +1090,7 @@ function JornadaDetail({
                     </div>
                 </form>
             </Modal>
+
         </div>
     );
 }

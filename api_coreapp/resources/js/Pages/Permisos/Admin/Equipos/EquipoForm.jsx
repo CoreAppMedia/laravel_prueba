@@ -7,6 +7,7 @@ export default function EquipoForm({ equipo, onSuccess, onCancel }) {
     const [clubes, setClubes] = useState([]);
     const [categorias, setCategorias] = useState([]);
     const [canchas, setCanchas] = useState([]);
+    const [directivos, setDirectivos] = useState([]);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         club_id: equipo?.club_id || '',
@@ -14,6 +15,7 @@ export default function EquipoForm({ equipo, onSuccess, onCancel }) {
         nombre_mostrado: equipo?.nombre_mostrado || '',
         cancha_id: equipo?.cancha_id || '',
         cancha_horario_id: equipo?.cancha_horario_id || '',
+        directivo_id: equipo?.directivo_id || '',
         activo: equipo?.activo ?? true
     });
 
@@ -22,14 +24,25 @@ export default function EquipoForm({ equipo, onSuccess, onCancel }) {
     useEffect(() => {
         const fetchDependencies = async () => {
             try {
-                const [resClubes, resCats, resCanchas] = await Promise.all([
+                const [resClubes, resCats, resCanchas, resDirectivos] = await Promise.all([
                     http.get('/api/clubs'),
                     http.get('/api/catalogos/categorias'),
-                    http.get('/api/canchas')
+                    http.get('/api/canchas'),
+                    http.get('/api/directivos/disponibles-para-equipo')
                 ]);
                 setClubes(resClubes.data);
                 setCategorias(resCats.data);
                 setCanchas(resCanchas.data);
+                
+                let disponibles = resDirectivos.data;
+                if (equipo?.directivo_id) {
+                    const currentRes = await http.get(`/api/directivos/${equipo.directivo_id}`);
+                    const exists = disponibles.find(d => d.id === equipo.directivo_id);
+                    if (!exists && currentRes.data) {
+                        disponibles = [currentRes.data, ...disponibles];
+                    }
+                }
+                setDirectivos(disponibles);
             } catch (error) {
                 toast.error('Error al cargar clubes o categorías');
             }
@@ -164,6 +177,26 @@ export default function EquipoForm({ equipo, onSuccess, onCancel }) {
                     ))}
                 </select>
                 {errors.categoria_id && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.categoria_id[0]}</p>}
+            </div>
+
+            {/* Directivo / Delegado */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label className={labelClass} style={{ marginLeft: '4px' }}>Delegado de Equipo <span className="text-xs font-normal text-slate-400">(Opcional)</span></label>
+                <select
+                    name="directivo_id"
+                    value={formData.directivo_id}
+                    onChange={handleChange}
+                    style={{
+                        ...inputStyle,
+                        ...(errors.directivo_id ? { border: '1px solid var(--color-danger)' } : {})
+                    }}
+                >
+                    <option value="">-- Sin delegado asignado --</option>
+                    {directivos.map((d) => (
+                        <option key={d.id} value={d.id}>{d.nombre} ({d.tipo?.nombre})</option>
+                    ))}
+                </select>
+                {errors.directivo_id && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.directivo_id[0]}</p>}
             </div>
 
             {/* Nombre Mostrado */}

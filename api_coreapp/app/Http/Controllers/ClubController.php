@@ -13,7 +13,7 @@ class ClubController extends Controller
      */
     public function index()
     {
-        return response()->json(Club::all());
+        return response()->json(Club::with('dueno')->get());
     }
 
     /**
@@ -28,6 +28,9 @@ class ClubController extends Controller
                 'telefono' => 'nullable|string|max:20',
                 'correo' => 'nullable|email|max:255',
                 'activo' => 'boolean',
+                'directivo_id' => 'nullable|uuid|exists:directivos,id|unique:clubs,directivo_id',
+            ], [
+                'directivo_id.unique' => 'El Dueño seleccionado ya se encuentra dirigiendo otro Club.'
             ]);
 
             $club = Club::create($validated);
@@ -43,7 +46,7 @@ class ClubController extends Controller
      */
     public function show(string $id)
     {
-        $club = Club::findOrFail($id);
+        $club = Club::with('dueno')->findOrFail($id);
         return response()->json($club);
     }
 
@@ -61,6 +64,9 @@ class ClubController extends Controller
                 'telefono' => 'nullable|string|max:20',
                 'correo' => 'nullable|email|max:255',
                 'activo' => 'boolean',
+                'directivo_id' => 'nullable|uuid|exists:directivos,id|unique:clubs,directivo_id,' . $club->id,
+            ], [
+                'directivo_id.unique' => 'El Dueño seleccionado ya se encuentra dirigiendo otro Club.'
             ]);
 
             $club->update($validated);

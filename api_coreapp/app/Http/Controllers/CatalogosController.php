@@ -8,6 +8,7 @@ use App\Models\CatalogoTipoTorneo;
 use App\Models\CatalogoCategoria;
 use App\Models\CatalogoEstadoPartido;
 use App\Models\CatalogoTipoMulta;
+use App\Models\CatalogoTipoDueno;
 
 class CatalogosController extends Controller
 {
@@ -41,5 +42,13 @@ class CatalogosController extends Controller
     public function getTiposMulta()
     {
         return response()->json(CatalogoTipoMulta::where('activo', true)->get());
+    }
+
+    /**
+     * Obtener tipos de dueños (ej: Dueño, Delegado) activos.
+     */
+    public function getTiposDuenos()
+    {
+        return response()->json(CatalogoTipoDueno::where('activo', true)->get());
     }
 }

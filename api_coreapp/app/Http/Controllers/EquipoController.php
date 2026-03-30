@@ -14,7 +14,7 @@ class EquipoController extends Controller
      */
     public function index()
     {
-        return response()->json(Equipo::with(['club', 'categoria', 'cancha', 'canchaHorario'])->get());
+        return response()->json(Equipo::with(['club', 'categoria', 'cancha', 'canchaHorario', 'delegado'])->get());
     }
 
     /**
@@ -37,8 +37,10 @@ class EquipoController extends Controller
                 'cancha_id' => 'nullable|uuid|exists:canchas,id',
                 'cancha_horario_id' => 'nullable|uuid|exists:cancha_horarios,id',
                 'activo' => 'boolean',
+                'directivo_id' => 'nullable|uuid|exists:directivos,id|unique:equipos,directivo_id',
             ], [
                 'club_id.unique' => 'Ya existe un equipo registrado para este club en la categoría seleccionada.',
+                'directivo_id.unique' => 'El Delegado/Dueño seleccionado ya tiene un Equipo asignado.',
             ]);
 
             $equipo = Equipo::create($validated);
@@ -54,7 +56,7 @@ class EquipoController extends Controller
      */
     public function show(string $id)
     {
-        $equipo = Equipo::with(['club', 'categoria', 'cancha', 'canchaHorario'])->findOrFail($id);
+        $equipo = Equipo::with(['club', 'categoria', 'cancha', 'canchaHorario', 'delegado'])->findOrFail($id);
         return response()->json($equipo);
     }
 
@@ -80,8 +82,10 @@ class EquipoController extends Controller
                 'cancha_id' => 'nullable|uuid|exists:canchas,id',
                 'cancha_horario_id' => 'nullable|uuid|exists:cancha_horarios,id',
                 'activo' => 'boolean',
+                'directivo_id' => 'nullable|uuid|exists:directivos,id|unique:equipos,directivo_id,' . $equipo->id,
             ], [
                 'club_id.unique' => 'Ya existe un equipo registrado para este club en la categoría seleccionada.',
+                'directivo_id.unique' => 'El Delegado/Dueño seleccionado ya tiene un Equipo asignado.',
             ]);
 
             $equipo->update($validated);

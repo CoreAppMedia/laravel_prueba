@@ -229,6 +229,13 @@ export default function EquiposContent() {
                                     </span>
                                 </div>
 
+                                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Delegado Asignado</p>
+                                    <span className="font-black text-slate-700 uppercase tracking-tight">
+                                        {selectedEquipo.delegado?.nombre || 'Sin asignación'}
+                                    </span>
+                                </div>
+
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Categoría</p>

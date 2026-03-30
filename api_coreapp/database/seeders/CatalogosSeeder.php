@@ -7,6 +7,7 @@ use App\Models\CatalogoTipoTorneo;
 use App\Models\CatalogoCategoria;
 use App\Models\CatalogoEstadoPartido;
 use App\Models\CatalogoTipoMulta;
+use App\Models\CatalogoTipoDueno;
 
 class CatalogosSeeder extends Seeder
 {
@@ -118,6 +119,23 @@ class CatalogosSeeder extends Seeder
         foreach ($tiposMulta as $item) {
             CatalogoTipoMulta::firstOrCreate(
             ['nombre' => $item['nombre']],
+                $item
+            );
+        }
+
+        /*
+         |--------------------------------------------------------------------------
+         | Tipos de Dueño
+         |--------------------------------------------------------------------------
+         */
+        $tiposDueno = [
+            ['nombre' => 'Dueño Club', 'activo' => true],
+            ['nombre' => 'Delegado', 'activo' => true]
+        ];
+        
+        foreach ($tiposDueno as $item) {
+            CatalogoTipoDueno::firstOrCreate(
+                ['nombre' => $item['nombre']],
                 $item
             );
         }

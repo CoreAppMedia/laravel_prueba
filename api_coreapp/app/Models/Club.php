@@ -21,6 +21,7 @@ class Club extends Model
         'telefono',
         'correo',
         'activo',
+        'directivo_id',
     ];
 
     protected $casts = [
@@ -31,5 +32,10 @@ class Club extends Model
     public function equipos()
     {
         return $this->hasMany(Equipo::class, 'club_id');
+    }
+
+    public function dueno()
+    {
+        return $this->belongsTo(Directivo::class, 'directivo_id');
     }
 }

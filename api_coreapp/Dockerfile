@@ -1,9 +1,24 @@
-FROM php:8.2-cli
+# ========================
+# ETAPA 1: BUILD FRONTEND
+# ========================
+FROM node:20 AS frontend
 
-# Dependencias sistema + Node + PHP extensions
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+RUN npm run build
+
+# ========================
+# ETAPA 2: PHP + NGINX
+# ========================
+FROM php:8.2-fpm
+
+# Instalar dependencias + nginx
 RUN apt-get update && apt-get install -y \
+    nginx \
     git unzip curl libpq-dev libzip-dev libonig-dev \
-    nodejs npm \
     && docker-php-ext-install pdo pdo_pgsql zip mbstring \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -15,26 +30,21 @@ WORKDIR /var/www
 # Copiar proyecto
 COPY . .
 
-# Instalar dependencias PHP
+# Copiar build frontend
+COPY --from=frontend /app/public/build /var/www/public/build
+
+# Instalar Laravel
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Instalar dependencias frontend
-RUN npm install
-
-# Build Vite producción
-RUN npm run build
-
-# Permisos Laravel
+# Configurar permisos
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Puerto Render
-ENV PORT=10000
-EXPOSE 10000
+# Copiar config nginx
+COPY nginx/default.conf /etc/nginx/sites-available/default
 
-# Arranque
-CMD php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan view:cache && \
-    php artisan migrate:fresh --seed --force && \
-    php artisan serve --host=0.0.0.0 --port=$PORT
+# Exponer puerto
+EXPOSE 80
+
+# Script de arranque
+CMD service nginx start && php-fpm

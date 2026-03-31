@@ -5,71 +5,72 @@ import DataTable from '../../../../Components/UI/DataTable';
 import GradientButton from '../../../../Components/UI/GradientButton';
 import Modal from '../../../../Components/UI/Modal';
 import SearchBar from '../../../../Components/UI/SearchBar';
-import ClubForm from './ClubForm';
-import { Plus, Edit, Trash2, ShieldCheck, User } from 'lucide-react';
+import DirectivoForm from './DirectivoForm';
+import { Plus, Edit, Trash2, User, Phone, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-export default function ClubesContent() {
-    const [clubes, setClubes] = useState([]);
+export default function DirectivosContent() {
+    const [directivos, setDirectivos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-    const [editingClub, setEditingClub] = useState(null);
-    const [selectedClub, setSelectedClub] = useState(null);
+    const [editingDirectivo, setEditingDirectivo] = useState(null);
+    const [selectedDirectivo, setSelectedDirectivo] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
 
-    const fetchClubes = async () => {
+    const fetchDirectivos = async () => {
         setLoading(true);
         try {
-            const response = await http.get('/api/clubs');
-            setClubes(response.data);
+            const response = await http.get('/api/directivos');
+            setDirectivos(response.data);
         } catch (error) {
-            toast.error('Error al cargar la lista de clubes');
+            toast.error('Error al cargar la lista de directivos');
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchClubes();
+        fetchDirectivos();
     }, []);
 
-    const filteredClubes = clubes.filter(club =>
-        club.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        club.correo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        club.telefono?.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredDirectivos = directivos.filter(dir =>
+        dir.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        dir.correo_electronico?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        dir.telefono?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        dir.tipo?.nombre?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const handleCreate = () => {
-        setEditingClub(null);
+        setEditingDirectivo(null);
         setIsModalOpen(true);
     };
 
-    const handleEdit = (club) => {
-        setEditingClub(club);
+    const handleEdit = (dir) => {
+        setEditingDirectivo(dir);
         setIsModalOpen(true);
     };
 
-    const handleRowClick = (club) => {
-        setSelectedClub(club);
+    const handleRowClick = (dir) => {
+        setSelectedDirectivo(dir);
         setIsDetailModalOpen(true);
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm('¿Seguro que deseas eliminar este club? Se perderá el historial de sus equipos.')) return;
+        if (!window.confirm('¿Seguro que deseas eliminar este directivo? Perderá la asociación con sus clubes/equipos.')) return;
 
         try {
-            await http.delete(`/api/clubs/${id}`);
-            toast.success('Club eliminado correctamente');
-            fetchClubes();
+            await http.delete(`/api/directivos/${id}`);
+            toast.success('Directivo eliminado correctamente');
+            fetchDirectivos();
         } catch (error) {
-            toast.error('Error al eliminar el club');
+            toast.error('Error al eliminar el directivo');
         }
     };
 
     const columns = [
         {
-            header: 'Entidad',
+            header: 'Nombre',
             accessor: 'nombre',
             render: (row) => (
                 <div className="flex flex-col gap-1">
@@ -77,8 +78,8 @@ export default function ClubesContent() {
                         {row.nombre}
                     </span>
                     <div className="flex items-center gap-2">
-                        <span className={`text-[10px] font-black uppercase tracking-widest ${row.es_club ? 'text-slate-400' : 'text-orange-500'}`}>
-                            {row.es_club ? 'Club Oficial' : 'Independiente'}
+                        <span className={`text-[10px] font-black uppercase tracking-widest ${row.tipo?.nombre === 'Dueño Club' ? 'text-blue-500' : 'text-purple-500'}`}>
+                            {row.tipo?.nombre || 'General'}
                         </span>
                         <div className="md:hidden">
                             {!row.activo && <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>}
@@ -88,16 +89,15 @@ export default function ClubesContent() {
             )
         },
         {
-            header: 'Teléfono',
+            header: 'Contacto',
             accessor: 'telefono',
             hiddenMobile: true,
-            render: (row) => <span className="font-bold text-[13px] text-slate-500">{row.telefono || '-'}</span>
-        },
-        {
-            header: 'Correo',
-            accessor: 'correo',
-            hiddenMobile: true,
-            render: (row) => <span className="font-bold text-[13px] text-slate-500">{row.correo || '-'}</span>
+            render: (row) => (
+                <div className="flex flex-col gap-1">
+                    <span className="font-bold text-[13px] text-slate-500">{row.telefono || '-'}</span>
+                    <span className="text-[11px] text-slate-400">{row.correo_electronico || '-'}</span>
+                </div>
+            )
         },
         {
             header: 'Estado',
@@ -106,8 +106,8 @@ export default function ClubesContent() {
             render: (row) => (
                 <span
                     className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${row.activo
-                            ? 'bg-green-50 text-green-600 border-green-100'
-                            : 'bg-red-50 text-red-600 border-red-100'
+                        ? 'bg-green-50 text-green-600 border-green-100'
+                        : 'bg-red-50 text-red-600 border-red-100'
                         }`}
                 >
                     {row.activo ? 'Activo' : 'Suspendido'}
@@ -137,28 +137,27 @@ export default function ClubesContent() {
 
     return (
         <>
-            <Card title="Directorio de Clubes">
+            <Card title="Directorio de Directivos (Dueños/Delegados)">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                     <SearchBar
                         value={searchTerm}
                         onChange={setSearchTerm}
-                        placeholder="Buscar clubes..."
+                        placeholder="Buscar nombre, teléfono, rol..."
                         className="w-full md:w-80 shadow-sm"
                     />
                     <GradientButton onClick={handleCreate} icon={Plus}>
-                        Registrar Club
+                        Registrar Directivo
                     </GradientButton>
                 </div>
                 <br />
-
                 {loading ? (
                     <div className="text-center py-12 text-slate-400 animate-pulse font-bold italic">
-                        Cargando clubes...
+                        Cargando directivos...
                     </div>
                 ) : (
                     <DataTable
                         columns={columns}
-                        data={filteredClubes}
+                        data={filteredDirectivos}
                         actions={actions}
                         onRowClick={handleRowClick}
                     />
@@ -168,13 +167,13 @@ export default function ClubesContent() {
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title={editingClub ? "Editar Información" : "Registro de Nuevo Club"}
+                title={editingDirectivo ? "Editar Información" : "Registro de Nuevo Directivo"}
             >
-                <ClubForm
-                    club={editingClub}
+                <DirectivoForm
+                    directivo={editingDirectivo}
                     onSuccess={() => {
                         setIsModalOpen(false);
-                        fetchClubes();
+                        fetchDirectivos();
                     }}
                     onCancel={() => setIsModalOpen(false)}
                 />
@@ -183,59 +182,56 @@ export default function ClubesContent() {
             <Modal
                 isOpen={isDetailModalOpen}
                 onClose={() => setIsDetailModalOpen(false)}
-                title="Ficha de Club / Equipo"
+                title="Ficha de Directivo"
             >
-                {selectedClub && (
+                {selectedDirectivo && (
                     <div className="space-y-6">
                         <div className="bg-slate-50 rounded-3xl p-6 border border-slate-200 shadow-inner">
                             <div className="flex items-center gap-4 mb-8">
                                 <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 text-slate-800">
-                                    <ShieldCheck size={32} />
+                                    <User size={32} />
                                 </div>
                                 <div className="flex-1">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5 italic">Razón social / Nombre</p>
-                                    <h3 className="text-2xl font-black text-slate-800 leading-tight">{selectedClub.nombre}</h3>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5 italic">Nombre completo</p>
+                                    <h3 className="text-2xl font-black text-slate-800 leading-tight">{selectedDirectivo.nombre}</h3>
                                 </div>
                             </div>
 
                             <div className="space-y-4">
                                 <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Tipo de Afiliación</p>
-                                    <span className={`font-black uppercase tracking-tight ${selectedClub.es_club ? 'text-blue-600' : 'text-orange-500'}`}>
-                                        {selectedClub.es_club ? 'Club Oficial' : 'Registro Independiente'}
-                                    </span>
-                                </div>
-
-                                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Dueño / Presidente</p>
-                                    <span className="font-black text-slate-700 uppercase tracking-tight">
-                                        {selectedClub.dueno?.nombre || 'Sin asignación'}
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Rol</p>
+                                    <span className={`font-black uppercase tracking-tight ${selectedDirectivo.tipo?.nombre === 'Dueño Club' ? 'text-blue-600' : 'text-purple-600'}`}>
+                                        {selectedDirectivo.tipo?.nombre}
                                     </span>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Teléfono</p>
-                                        <p className="font-bold text-slate-700">{selectedClub.telefono || 'Sin registro'}</p>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic flex gap-1"><Phone size={12} /> Teléfono</p>
+                                        <p className="font-bold text-slate-700">{selectedDirectivo.telefono || 'Sin registro'}</p>
                                     </div>
                                     <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Estado</p>
-                                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-black uppercase ${selectedClub.activo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic flex gap-1"><MapPin size={12} /> Estado</p>
+                                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-black uppercase ${selectedDirectivo.activo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                                             }`}>
-                                            {selectedClub.activo ? 'Vigente' : 'Suspendido'}
+                                            {selectedDirectivo.activo ? 'Vigente' : 'Suspendido'}
                                         </span>
                                     </div>
                                 </div>
 
                                 <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Dirección</p>
+                                    <p className="font-bold text-slate-700 truncate">{selectedDirectivo.direccion || 'Sin registro'}</p>
+                                </div>
+                                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Correo Electrónico</p>
-                                    <p className="font-bold text-slate-700 truncate">{selectedClub.correo || 'Sin correo registrado'}</p>
+                                    <p className="font-bold text-slate-700 truncate">{selectedDirectivo.correo_electronico || 'Sin registro'}</p>
                                 </div>
                             </div>
                         </div>
 
                         <button
-                            onClick={() => { setIsDetailModalOpen(false); handleEdit(selectedClub); }}
+                            onClick={() => { setIsDetailModalOpen(false); handleEdit(selectedDirectivo); }}
                             className="w-full bg-slate-800 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-900 transition-all shadow-premium"
                         >
                             Editar Información

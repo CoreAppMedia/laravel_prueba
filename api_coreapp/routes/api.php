@@ -144,8 +144,16 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/categorias', [\App\Http\Controllers\CatalogosController::class , 'getCategorias']);
             Route::get('/estados-partido', [\App\Http\Controllers\CatalogosController::class , 'getEstadosPartido']);
             Route::get('/tipos-multa', [\App\Http\Controllers\CatalogosController::class , 'getTiposMulta']);
+            Route::get('/tipos-duenos', [\App\Http\Controllers\CatalogosController::class , 'getTiposDuenos']);
         }
         );
+
+        // Rutas de Directivos (Dueños/Delegados)
+        Route::middleware('can:*.view')->group(function () {
+            Route::get('/directivos/disponibles-para-club', [\App\Http\Controllers\DirectivoController::class, 'disponiblesParaClub']);
+            Route::get('/directivos/disponibles-para-equipo', [\App\Http\Controllers\DirectivoController::class, 'disponiblesParaEquipo']);
+            Route::apiResource('directivos', \App\Http\Controllers\DirectivoController::class);
+        });
     });
 
 Route::get('/test', function () {

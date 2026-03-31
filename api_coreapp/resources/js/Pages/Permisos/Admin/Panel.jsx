@@ -12,7 +12,8 @@ import CanchasContent from './Canchas/CanchasContent';
 import ArbitrosContent from './Torneos/ArbitrosContent';
 import UsersContent from './Users/UsersContent';
 import FinanzasContent from './Finanzas/FinanzasContent';
-import { MapPin, ShieldCheck, Banknote } from 'lucide-react';
+import DirectivosContent from './Directivos/DirectivosContent';
+import { MapPin, ShieldCheck, Banknote, Briefcase } from 'lucide-react';
 import { useAuth } from '../../../Auth/AuthContext';
 
 export default function PanelAdmin() {
@@ -26,6 +27,7 @@ export default function PanelAdmin() {
         canchas: 0,
         arbitros: 0,
         finanzas: 0,
+        directivos: 0,
         users: 0,
     });
     const [loading, setLoading] = useState(true);
@@ -39,7 +41,7 @@ export default function PanelAdmin() {
         const fetchStats = async () => {
             try {
                 // Usamos Promise.all con catch individual para que un fallo no bloquee todo
-                const [resTemp, resTor, resClub, resEqui, resCanchas, resArbitros, resMultas, resUsers] = await Promise.all([
+                const [resTemp, resTor, resClub, resEqui, resCanchas, resArbitros, resMultas, resDirectivos, resUsers] = await Promise.all([
                     http.get('/api/temporadas').catch(() => ({ data: [] })),
                     http.get('/api/torneos').catch(() => ({ data: [] })),
                     http.get('/api/clubs').catch(() => ({ data: [] })),
@@ -47,6 +49,7 @@ export default function PanelAdmin() {
                     http.get('/api/canchas').catch(() => ({ data: [] })),
                     http.get('/api/arbitros').catch(() => ({ data: [] })),
                     http.get('/api/multas').catch(() => ({ data: [] })),
+                    http.get('/api/directivos').catch(() => ({ data: [] })),
                     canManageUsers ? http.get('/api/users').catch(() => ({ data: [] })) : Promise.resolve({ data: [] }),
                 ]);
 
@@ -58,6 +61,7 @@ export default function PanelAdmin() {
                     canchas: resCanchas.data?.length || 0,
                     arbitros: resArbitros.data?.length || 0,
                     finanzas: resMultas.data?.length || 0,
+                    directivos: resDirectivos.data?.length || 0,
                     users: resUsers.data?.length || 0,
                 });
             } catch (error) {
@@ -141,6 +145,16 @@ export default function PanelAdmin() {
             desc: 'Control de multas, ingresos y egresos del torneo.',
             count: stats.finanzas
         },
+        {
+            id: 'directivos',
+            title: 'Directivos',
+            path: '/panel/admin/directivos',
+            icon: Briefcase,
+            color: '#DB2777', // Pink 600
+            bg: '#FCE7F3', // Pink 100
+            desc: 'Directorio de Dueños y Delegados de los equipos.',
+            count: stats.directivos
+        },
         ...(canManageUsers
             ? [
                 {
@@ -174,6 +188,8 @@ export default function PanelAdmin() {
                 return <ArbitrosContent />;
             case 'finanzas':
                 return <FinanzasContent />;
+            case 'directivos':
+                return <DirectivosContent />;
             case 'users':
                 return <UsersContent />;
             default:
@@ -361,7 +377,7 @@ export default function PanelAdmin() {
                                     fontWeight: 700,
                                     color: 'var(--color-text-primary)'
                                 }}>
-                                    {loading ? '...' : stats.temporadas + stats.torneos + stats.clubes + stats.equipos + stats.arbitros + stats.finanzas}
+                                    {loading ? '...' : stats.temporadas + stats.torneos + stats.clubes + stats.equipos + stats.arbitros + stats.finanzas + stats.directivos}
                                 </span>
                             </div>
                         </div>

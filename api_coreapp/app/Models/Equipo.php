@@ -19,7 +19,7 @@ class Equipo extends Model
         'club_id',
         'categoria_id',
         'nombre_mostrado',
-        'delegado_user_id',
+        'directivo_id',
         'cancha_id',
         'cancha_horario_id',
         'activo',
@@ -37,6 +37,11 @@ class Equipo extends Model
     public function categoria()
     {
         return $this->belongsTo(CatalogoCategoria::class, 'categoria_id');
+    }
+
+    public function delegado()
+    {
+        return $this->belongsTo(Directivo::class, 'directivo_id');
     }
 
     public function torneos()

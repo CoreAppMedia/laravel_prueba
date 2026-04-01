@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import http from '../../../../lib/http';
 import GradientButton from '../../../../Components/UI/GradientButton';
-import { Plus, Trash2, Clock, Calendar } from 'lucide-react';
+import { 
+    Plus, Trash2, Clock, Calendar, MapPin, 
+    Image as ImageIcon, Building2, CheckCircle2, 
+    AlertCircle, Play, Pause 
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function CanchaForm({ cancha, onSuccess, onCancel }) {
@@ -108,62 +112,56 @@ export default function CanchaForm({ cancha, onSuccess, onCancel }) {
     const diaMap = { 1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado', 7: 'Domingo' };
 
     return (
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {/* Nombre */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label className={labelClass} style={{ marginLeft: '4px' }}>Nombre Identificador (Cancha / Complejo)</label>
-                <input
-                    type="text"
-                    name="nombre"
-                    value={formData.nombre}
-                    onChange={handleChange}
-                    style={{
-                        ...inputStyle,
-                        ...(errors.nombre ? { border: '1px solid var(--color-danger)' } : {})
-                    }}
-                    placeholder="Ej. Estadio Municipal o Cancha 1 Reforma"
-                    required
-                    onFocus={(e) => {
-                        e.target.style.borderColor = 'var(--color-gold)';
-                        e.target.style.boxShadow = '0 0 0 4px var(--color-gold-light)';
-                    }}
-                    onBlur={(e) => {
-                        e.target.style.borderColor = errors.nombre ? 'var(--color-danger)' : 'var(--color-border-subtle)';
-                        e.target.style.boxShadow = 'var(--shadow-soft)';
-                    }}
-                />
-                {errors.nombre && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.nombre[0]}</p>}
-            </div>
-
-            {/* Dirección */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label className={labelClass} style={{ marginLeft: '4px' }}>Ubicación Física o Referencia</label>
-                <textarea
-                    name="direccion"
-                    value={formData.direccion}
-                    onChange={handleChange}
-                    rows="1"
-                    style={{
-                        ...inputStyle,
-                        ...(errors.direccion ? { border: '1px solid var(--color-danger)' } : {}),
-                        resize: 'vertical',
-                        minHeight: '40px'
-                    }}
-                    placeholder="Ej. Av. Siempre Viva 123"
-                    onFocus={(e) => {
-                        e.target.style.borderColor = 'var(--color-gold)';
-                        e.target.style.boxShadow = '0 0 0 4px var(--color-gold-light)';
-                    }}
-                    onBlur={(e) => {
-                        e.target.style.borderColor = errors.direccion ? 'var(--color-danger)' : 'var(--color-border-subtle)';
-                        e.target.style.boxShadow = 'var(--shadow-soft)';
-                    }}
-                />
-                {errors.direccion && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.direccion[0]}</p>}
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+            {/* ── SECCIÓN: IDENTIDAD DE LA SEDE ── */}
+            <div style={{ backgroundColor: 'var(--color-bg-surface-alt)', padding: '24px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border-subtle)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 900, color: 'var(--color-gold)', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '1px' }}>
+                    <Building2 size={14} /> Información de la Sede
+                </div>
+                
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <label className={labelClass} style={{ marginLeft: '4px' }}>URL de Fotografía de la Cancha (Opcional)</label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
+                        Nombre del Complejo / Cancha
+                    </label>
+                    <input
+                        type="text"
+                        name="nombre"
+                        value={formData.nombre}
+                        onChange={handleChange}
+                        style={{
+                            ...inputStyle,
+                            ...(errors.nombre ? { border: '1px solid var(--color-danger)' } : {})
+                        }}
+                        placeholder="Ej. Estadio Municipal / Cancha Central Reforma"
+                        required
+                    />
+                    {errors.nombre && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px' }}>{errors.nombre[0]}</p>}
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
+                        <MapPin size={12} /> Ubicación o Referencia
+                    </label>
+                    <textarea
+                        name="direccion"
+                        value={formData.direccion}
+                        onChange={handleChange}
+                        rows="1"
+                        style={{
+                            ...inputStyle,
+                            ...(errors.direccion ? { border: '1px solid var(--color-danger)' } : {}),
+                            resize: 'vertical',
+                            minHeight: '44px'
+                        }}
+                        placeholder="Av. Principal #123, Col. Centro..."
+                    />
+                    {errors.direccion && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px' }}>{errors.direccion[0]}</p>}
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
+                       <ImageIcon size={12} /> Fotografía (URL)
+                    </label>
                     <input
                         type="url"
                         name="imagen_url"
@@ -173,33 +171,23 @@ export default function CanchaForm({ cancha, onSuccess, onCancel }) {
                             ...inputStyle,
                             ...(errors.imagen_url ? { border: '1px solid var(--color-danger)' } : {})
                         }}
-                        placeholder="https://..."
-                        onFocus={(e) => {
-                            e.target.style.borderColor = 'var(--color-gold)';
-                            e.target.style.boxShadow = '0 0 0 4px var(--color-gold-light)';
-                        }}
-                        onBlur={(e) => {
-                            e.target.style.borderColor = errors.imagen_url ? 'var(--color-danger)' : 'var(--color-border-subtle)';
-                            e.target.style.boxShadow = 'var(--shadow-soft)';
-                        }}
+                        placeholder="https://ejemplo.com/cancha.jpg"
                     />
-                    {errors.imagen_url && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.imagen_url[0]}</p>}
                 </div>
             </div>
 
-            <hr style={{ border: 0, borderTop: '1px solid var(--color-border-subtle)' }} />
+            {/* ── SECCIÓN: GESTIÓN DE HORARIOS ── */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 900, color: 'var(--color-gold)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        <Calendar size={14} /> Disponibilidad Habitual
+                    </div>
+                </div>
 
-            {/* Gestión de Horarios List */}
-            <div>
-                <h4 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-navy)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Calendar size={16} />
-                    Horarios Disponibles Habituales
-                </h4>
-                
-                <div style={{ padding: '12px', backgroundColor: 'var(--color-bg-surface-alt)', border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-md)' }}>
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end', marginBottom: '16px' }}>
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <label className={labelClass} style={{ fontSize: '11px' }}>Día</label>
+                <div style={{ border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '12px', padding: '16px', backgroundColor: 'var(--color-bg-surface-alt)', borderBottom: '1px solid var(--color-border-subtle)' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <label style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Día de la Semana</label>
                             <select 
                                 value={nuevoHorario.dia_semana}
                                 onChange={(e) => setNuevoHorario({...nuevoHorario, dia_semana: e.target.value})}
@@ -214,8 +202,8 @@ export default function CanchaForm({ cancha, onSuccess, onCancel }) {
                                 <option value="7">Domingo</option>
                             </select>
                         </div>
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <label className={labelClass} style={{ fontSize: '11px' }}>Hora</label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <label style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Hora de Inicio</label>
                             <input 
                                 type="time"
                                 value={nuevoHorario.hora}
@@ -223,50 +211,68 @@ export default function CanchaForm({ cancha, onSuccess, onCancel }) {
                                 style={{ ...inputStyle, padding: '10px' }}
                             />
                         </div>
-                        <button 
-                            type="button" 
-                            onClick={handleAddHorarioVirtual}
-                            style={{ 
-                                padding: '10px 16px', 
-                                backgroundColor: 'var(--color-gold)', 
-                                color: 'white', 
-                                border: 'none', 
-                                borderRadius: 'var(--radius-md)', 
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                fontSize: '13px',
-                                fontWeight: 700,
-                                boxShadow: '0 4px 6px rgba(212, 175, 55, 0.2)',
-                                transition: 'all 0.2s',
-                                height: '42px'
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
-                            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                        >
-                            <Plus size={16} /> Agregar
-                        </button>
+                        <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                            <button 
+                                type="button" 
+                                onClick={handleAddHorarioVirtual}
+                                style={{ 
+                                    padding: '0 20px', 
+                                    backgroundColor: 'var(--color-gold)', 
+                                    color: 'white', 
+                                    border: 'none', 
+                                    borderRadius: 'var(--radius-md)', 
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    fontSize: '11px',
+                                    fontWeight: 900,
+                                    textTransform: 'uppercase',
+                                    height: '42px',
+                                    transition: 'all 0.2s'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-gold-dark)'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--color-gold)'}
+                            >
+                                <Plus size={14} strokeWidth={3} /> Agregar
+                            </button>
+                        </div>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', backgroundColor: 'white' }}>
                         {horarios.length === 0 ? (
-                            <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '12px' }}>
-                                Sin horarios definidos registrados para esta sede.
+                            <div style={{ padding: '32px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                                <Clock size={32} style={{ color: 'var(--color-border-subtle)' }} />
+                                <span style={{ fontSize: '13px', color: 'var(--color-text-muted)', fontWeight: 600 }}>No hay horarios configurados para esta sede.</span>
                             </div>
                         ) : (
                             horarios.map((h, i) => (
-                                <div key={h.id || h.temporal_id || i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-sm)' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
-                                        <Clock size={16} style={{ color: 'var(--color-gold)' }} />
-                                        <span>{diaMap[h.dia_semana]} - {typeof h.hora === 'string' ? h.hora.substring(0, 5) : h.hora} hrs</span>
-                                        {h.es_nuevo && <span style={{ fontSize: '10px', backgroundColor: 'var(--color-sage-light)', color: 'var(--color-sage)', padding: '2px 6px', borderRadius: '4px', marginLeft: '6px' }}>Nuevo</span>}
+                                <div key={h.id || h.temporal_id || i} style={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'space-between', 
+                                    alignItems: 'center', 
+                                    padding: '12px 20px', 
+                                    borderBottom: i === horarios.length - 1 ? 'none' : '1px solid var(--color-bg-surface-alt)',
+                                    transition: 'background 0.2s'
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                        <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--color-gold-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-gold)' }}>
+                                            <Clock size={16} />
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                            <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-slate)' }}>{diaMap[h.dia_semana]}</span>
+                                            <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 600 }}>{typeof h.hora === 'string' ? h.hora.substring(0, 5) : h.hora} hrs</span>
+                                        </div>
+                                        {h.es_nuevo && (
+                                            <span style={{ fontSize: '9px', fontWeight: 900, backgroundColor: 'var(--color-sage-light)', color: 'var(--color-sage)', padding: '2px 8px', borderRadius: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Nueva</span>
+                                        )}
                                     </div>
                                     <button 
                                         type="button" 
                                         onClick={() => handleRemoveHorarioVirtual(h)}
-                                        className="btn-ghost"
-                                        style={{ color: 'var(--color-terra)', padding: '4px' }}
+                                        style={{ width: '32px', height: '32px', borderRadius: 'var(--radius-sm)', border: 'none', background: 'transparent', color: 'var(--color-terra)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-terra-light)'}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                                     >
                                         <Trash2 size={16} />
                                     </button>
@@ -277,51 +283,58 @@ export default function CanchaForm({ cancha, onSuccess, onCancel }) {
                 </div>
             </div>
 
-            <hr style={{ border: 0, borderTop: '1px solid var(--color-border-subtle)', margin: '4px 0' }} />
-
-            {/* Opciones de Checkbox */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div 
-                    style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        padding: '12px 16px', 
-                        background: 'var(--color-bg-surface-alt)',  
-                        borderRadius: 'var(--radius-md)', 
-                        border: '1px solid var(--color-border-subtle)',
-                        cursor: 'pointer',
-                        transition: 'background 0.2s'
-                    }}
-                    onClick={() => handleChange({ target: { name: 'activa', type: 'checkbox', checked: !formData.activa } })}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-muted)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-bg-surface-alt)'}
-                >
-                    <input
-                        type="checkbox"
-                        id="activa"
-                        name="activa"
-                        checked={formData.activa}
-                        onChange={handleChange}
-                        style={{ width: '18px', height: '18px', accentColor: 'var(--color-navy)', cursor: 'pointer' }}
-                    />
-                    <label htmlFor="activa" style={{ marginLeft: '12px', fontSize: '13px', fontWeight: 600, color: 'var(--color-text-secondary)', cursor: 'pointer' }}>
-                        Cancha en funcionamiento y activa
-                    </label>
+            {/* ── ESTATUS DE OPERACIÓN ── */}
+            <div 
+                onClick={() => handleChange({ target: { name: 'activa', type: 'checkbox', checked: !formData.activa } })}
+                style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between',
+                    padding: '16px 20px', 
+                    background: formData.activa ? 'var(--color-bg-surface-alt)' : 'white', 
+                    borderRadius: 'var(--radius-lg)', 
+                    border: `1px solid ${formData.activa ? 'var(--color-gold)' : 'var(--color-border-subtle)'}`,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    marginTop: '8px'
+                }}
+            >
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <CheckCircle2 size={18} style={{ color: formData.activa ? 'var(--color-gold)' : 'var(--color-text-muted)' }} />
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-slate)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Sede en Funcionamiento</span>
+                </div>
+                <div style={{ 
+                    width: '40px', 
+                    height: '22px', 
+                    backgroundColor: formData.activa ? 'var(--color-gold)' : 'var(--color-border-subtle)', 
+                    borderRadius: '20px',
+                    position: 'relative',
+                    transition: 'all 0.3s'
+                }}>
+                    <div style={{ 
+                        width: '16px', 
+                        height: '16px', 
+                        backgroundColor: 'white', 
+                        borderRadius: '50%', 
+                        position: 'absolute', 
+                        top: '3px', 
+                        left: formData.activa ? '21px' : '3px',
+                        transition: 'all 0.3s'
+                    }} />
                 </div>
             </div>
 
-            {/* Acciones */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '8px', paddingTop: '16px', borderTop: '1px solid var(--color-border-subtle)' }}>
+            {/* BOTONES DE ACCIÓN */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '12px', paddingTop: '24px', borderTop: '1px solid var(--color-border-subtle)' }}>
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="btn btn-ghost"
-                    style={{ padding: '8px 16px', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}
+                    style={{ padding: '12px 24px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-muted)', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', cursor: 'pointer', background: 'none' }}
                 >
                     Cancelar
                 </button>
-                <GradientButton type="submit" disabled={loading} variant="primary">
-                    {loading ? 'Procesando...' : (cancha ? 'Guardar Configuración' : 'Registrar Sede')}
+                <GradientButton type="submit" disabled={loading} variant="primary" style={{ padding: '12px 32px' }}>
+                    {loading ? 'Guardando...' : (cancha ? 'Actualizar Sede' : 'Registrar Nueva Sede')}
                 </GradientButton>
             </div>
         </form>

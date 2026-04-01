@@ -105,37 +105,41 @@ class JornadaController extends Controller
             $jornada->cerrada = true;
             $jornada->save();
 
-            // Agrupar pagos por ROL de árbitro dentro de la transacción
-            $pagosPorRol = DB::table('partido_arbitro')
-                ->join('partidos', 'partido_arbitro.partido_id', '=', 'partidos.id')
-                ->where('partidos.jornada_id', $jornada->id)
-                ->where('partido_arbitro.pagado', true)
-                ->select('partido_arbitro.rol', DB::raw('SUM(partido_arbitro.pago) as total'))
-                ->groupBy('partido_arbitro.rol')
-                ->get();
-                
-            foreach ($pagosPorRol as $pago) {
-                if ($pago->total > 0) {
-                    $egreso = new Egreso();
-                    $egreso->id = (string) Str::uuid();
-                    $egreso->torneo_id = $jornada->torneo_id;
-                    $egreso->jornada_id = $jornada->id;
-                    $egreso->concepto = "Pago Arbitraje (" . ($pago->rol ?: 'Central') . ") - Jornada " . $jornada->numero;
-                    $egreso->categoria = 'arbitraje';
-                    $egreso->monto = $pago->total;
-                    $egreso->fecha = now();
-                    
-                    // Vinculamos el egreso consolidado a la Jornada
-                    $egreso->payable_id = $jornada->id;
-                    $egreso->payable_type = Jornada::class;
-                    $egreso->metodo_pago = 'Efectivo';
-                    
-                    $egreso->save();
+            // Cargar relaciones para evitar múltiples consultas y usar SoftDeletes correctamente
+            $jornada->load(['partidos.arbitros', 'partidos.equipoLocal', 'partidos.equipoVisitante']);
+
+            foreach ($jornada->partidos as $partido) {
+                foreach ($partido->arbitros as $arbitro) {
+                    // Solo generamos egreso si el arbitraje fue marcado como pagado por el administrador
+                    if ($arbitro->pivot->pagado && (float)$arbitro->pivot->pago > 0) {
+                        $egreso = new Egreso();
+                        $egreso->id = (string) Str::uuid();
+                        $egreso->torneo_id = $jornada->torneo_id;
+                        $egreso->jornada_id = $jornada->id;
+                        
+                        // Formatear concepto detallado para trazabilidad total
+                        $rol = $arbitro->pivot->rol ?: 'Central';
+                        $nombreArbitro = $arbitro->nombre;
+                        $nombreLocal = $partido->equipoLocal->nombre_mostrado ?? 'Local';
+                        $nombreVisitante = $partido->equipoVisitante->nombre_mostrado ?? 'Visita';
+                        
+                        $egreso->concepto = "Pago Arbitraje ({$rol}) - {$nombreArbitro} - {$nombreLocal} vs {$nombreVisitante}";
+                        $egreso->categoria = 'arbitraje';
+                        $egreso->monto = (float)$arbitro->pivot->pago;
+                        $egreso->fecha = now();
+                        
+                        // Vinculación polimórfica al registro de asignación original (pivot)
+                        $egreso->payable_id = $arbitro->pivot->id;
+                        $egreso->payable_type = 'App\Models\PartidoArbitro';
+                        $egreso->metodo_pago = 'Efectivo';
+                        
+                        $egreso->save();
+                    }
                 }
             }
 
             return response()->json([
-                'message' => 'Jornada cerrada correctamente y egresos de arbitraje generados.',
+                'message' => 'Jornada cerrada correctamente y egresos detallados generados.',
                 'data' => $jornada
             ]);
         });

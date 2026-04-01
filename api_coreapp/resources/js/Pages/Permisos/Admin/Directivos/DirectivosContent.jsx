@@ -6,7 +6,7 @@ import GradientButton from '../../../../Components/UI/GradientButton';
 import Modal from '../../../../Components/UI/Modal';
 import SearchBar from '../../../../Components/UI/SearchBar';
 import DirectivoForm from './DirectivoForm';
-import { Plus, Edit, Trash2, User, Phone, MapPin } from 'lucide-react';
+import { Plus, Edit, Trash2, User, Phone, MapPin, Mail, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function DirectivosContent() {
@@ -185,57 +185,90 @@ export default function DirectivosContent() {
                 title="Ficha de Directivo"
             >
                 {selectedDirectivo && (
-                    <div className="space-y-6">
-                        <div className="bg-slate-50 rounded-3xl p-6 border border-slate-200 shadow-inner">
-                            <div className="flex items-center gap-4 mb-8">
-                                <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 text-slate-800">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                        <div style={{ 
+                            backgroundColor: 'var(--color-bg-surface-alt)', 
+                            borderRadius: 'var(--radius-lg)', 
+                            padding: '24px', 
+                            border: '1px solid var(--color-border-subtle)',
+                            boxShadow: 'var(--shadow-soft)'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px' }}>
+                                <div style={{ 
+                                    padding: '16px', 
+                                    backgroundColor: 'white', 
+                                    borderRadius: 'var(--radius-md)', 
+                                    border: '1px solid var(--color-border-subtle)', 
+                                    color: 'var(--color-slate)',
+                                    boxShadow: 'var(--shadow-sm)'
+                                }}>
                                     <User size={32} />
                                 </div>
-                                <div className="flex-1">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5 italic">Nombre completo</p>
-                                    <h3 className="text-2xl font-black text-slate-800 leading-tight">{selectedDirectivo.nombre}</h3>
+                                <div style={{ flex: 1 }}>
+                                    <p style={{ fontSize: '10px', fontWeight: 900, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Nombre completo</p>
+                                    <h3 style={{ fontSize: '22px', fontWeight: 900, color: 'var(--color-slate)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{selectedDirectivo.nombre}</h3>
                                 </div>
                             </div>
 
-                            <div className="space-y-4">
-                                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Rol</p>
-                                    <span className={`font-black uppercase tracking-tight ${selectedDirectivo.tipo?.nombre === 'Dueño Club' ? 'text-blue-600' : 'text-purple-600'}`}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', backgroundColor: 'white', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)' }}>
+                                    <p style={{ fontSize: '10px', fontWeight: 900, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Rol Asignado</p>
+                                    <span style={{ 
+                                        fontWeight: 900, 
+                                        color: selectedDirectivo.tipo?.nombre === 'Dueño Club' ? 'var(--color-primary)' : 'var(--color-gold)', 
+                                        textTransform: 'uppercase',
+                                        fontSize: '13px'
+                                    }}>
                                         {selectedDirectivo.tipo?.nombre}
                                     </span>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic flex gap-1"><Phone size={12} /> Teléfono</p>
-                                        <p className="font-bold text-slate-700">{selectedDirectivo.telefono || 'Sin registro'}</p>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                    <div style={{ padding: '16px', backgroundColor: 'white', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)' }}>
+                                        <p style={{ fontSize: '10px', fontWeight: 900, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <Phone size={12} /> Teléfono
+                                        </p>
+                                        <p style={{ fontWeight: 700, color: 'var(--color-text-primary)' }}>{selectedDirectivo.telefono || 'N/A'}</p>
                                     </div>
-                                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic flex gap-1"><MapPin size={12} /> Estado</p>
-                                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-black uppercase ${selectedDirectivo.activo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                                            }`}>
+                                    <div style={{ padding: '16px', backgroundColor: 'white', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)' }}>
+                                        <p style={{ fontSize: '10px', fontWeight: 900, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <CheckCircle2 size={12} /> Estado
+                                        </p>
+                                        <span style={{ 
+                                            fontSize: '10px', 
+                                            fontWeight: 900, 
+                                            textTransform: 'uppercase',
+                                            color: selectedDirectivo.activo ? 'var(--color-sage)' : 'var(--color-terra)'
+                                        }}>
                                             {selectedDirectivo.activo ? 'Vigente' : 'Suspendido'}
                                         </span>
                                     </div>
                                 </div>
 
-                                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Dirección</p>
-                                    <p className="font-bold text-slate-700 truncate">{selectedDirectivo.direccion || 'Sin registro'}</p>
+                                <div style={{ padding: '16px', backgroundColor: 'white', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)' }}>
+                                    <p style={{ fontSize: '10px', fontWeight: 900, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <Mail size={12} /> Correo Electrónico
+                                    </p>
+                                    <p style={{ fontWeight: 700, color: 'var(--color-text-primary)', wordBreak: 'break-all' }}>{selectedDirectivo.correo_electronico || 'N/A'}</p>
                                 </div>
-                                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Correo Electrónico</p>
-                                    <p className="font-bold text-slate-700 truncate">{selectedDirectivo.correo_electronico || 'Sin registro'}</p>
+
+                                <div style={{ padding: '16px', backgroundColor: 'white', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)' }}>
+                                    <p style={{ fontSize: '10px', fontWeight: 900, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <MapPin size={12} /> Dirección Física
+                                    </p>
+                                    <p style={{ fontWeight: 700, color: 'var(--color-text-primary)', fontSize: '13px' }}>{selectedDirectivo.direccion || 'No registrada'}</p>
                                 </div>
                             </div>
                         </div>
 
-                        <button
+                        <GradientButton
                             onClick={() => { setIsDetailModalOpen(false); handleEdit(selectedDirectivo); }}
-                            className="w-full bg-slate-800 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-900 transition-all shadow-premium"
+                            variant="primary"
+                            icon={Edit}
+                            style={{ width: '100%', padding: '16px' }}
                         >
                             Editar Información
-                        </button>
+                        </GradientButton>
                     </div>
                 )}
             </Modal>

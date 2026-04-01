@@ -3,8 +3,14 @@ import http from '../../../../lib/http';
 import Card from '../../../../Components/UI/Card';
 import GradientButton from '../../../../Components/UI/GradientButton';
 import Modal from '../../../../Components/UI/Modal';
-import { Plus, Check, Calendar, Trophy, Trash2, Pause, Play, AlertCircle, ArrowLeft, Lock, Shield, User, DollarSign, X } from 'lucide-react';
+import { 
+    Plus, Check, Calendar, Trophy, Trash2, Pause, Play, AlertCircle, 
+    ArrowLeft, Lock, Shield, User, DollarSign, X, MapPin, Clock, Mail, 
+    Banknote, FileText, XCircle, TrendingUp, TrendingDown, Activity,
+    AlertTriangle, PlusCircle, Users, CheckCircle
+} from 'lucide-react';
 import toast from 'react-hot-toast';
+import ReciboArbitrajeJornadaTemplate from '../../../../Components/ReciboArbitrajeJornadaTemplate';
 
 // ────────────────────────────────────────────────
 // Sub‑view: Detail of a single Jornada
@@ -70,6 +76,15 @@ function JornadaDetail({
         };
         fetchArbitros();
     }, [torneo.id]);
+
+    // Sincronizar precios por defecto cuando el torneo carga o cambia
+    useEffect(() => {
+        const defaultPago = parseFloat(torneo.monto_pago_arbitro || 0);
+        if (defaultPago > 0) {
+            setPartidoForm(prev => ({ ...prev, pago_arbitro: defaultPago }));
+            setArbitroForm(prev => ({ ...prev, pago: defaultPago }));
+        }
+    }, [torneo.monto_pago_arbitro]);
 
     const inputStyle = {
         width: '100%',
@@ -224,9 +239,12 @@ function JornadaDetail({
         try {
             await http.patch(`/api/jornadas/${jornada.id}/cerrar`);
             toast.success('Jornada cerrada correctamente');
-            setIsCierreModalOpen(false);
+            
+            // Recargar datos para que los nuevos egresos individuales aparezcan en el modal
+            await handleVerResumen(); 
+            
             onRefresh();
-            onBack();
+            // Ya no cerramos el modal ni volvemos atrás inmediatamente para que el usuario vea el reporte final y pueda imprimir
         } catch (error) {
             const msg = error.response?.data?.message || 'Error al cerrar jornada';
             const pending = error.response?.data?.partidos_pendientes || [];
@@ -402,7 +420,7 @@ function JornadaDetail({
                                     cancha_id: '',
                                     cancha_horario_id: '',
                                     arbitro_id: '',
-                                    pago_arbitro: torneo.monto_pago_arbitro || 0,
+                                    pago_arbitro: parseFloat(torneo.monto_pago_arbitro || 0),
                                     rol: 'Central'
                                 });
                                 setFormError(null);
@@ -628,8 +646,9 @@ function JornadaDetail({
                                                 </button>
                                                 <button
                                                     onClick={() => {
+                                                        const defaultPago = parseFloat(torneo.monto_pago_arbitro || 0);
                                                         setTargetPartidoId(partido.id);
-                                                        setArbitroForm({ arbitro_id: '', rol: 'Central', pago: torneo.monto_pago_arbitro || 0 });
+                                                        setArbitroForm({ arbitro_id: '', rol: 'Central', pago: defaultPago });
                                                         setIsArbitroModalOpen(true);
                                                     }}
                                                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '7px 12px', color: 'var(--color-gold)', border: '1px solid rgba(212,175,55,0.1)', background: 'var(--color-gold-light)', borderRadius: '6px', fontSize: '10px', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase' }}
@@ -724,38 +743,78 @@ function JornadaDetail({
 
             {/* ── Modal: Programar Partido ── */}
             <Modal isOpen={isPartidoModalOpen} onClose={() => setIsPartidoModalOpen(false)} title="Programación de Encuentro" maxWidth="max-w-4xl">
-                <form onSubmit={handlePartidoSubmit} style={{ display: 'flex', flexDirection: 'column', height: 'auto', maxHeight: 'calc(100vh - 160px)' }}>
-                    {/* Scrollable Content Area */}
-                    <div style={{ flex: 1, overflowY: 'auto', paddingRight: '8px', paddingBottom: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <form onSubmit={handlePartidoSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                         
-                        {/* Team Selection Row */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '20px', padding: '10px 0' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                <label className="text-label" style={{ marginLeft: '4px' }}>Escuadra Local</label>
-                                <select style={inputStyle} value={partidoForm.equipo_local_id} onChange={e => setPartidoForm({ ...partidoForm, equipo_local_id: e.target.value })} required>
+                        {/* ── SECCIÓN 1: DUELO DE ESCUADRAS ── */}
+                        <div style={{ 
+                            backgroundColor: 'var(--color-bg-surface-alt)', 
+                            borderRadius: 'var(--radius-lg)', 
+                            padding: '28px', 
+                            border: '1px solid var(--color-border-subtle)',
+                            boxShadow: 'var(--shadow-soft)',
+                            display: 'grid',
+                            gridTemplateColumns: '1fr auto 1fr',
+                            alignItems: 'center',
+                            gap: '32px',
+                            position: 'relative',
+                            overflow: 'hidden'
+                        }}>
+                            {/* Background decoration */}
+                            <div style={{ position: 'absolute', top: '-20px', left: '-20px', opacity: 0.03, pointerEvents: 'none' }}><Users size={120} /></div>
+                            
+                            {/* Equipo Local */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                    <Shield size={14} /> Anfitrión (Local) <span style={{ color: 'var(--color-terra)' }}>*</span>
+                                </label>
+                                <select 
+                                    style={{ ...inputStyle, padding: '14px 18px', fontSize: '15px', fontWeight: 700 }} 
+                                    value={partidoForm.equipo_local_id} 
+                                    onChange={e => setPartidoForm({ ...partidoForm, equipo_local_id: e.target.value })} 
+                                    required
+                                >
                                     <option value="">-- Seleccione equipo --</option>
                                     {equiposInscritos.map(eq => {
                                         const isOpponent = eq.id === partidoForm.equipo_visitante_id;
                                         const isUsed = usedTeamIds.has(eq.id);
                                         return (
                                             <option key={eq.id} value={eq.id} disabled={isOpponent || isUsed}>
-                                                {eq.nombre_mostrado}{isUsed ? ' (ya usado en esta jornada)' : ''}
+                                                {eq.nombre_mostrado}{isUsed ? ' (ya usado)' : ''}
                                             </option>
                                         );
                                     })}
                                 </select>
                             </div>
-                            <div style={{ padding: '24px 10px 0 10px', fontSize: '10px', fontWeight: 900, color: 'var(--color-gold)', letterSpacing: '2px' }}>VS</div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                <label className="text-label" style={{ marginLeft: '4px' }}>Escuadra Visitante</label>
-                                <select style={inputStyle} value={partidoForm.equipo_visitante_id} onChange={e => setPartidoForm({ ...partidoForm, equipo_visitante_id: e.target.value })} required>
+
+                            {/* VS Badge */}
+                            <div style={{ 
+                                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
+                                backgroundColor: 'white', border: '2px solid var(--color-gold)', borderRadius: '50%', 
+                                width: '48px', height: '48px', z_index: 2, boxShadow: 'var(--shadow-md)',
+                                marginTop: '22px'
+                            }}>
+                                <span style={{ fontSize: '12px', fontWeight: 900, color: 'var(--color-gold)', letterSpacing: '1px' }}>VS</span>
+                            </div>
+
+                            {/* Equipo Visitante */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 800, color: 'var(--color-gold)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                    <Shield size={14} /> Visitante <span style={{ color: 'var(--color-terra)' }}>*</span>
+                                </label>
+                                <select 
+                                    style={{ ...inputStyle, padding: '14px 18px', fontSize: '15px', fontWeight: 700 }} 
+                                    value={partidoForm.equipo_visitante_id} 
+                                    onChange={e => setPartidoForm({ ...partidoForm, equipo_visitante_id: e.target.value })} 
+                                    required
+                                >
                                     <option value="">-- Seleccione equipo --</option>
                                     {equiposInscritos.map(eq => {
                                         const isOpponent = eq.id === partidoForm.equipo_local_id;
                                         const isUsed = usedTeamIds.has(eq.id);
                                         return (
                                             <option key={eq.id} value={eq.id} disabled={isOpponent || isUsed}>
-                                                {eq.nombre_mostrado}{isUsed ? ' (ya usado en esta jornada)' : ''}
+                                                {eq.nombre_mostrado}{isUsed ? ' (ya usado)' : ''}
                                             </option>
                                         );
                                     })}
@@ -763,11 +822,13 @@ function JornadaDetail({
                             </div>
                         </div>
 
-                        {/* Venue and Schedule Row */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                <label className="text-label" style={{ marginLeft: '4px' }}>Sede del Encuentro</label>
-                                <select style={{ ...inputStyle, fontSize: '13px', padding: '10px 14px' }} value={partidoForm.cancha_id} onChange={e => {
+                        {/* ── SECCIÓN 2: LOGÍSTICA (SEDE Y HORARIO) ── */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                    <MapPin size={14} style={{ color: 'var(--color-gold)' }} /> Sede del Encuentro
+                                </label>
+                                <select style={{ ...inputStyle, padding: '12px 14px' }} value={partidoForm.cancha_id} onChange={e => {
                                     const value = e.target.value;
                                     setPartidoForm(prev => {
                                         let nuevoHorarioId = '';
@@ -781,8 +842,11 @@ function JornadaDetail({
                                     {selectedVisitForm?.cancha && <option value={selectedVisitForm.cancha_id} disabled={selectedLocalForm?.cancha_id === selectedVisitForm.cancha_id}>Sede Visitante ({selectedVisitForm.cancha.nombre})</option>}
                                 </select>
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                <label className="text-label" style={{ marginLeft: '4px' }}>Horario de Juego</label>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                    <Clock size={14} style={{ color: 'var(--color-gold)' }} /> Horario de Inicio
+                                </label>
                                 {(() => {
                                     const ownerEquipo = partidoForm.cancha_id
                                         ? ([selectedLocalForm, selectedVisitForm].find(eq => eq?.cancha_id === partidoForm.cancha_id))
@@ -794,7 +858,7 @@ function JornadaDetail({
                                     );
                                     return (
                                         <select
-                                            style={{ ...inputStyle, fontSize: '13px', padding: '10px 14px' }}
+                                            style={{ ...inputStyle, padding: '12px 14px' }}
                                             value={partidoForm.cancha_horario_id}
                                             onChange={e => setPartidoForm({ ...partidoForm, cancha_horario_id: e.target.value })}
                                             disabled={!partidoForm.cancha_id}
@@ -806,7 +870,7 @@ function JornadaDetail({
                                                 </option>
                                             ))}
                                             {filtered.length === 0 && partidoForm.cancha_id && (
-                                                <option disabled value="">Sin horarios disponibles para esta sede</option>
+                                                <option disabled value="">Sin horarios disponibles</option>
                                             )}
                                         </select>
                                     );
@@ -814,14 +878,22 @@ function JornadaDetail({
                             </div>
                         </div>
 
-                        {/* Referee Assignment Section */}
-                        <div style={{ padding: '20px', backgroundColor: 'var(--color-bg-surface-alt)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', marginTop: '4px' }}>
-                            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-gold)', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px' }}>Asignación de Árbitros (Opcional)</div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                        {/* ── SECCIÓN 3: CUERPO ARBITRAL (OPCIONAL) ── */}
+                        <div style={{ 
+                            padding: '24px', 
+                            backgroundColor: 'var(--color-bg-surface-alt)', 
+                            borderRadius: 'var(--radius-md)', 
+                            border: '1px solid var(--color-border-subtle)',
+                            marginTop: '8px'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 800, color: 'var(--color-gold)', textTransform: 'uppercase', marginBottom: '20px', letterSpacing: '1px' }}>
+                                <User size={14} /> Asignación de Árbitros (Opcional)
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 0.8fr', gap: '16px' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    <label className="text-label" style={{ fontSize: '12px' }}>Seleccionar Árbitro</label>
+                                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Nombre del Árbitro</label>
                                     <select
-                                        style={{ ...inputStyle, padding: '10px 14px' }}
+                                        style={inputStyle}
                                         value={partidoForm.arbitro_id}
                                         onChange={e => setPartidoForm({ ...partidoForm, arbitro_id: e.target.value })}
                                     >
@@ -831,45 +903,51 @@ function JornadaDetail({
                                         ))}
                                     </select>
                                 </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                        <label className="text-label" style={{ fontSize: '12px' }}>Rol</label>
-                                        <select
-                                            style={{ ...inputStyle, padding: '10px 14px' }}
-                                            value={partidoForm.rol}
-                                            onChange={e => setPartidoForm({ ...partidoForm, rol: e.target.value })}
-                                            disabled={!partidoForm.arbitro_id}
-                                        >
-                                            <option value="Central">Central</option>
-                                            <option value="Asistente 1">Asistente 1</option>
-                                            <option value="Asistente 2">Asistente 2</option>
-                                        </select>
-                                    </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                        <label className="text-label" style={{ fontSize: '12px' }}>Pago ($)</label>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Rol Principal</label>
+                                    <select
+                                        style={inputStyle}
+                                        value={partidoForm.rol}
+                                        onChange={e => setPartidoForm({ ...partidoForm, rol: e.target.value })}
+                                        disabled={!partidoForm.arbitro_id}
+                                    >
+                                        <option value="Central">Central</option>
+                                        <option value="Asistente 1">Asistente 1</option>
+                                        <option value="Asistente 2">Asistente 2</option>
+                                    </select>
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Pago Árbitro ($)</label>
+                                    <div style={{ position: 'relative' }}>
                                         <input
                                             type="number"
-                                            style={{ ...inputStyle, padding: '10px 14px', backgroundColor: 'var(--color-bg-surface-alt)', cursor: 'not-allowed' }}
-                                            value={partidoForm.pago_arbitro}
-                                            onChange={e => setPartidoForm({ ...partidoForm, pago_arbitro: e.target.value })}
-                                            disabled={true} title="El monto de pago se define automáticamente por la configuración del torneo"
+                                            style={{ ...inputStyle, backgroundColor: '#f8fafc', color: 'var(--color-text-muted)', cursor: 'not-allowed' }}
+                                            value={partidoForm.pago_arbitro || parseFloat(torneo.monto_pago_arbitro || 0)}
+                                            disabled={true}
                                         />
+                                        <div title="Monto inmutable definido en el torneo" style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-gold)' }}><Lock size={12} /></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Sticky Footer */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '16px', marginTop: '12px', paddingTop: '24px', borderTop: '1px solid var(--color-border-subtle)', backgroundColor: 'var(--color-bg-surface-alt)', margin: '0 -24px -24px -24px', padding: '16px 24px' }}>
+                    {/* PIE DE FORMULARIO ESTÁTICO */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '16px', marginTop: '12px', paddingTop: '24px', borderTop: '1px solid var(--color-border-subtle)' }}>
                         {formError && (
-                            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-terra)', backgroundColor: 'var(--color-terra-light)', padding: '10px 16px', borderRadius: 'var(--radius-md)', border: '1px solid rgba(192,68,42,0.2)', fontSize: '13px', fontWeight: 700, animation: 'shake 0.4s ease-in-out' }}>
+                            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-terra)', backgroundColor: 'var(--color-terra-light)', padding: '10px 16px', borderRadius: 'var(--radius-md)', border: '1px solid rgba(192,68,42,0.2)', fontSize: '13px', fontWeight: 700 }}>
                                 <AlertCircle size={16} />
                                 {formError}
                             </div>
                         )}
-                        <button type="button" onClick={() => { setIsPartidoModalOpen(false); setFormError(null); }} className="btn btn-ghost">Cancelar</button>
-                        <GradientButton type="submit" disabled={saving} isLoading={saving} variant="primary">Agendar Partido</GradientButton>
+                        <button 
+                            type="button" 
+                            onClick={() => { setIsPartidoModalOpen(false); setFormError(null); }} 
+                            style={{ padding: '12px 24px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-muted)', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', cursor: 'pointer', background: 'none' }}
+                        >
+                            Cancelar
+                        </button>
+                        <GradientButton type="submit" disabled={saving} isLoading={saving} variant="primary">Programar Encuentro Oficial</GradientButton>
                     </div>
                 </form>
             </Modal>
@@ -878,162 +956,267 @@ function JornadaDetail({
             <Modal isOpen={isResultadoModalOpen} onClose={() => setIsResultadoModalOpen(false)} title="Acta de Resultados Oficiales">
                 {selectedPartido && (
                     <form onSubmit={handleResultadoSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                        <div style={{ padding: '20px', backgroundColor: 'var(--color-bg-surface-alt)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', textAlign: 'center' }}>
-                            <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '1px' }}>Detalles del Encuentro</div>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
-                                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--color-slate)', fontSize: '18px', flex: 1, textAlign: 'right' }}>{selectedPartido.equipo_local?.nombre_mostrado}</span>
-                                <span style={{ color: 'var(--color-gold)', fontWeight: 900, fontSize: '12px' }}>VS</span>
-                                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--color-slate)', fontSize: '18px', flex: 1, textAlign: 'left' }}>{selectedPartido.equipo_visitante?.nombre_mostrado}</span>
+                        {/* ── ENCABEZADO DE ENCUENTRO ── */}
+                        <div style={{ 
+                            padding: '28px', 
+                            backgroundColor: 'var(--color-bg-surface-alt)', 
+                            borderRadius: 'var(--radius-lg)', 
+                            border: '1px solid var(--color-border-subtle)', 
+                            textAlign: 'center',
+                            position: 'relative',
+                            overflow: 'hidden'
+                        }}>
+                             <div style={{ position: 'absolute', top: '-10px', left: '-10px', opacity: 0.05 }}><Trophy size={80} /></div>
+                            <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 900, textTransform: 'uppercase', marginBottom: '20px', letterSpacing: '2px' }}>Marcador Final Oficial</div>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '32px' }}>
+                                <div style={{ flex: 1, textAlign: 'right' }}>
+                                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, color: 'var(--color-slate)', fontSize: '22px', marginBottom: '4px', lineHeight: 1.1 }}>{selectedPartido.equipo_local?.nombre_mostrado}</div>
+                                    <div style={{ fontSize: '10px', color: 'var(--color-primary)', fontWeight: 800, letterSpacing: '1px' }}>LOCAL</div>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', backgroundColor: 'white', padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '2px solid var(--color-gold)', boxShadow: 'var(--shadow-md)' }}>
+                                    <span style={{ fontSize: '38px', fontWeight: 900, color: 'var(--color-slate)', fontFamily: 'var(--font-display)' }}>{resultadoForm.goles_local}</span>
+                                    <span style={{ color: 'var(--color-gold)', fontWeight: 900, fontSize: '20px' }}>—</span>
+                                    <span style={{ fontSize: '38px', fontWeight: 900, color: 'var(--color-slate)', fontFamily: 'var(--font-display)' }}>{resultadoForm.goles_visitante}</span>
+                                </div>
+                                <div style={{ flex: 1, textAlign: 'left' }}>
+                                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, color: 'var(--color-slate)', fontSize: '22px', marginBottom: '4px', lineHeight: 1.1 }}>{selectedPartido.equipo_visitante?.nombre_mostrado}</div>
+                                    <div style={{ fontSize: '10px', color: 'var(--color-gold)', fontWeight: 800, letterSpacing: '1px' }}>VISITANTE</div>
+                                </div>
                             </div>
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
-                            <div style={{ textAlign: 'center' }}>
-                                <label style={{ display: 'block', fontSize: '9px', fontWeight: 900, color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '1.5px' }}>Goles Local</label>
-                                <input type="number" min="0" style={{ ...inputStyle, textAlign: 'center', fontSize: '42px', fontWeight: 900, height: '90px', borderRadius: 'var(--radius-md)', fontFamily: 'var(--font-display)' }} value={resultadoForm.goles_local} onChange={e => setResultadoForm({ ...resultadoForm, goles_local: e.target.value })} required />
+
+                        {/* ── CAPTURA DE GOLES ── */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                    <Trophy size={14} style={{ color: 'var(--color-primary)' }} /> Goles del Local
+                                </label>
+                                <input
+                                    type="number" min="0"
+                                    style={{ ...inputStyle, fontSize: '24px', fontWeight: 900, textAlign: 'center', padding: '16px' }}
+                                    value={resultadoForm.goles_local}
+                                    onChange={e => setResultadoForm({ ...resultadoForm, goles_local: e.target.value })}
+                                    required
+                                />
                             </div>
-                            <div style={{ textAlign: 'center' }}>
-                                <label style={{ display: 'block', fontSize: '9px', fontWeight: 900, color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '1.5px' }}>Goles Visitante</label>
-                                <input type="number" min="0" style={{ ...inputStyle, textAlign: 'center', fontSize: '42px', fontWeight: 900, height: '90px', borderRadius: 'var(--radius-md)', fontFamily: 'var(--font-display)' }} value={resultadoForm.goles_visitante} onChange={e => setResultadoForm({ ...resultadoForm, goles_visitante: e.target.value })} required />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }} >
+                                    <Trophy size={14} style={{ color: 'var(--color-gold)' }} /> Goles del Visitante
+                                </label>
+                                <input
+                                    type="number" min="0"
+                                    style={{ ...inputStyle, fontSize: '24px', fontWeight: 900, textAlign: 'center', padding: '16px' }}
+                                    value={resultadoForm.goles_visitante}
+                                    onChange={e => setResultadoForm({ ...resultadoForm, goles_visitante: e.target.value })}
+                                    required
+                                />
                             </div>
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '12px', paddingTop: '24px', borderTop: '1px solid var(--color-border-subtle)' }}>
-                            <button type="button" onClick={() => setIsResultadoModalOpen(false)} className="btn btn-ghost">Cancelar</button>
-                            <GradientButton type="submit" disabled={saving} isLoading={saving} variant="primary">Validar Marcador</GradientButton>
+
+                        {/* ── OBSERVACIONES ── */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                <FileText size={14} style={{ color: 'var(--color-gold)' }} /> Observaciones de la Cédula
+                            </label>
+                            <textarea
+                                style={{ ...inputStyle, height: '120px', resize: 'none', padding: '16px', fontSize: '14px', lineHeight: '1.5' }}
+                                placeholder="Registra incidencias, amonestaciones o cualquier situación relevante para el acta oficial..."
+                                value={resultadoForm.observaciones}
+                                onChange={e => setResultadoForm({ ...resultadoForm, observaciones: e.target.value })}
+                            />
+                        </div>
+
+                        {/* ACCIONES */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '16px', marginTop: '12px', paddingTop: '24px', borderTop: '1px solid var(--color-border-subtle)' }}>
+                            <button 
+                                type="button" 
+                                onClick={() => setIsResultadoModalOpen(false)} 
+                                style={{ padding: '12px 24px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-muted)', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', cursor: 'pointer', background: 'none' }}
+                            >
+                                Cancelar
+                            </button>
+                            <GradientButton type="submit" disabled={saving} isLoading={saving} variant="primary">Guardar Acta Oficial</GradientButton>
                         </div>
                     </form>
                 )}
             </Modal>
 
             {/* ── Modal: Suspensión ── */}
-            <Modal isOpen={isSuspensionModalOpen} onClose={() => setIsSuspensionModalOpen(false)} title="Suspender Jornada Oficial">
-                <form onSubmit={handleSuspenderJornada} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label className="text-label" style={{ marginLeft: '4px' }}>Motivo de la Suspensión</label>
+            <Modal isOpen={isSuspensionModalOpen} onClose={() => setIsSuspensionModalOpen(false)} title="Suspensión de Jornada Oficial">
+                <form onSubmit={handleSuspenderJornada} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div style={{ padding: '20px', backgroundColor: 'rgba(192,68,42,0.05)', border: '1px solid rgba(192,68,42,0.15)', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+                        <AlertTriangle size={24} style={{ color: 'var(--color-terra)', flexShrink: 0 }} />
+                        <div>
+                            <div style={{ fontSize: '14px', fontWeight: 900, color: 'var(--color-terra)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Atención Administrador</div>
+                            <div style={{ fontSize: '13px', color: 'var(--color-text-primary)', lineHeight: '1.5', fontWeight: 500 }}>
+                                Estás a punto de suspender la jornada completa. Los encuentros programados no sumarán estadísticas y se notificará a los delegados.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            <FileText size={14} style={{ color: 'var(--color-gold)' }} /> Motivo de la Suspensión
+                        </label>
                         <textarea
-                            style={{ width: '100%', minHeight: '120px', resize: 'none', backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-text-primary)', outline: 'none' }}
+                            style={{ ...inputStyle, minHeight: '120px', resize: 'none', padding: '16px' }}
                             value={motivo}
                             onChange={e => setMotivo(e.target.value)}
-                            placeholder="Ej. Inclemencias del tiempo, falta de disponibilidad de sedes, etc."
+                            placeholder="Ej. Condiciones climatológicas adversas, falta de disponibilidad de sedes, duelo oficial..."
                             required
                         />
-                        <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Este motivo será visible en el calendario.</p>
+                        <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontStyle: 'italic', paddingLeft: '4px' }}>Esta justificación será visible en el calendario para todos los usuarios.</p>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '12px', paddingTop: '24px', borderTop: '1px solid var(--color-border-subtle)' }}>
-                        <button type="button" onClick={() => setIsSuspensionModalOpen(false)} className="btn btn-ghost">Cancelar</button>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '4px', paddingTop: '28px', borderTop: '1px solid var(--color-border-subtle)' }}>
+                        <button 
+                            type="button" 
+                            onClick={() => setIsSuspensionModalOpen(false)} 
+                            style={{ padding: '12px 24px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-muted)', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', cursor: 'pointer', background: 'none' }}
+                        >
+                            Cancelar
+                        </button>
                         <GradientButton type="submit" disabled={saving} isLoading={saving} variant="primary">Confirmar Suspensión</GradientButton>
                     </div>
                 </form>
             </Modal>
 
             {/* ── Modal: Suspender Partido ── */}
-            <Modal isOpen={isPartidoSuspensionModalOpen} onClose={() => setIsPartidoSuspensionModalOpen(false)} title="Marcar Partido como No Realizado">
-                <form onSubmit={handleSuspenderPartido} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div style={{ padding: '12px 16px', backgroundColor: 'rgba(192,68,42,0.05)', border: '1px solid rgba(192,68,42,0.15)', borderRadius: 'var(--radius-md)', fontSize: '13px', color: 'var(--color-terra)' }}>
-                        <strong>⚠ Atención:</strong> El partido quedará marcado como <strong>Suspendido</strong>. Podrás reactivarlo desde la vista de jornada si la situación se resuelve.
+            <Modal isOpen={isPartidoSuspensionModalOpen} onClose={() => setIsPartidoSuspensionModalOpen(false)} title="Anulación de Encuentro Deportivo">
+                <form onSubmit={handleSuspenderPartido} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div style={{ padding: '20px', backgroundColor: 'rgba(192,68,42,0.05)', border: '1px solid rgba(192,68,42,0.15)', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+                        <AlertCircle size={24} style={{ color: 'var(--color-terra)', flexShrink: 0 }} />
+                        <div>
+                            <div style={{ fontSize: '14px', fontWeight: 900, color: 'var(--color-terra)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Protocolo de Incidencia</div>
+                            <div style={{ fontSize: '13px', color: 'var(--color-text-primary)', lineHeight: '1.5', fontWeight: 500 }}>
+                                El partido quedará marcado como <strong style={{ color: 'var(--color-terra)' }}>Suspendido</strong>. Podrás reactivarlo posteriormente si la situación se resuelve administrativamente.
+                            </div>
+                        </div>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label className="text-label" style={{ marginLeft: '4px' }}>Razón de No Realización</label>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            <FileText size={14} style={{ color: 'var(--color-gold)' }} /> Razón de No Realización
+                        </label>
                         <textarea
-                            style={{ width: '100%', minHeight: '110px', resize: 'none', backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-text-primary)', outline: 'none' }}
+                            style={{ ...inputStyle, minHeight: '120px', resize: 'none', padding: '16px' }}
                             value={motivoPartido}
                             onChange={e => setMotivoPartido(e.target.value)}
-                            placeholder="Ej. Equipo no se presentó, cancha en mal estado, árbitro ausente, etc."
+                            placeholder="Ej. Incomparecencia de equipo (Default), falla en suministro eléctrico, conducta antideportiva..."
                             required
                         />
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '4px', paddingTop: '20px', borderTop: '1px solid var(--color-border-subtle)' }}>
-                        <button type="button" onClick={() => setIsPartidoSuspensionModalOpen(false)} className="btn btn-ghost">Cancelar</button>
-                        <GradientButton type="submit" disabled={saving} isLoading={saving} variant="primary">Confirmar</GradientButton>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '4px', paddingTop: '28px', borderTop: '1px solid var(--color-border-subtle)' }}>
+                        <button 
+                            type="button" 
+                            onClick={() => setIsPartidoSuspensionModalOpen(false)} 
+                            style={{ padding: '12px 24px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-muted)', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', cursor: 'pointer', background: 'none' }}
+                        >
+                            Volver
+                        </button>
+                        <GradientButton type="submit" disabled={saving} isLoading={saving} variant="primary">Confirmar Suspensión</GradientButton>
                     </div>
                 </form>
             </Modal>
 
             {/* ── Modal: Cierre de Jornada (Summary) ── */}
             <Modal isOpen={isCierreModalOpen} onClose={() => setIsCierreModalOpen(false)} title={`Resumen de Jornada ${jornada.numero}`}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
                     {pendingList.length > 0 ? (
                         <>
-                            <div style={{ padding: '16px', backgroundColor: 'rgba(192,68,42,0.05)', border: '1px solid rgba(192,68,42,0.2)', borderRadius: 'var(--radius-md)' }}>
-                                <div style={{ fontWeight: 800, color: 'var(--color-terra)', fontSize: '13px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <AlertCircle size={16} /> No puedes cerrar la jornada — hay encuentros sin concluir:
+                            <div style={{ padding: '24px', backgroundColor: 'rgba(192,68,42,0.05)', border: '1px solid rgba(192,68,42,0.2)', borderRadius: 'var(--radius-lg)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                <div style={{ fontWeight: 900, color: 'var(--color-terra)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                    <AlertCircle size={20} /> Bloqueo de Cierre de Jornada
                                 </div>
-                                <ul style={{ margin: 0, padding: '0 0 0 20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                <div style={{ fontSize: '13px', color: 'var(--color-text-primary)', fontWeight: 600, lineHeight: '1.5' }}>
+                                    No es posible finalizar la jornada oficial ya que existen los siguientes encuentros sin concluir o sin acta oficial:
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px', background: 'white', borderRadius: 'var(--radius-md)', border: '1px solid rgba(192,68,42,0.1)' }}>
                                     {pendingList.map((p, i) => (
-                                        <li key={i} style={{ fontSize: '13px', color: 'var(--color-terra)', fontWeight: 600 }}>
+                                        <div key={i} style={{ fontSize: '13px', color: 'var(--color-slate)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--color-terra)' }}></div>
                                             {typeof p === 'string' ? p : `${p.equipo_local?.nombre_mostrado ?? '?'} vs ${p.equipo_visitante?.nombre_mostrado ?? '?'}`}
-                                        </li>
+                                        </div>
                                     ))}
-                                </ul>
-                                <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--color-text-muted)' }}>Cierra cada partido o márcalo como suspendido antes de cerrar la jornada.</div>
+                                </div>
+                                <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>
+                                    Asegúrate de registrar todos los resultados o marcar los partidos como suspendidos antes de proceder al corte contable.
+                                </div>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                <button onClick={() => setIsCierreModalOpen(false)} className="btn btn-ghost">Entendido</button>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '8px' }}>
+                                <button 
+                                    onClick={() => setIsCierreModalOpen(false)} 
+                                    style={{ padding: '12px 32px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-muted)', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', cursor: 'pointer', background: 'none' }}
+                                >
+                                    Entendido
+                                </button>
                             </div>
                         </>
                     ) : (
                         <>
-                            <div style={{ padding: '12px 16px', backgroundColor: 'rgba(45,134,83,0.05)', border: '1px solid rgba(45,134,83,0.15)', borderRadius: 'var(--radius-md)', fontSize: '13px', color: '#2d8653', fontWeight: 600 }}>
-                                ✅ Todos los encuentros de esta jornada han concluido. Puedes cerrarla oficialmente.
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 20px', backgroundColor: 'rgba(45,134,83,0.05)', border: '1px solid rgba(45,134,83,0.15)', borderRadius: 'var(--radius-lg)' }}>
+                                <CheckCircle size={20} style={{ color: 'var(--color-sage)' }} />
+                                <span style={{ fontSize: '13px', color: 'var(--color-sage)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                    Protocolo de cierre habilitado: Todos los encuentros concluidos
+                                </span>
                             </div>
 
-                            {/* Resumen Financiero Visual */}
-                            <div style={{ marginTop: '20px', padding: '16px', backgroundColor: 'var(--color-bg-surface-alt)', borderRadius: '8px', border: '1px solid var(--color-border-subtle)' }}>
-                                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-gold)', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '1px' }}>
-                                    {jornada.cerrada ? 'Reporte Contable Final' : 'Cierre de Caja Proyectado'} : Jornada {jornada.numero}
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                    <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>Ingresos Cobrados a Equipos:</span>
-                                    <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-sage)' }}>${summaryData.totalCobrado.toLocaleString()}</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                    <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>Pagos a Cuerpo Arbitral:</span>
-                                    <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-terra)' }}>${summaryData.totalEgresosArbitros.toLocaleString()}</span>
-                                </div>
-
-                                {/* Otros Egresos */}
-                                {jornadaResumen?.egresos?.filter(e => e.categoria !== 'arbitraje').length > 0 && (
-                                    <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed var(--color-border-subtle)' }}>
-                                        <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-text-muted)', marginBottom: '8px' }}>OTROS GASTOS / DESCUENTOS</div>
-                                        {jornadaResumen.egresos.filter(e => e.categoria !== 'arbitraje').map((egr, idx) => (
-                                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '12px' }}>
-                                                <span style={{ color: 'var(--color-text-secondary)' }}>{egr.concepto}</span>
-                                                <span style={{ fontWeight: 700, color: 'var(--color-terra)' }}>-${parseFloat(egr.monto).toLocaleString()}</span>
-                                            </div>
-                                        ))}
+                            {/* ── SECCIÓN FINANCIERA: CARDS ── */}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                                <div style={{ background: 'var(--color-bg-surface-alt)', padding: '20px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border-subtle)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <span style={{ fontSize: '10px', fontWeight: 900, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Ingresos Reales</span>
+                                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                                        <span style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-sage)' }}>${summaryData.totalCobrado.toLocaleString()}</span>
+                                        <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 600 }}>MXN</span>
                                     </div>
-                                )}
+                                    <TrendingUp size={16} style={{ color: 'var(--color-sage)', opacity: 0.5, marginTop: '4px' }} />
+                                </div>
 
-                                <div style={{ borderTop: '2px solid var(--color-border-subtle)', marginTop: '12px', paddingTop: '10px', display: 'flex', justifyContent: 'space-between' }}>
-                                    <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-slate)' }}>Utilidad Neta:</span>
-                                    <span style={{ fontSize: '15px', fontWeight: 900, color: (summaryData.totalCobrado - (jornadaResumen?.egresos?.reduce((acc, e) => acc + parseFloat(e.monto), 0) || summaryData.totalEgresosArbitros)) >= 0 ? 'var(--color-gold)' : 'var(--color-terra)' }}>
-                                        ${ (summaryData.totalCobrado - (jornadaResumen?.egresos?.reduce((acc, e) => acc + parseFloat(e.monto), 0) || summaryData.totalEgresosArbitros)).toLocaleString() }
-                                    </span>
+                                <div style={{ background: 'var(--color-bg-surface-alt)', padding: '20px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border-subtle)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <span style={{ fontSize: '10px', fontWeight: 900, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Egresos Totales</span>
+                                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                                        <span style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-terra)' }}>${((jornadaResumen?.egresos?.reduce((acc, e) => acc + parseFloat(e.monto), 0)) || summaryData.totalEgresosArbitros).toLocaleString()}</span>
+                                        <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 600 }}>MXN</span>
+                                    </div>
+                                    <TrendingDown size={16} style={{ color: 'var(--color-terra)', opacity: 0.5, marginTop: '4px' }} />
+                                </div>
+
+                                <div style={{ background: 'var(--color-navy)', padding: '20px', borderRadius: 'var(--radius-lg)', border: 'none', display: 'flex', flexDirection: 'column', gap: '8px', boxShadow: '0 10px 20px rgba(10, 25, 47, 0.15)' }}>
+                                    <span style={{ fontSize: '10px', fontWeight: 900, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '1px' }}>Utilidad Neta</span>
+                                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                                        <span style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-gold)' }}>
+                                            ${(summaryData.totalCobrado - ((jornadaResumen?.egresos?.reduce((acc, e) => acc + parseFloat(e.monto), 0)) || summaryData.totalEgresosArbitros)).toLocaleString()}
+                                        </span>
+                                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>MXN</span>
+                                    </div>
+                                    <Activity size={16} style={{ color: 'var(--color-gold)', opacity: 0.5, marginTop: '4px' }} />
                                 </div>
                             </div>
 
-                            {/* Detalle de Arbitraje Table */}
+                            {/* ── DETALLE DE PAGOS A ÁRBITROS ── */}
                             {jornadaResumen?.detalles_arbitraje?.length > 0 && (
-                                <div style={{ marginTop: '20px' }}>
-                                    <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-slate)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>Detalle de Pagos a Árbitros</div>
-                                    <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-sm)' }}>
-                                        <table style={{ width: '100%', fontSize: '12px', textAlign: 'left', borderCollapse: 'collapse' }}>
-                                            <thead style={{ backgroundColor: 'var(--color-bg-surface-alt)', position: 'sticky', top: 0 }}>
-                                                <tr>
-                                                    <th style={{ padding: '8px 12px', borderBottom: '1px solid var(--color-border-subtle)' }}>Árbitro</th>
-                                                    <th style={{ padding: '8px 12px', borderBottom: '1px solid var(--color-border-subtle)' }}>Rol</th>
-                                                    <th style={{ padding: '8px 12px', borderBottom: '1px solid var(--color-border-subtle)' }}>Partido</th>
-                                                    <th style={{ padding: '8px 12px', borderBottom: '1px solid var(--color-border-subtle)', textAlign: 'right' }}>Monto</th>
+                                <div style={{ marginTop: '-4px' }}>
+                                    <div style={{ fontSize: '11px', fontWeight: 900, color: 'var(--color-gold)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <Shield size={14} /> Liquidación de Honorarios Arbitrales
+                                    </div>
+                                    <div style={{ border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+                                        <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'white' }}>
+                                            <thead>
+                                                <tr style={{ backgroundColor: 'var(--color-bg-surface-alt)', borderBottom: '1px solid var(--color-border-subtle)' }}>
+                                                    <th style={{ textAlign: 'left', padding: '12px 20px', fontSize: '10px', fontWeight: 900, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Oficial</th>
+                                                    <th style={{ textAlign: 'left', padding: '12px 20px', fontSize: '10px', fontWeight: 900, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Rol</th>
+                                                    <th style={{ textAlign: 'right', padding: '12px 20px', fontSize: '10px', fontWeight: 900, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Monto</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {jornadaResumen.detalles_arbitraje.map((det, idx) => (
-                                                    <tr key={idx} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
-                                                        <td style={{ padding: '8px 12px', fontWeight: 600 }}>{det.arbitro_nombre}</td>
-                                                        <td style={{ padding: '8px 12px' }}>
-                                                            <span style={{ fontSize: '10px', padding: '2px 6px', background: 'var(--color-gold-light)', color: 'var(--color-gold)', borderRadius: '4px', fontWeight: 700 }}>{det.rol}</span>
+                                                    <tr key={idx} style={{ borderBottom: '1px solid var(--color-bg-surface-alt)' }}>
+                                                        <td style={{ padding: '12px 20px', fontSize: '13px', fontWeight: 700, color: 'var(--color-slate)' }}>{det.arbitro_nombre}</td>
+                                                        <td style={{ padding: '12px 20px' }}>
+                                                            <span style={{ fontSize: '10px', padding: '2px 8px', background: 'var(--color-gold-light)', color: 'var(--color-gold)', borderRadius: '10px', fontWeight: 900, textTransform: 'uppercase' }}>{det.rol}</span>
                                                         </td>
-                                                        <td style={{ padding: '8px 12px', color: 'var(--color-text-muted)', fontSize: '11px' }}>{det.partido_nombre}</td>
-                                                        <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700 }}>${parseFloat(det.monto).toLocaleString()}</td>
+                                                        <td style={{ padding: '12px 20px', textAlign: 'right', fontSize: '14px', fontWeight: 900, color: 'var(--color-terra)' }}>${parseFloat(det.monto).toLocaleString()}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -1042,39 +1225,72 @@ function JornadaDetail({
                                 </div>
                             )}
 
-                            {/* Score summary */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-slate)', textTransform: 'uppercase', letterSpacing: '1px' }}>Resultados Finales</div>
-                                {(jornada.partidos || []).map(partido => {
-                                    const esJugado = ['Jugado', 'jugado', 'finalizado'].includes(partido.estado?.nombre) || partido.cerrado;
-                                    const gL = Number(partido.goles_local);
-                                    const gV = Number(partido.goles_visitante);
-                                    const ganaLocal = esJugado && gL > gV;
-                                    const ganaVisita = esJugado && gV > gL;
-                                    const empate = esJugado && gL === gV;
-                                    return (
-                                        <div key={partido.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', backgroundColor: 'var(--color-bg-surface)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-subtle)', gap: '12px' }}>
-                                            <div style={{ flex: 1, textAlign: 'right', fontWeight: ganaLocal ? 800 : 600, color: ganaLocal ? '#2d8653' : empate ? '#c9a227' : 'var(--color-slate)', fontSize: '14px' }}>{partido.equipo_local?.nombre_mostrado}</div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: '80px', justifyContent: 'center' }}>
-                                                {partido.suspendido ? (
-                                                    <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-terra)', textTransform: 'uppercase', padding: '3px 8px', background: 'var(--color-terra-light)', borderRadius: '6px' }}>Suspendido</span>
-                                                ) : (
-                                                    <>
-                                                        <span style={{ fontWeight: 900, fontSize: '20px', color: ganaLocal ? '#2d8653' : empate ? '#c9a227' : 'var(--color-slate)' }}>{partido.goles_local}</span>
-                                                        <span style={{ color: 'var(--color-text-muted)', fontWeight: 700 }}>:</span>
-                                                        <span style={{ fontWeight: 900, fontSize: '20px', color: ganaVisita ? '#2d8653' : empate ? '#c9a227' : 'var(--color-slate)' }}>{partido.goles_visitante}</span>
-                                                    </>
-                                                )}
+                            {/* ── OTROS GASTOS ── */}
+                            {jornadaResumen?.egresos?.filter(e => e.categoria !== 'arbitraje').length > 0 && (
+                                <div style={{ marginTop: '-4px' }}>
+                                    <div style={{ fontSize: '11px', fontWeight: 900, color: 'var(--color-gold)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <FileText size={14} /> Egresos Operativos Adicionales
+                                    </div>
+                                    <div style={{ background: 'white', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border-subtle)', overflow: 'hidden' }}>
+                                        {jornadaResumen.egresos.filter(e => e.categoria !== 'arbitraje').map((egr, idx) => (
+                                            <div key={idx} style={{ padding: '12px 20px', borderBottom: idx === (jornadaResumen.egresos.filter(e => e.categoria !== 'arbitraje').length - 1) ? 'none' : '1px solid var(--color-bg-surface-alt)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                    <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-slate)' }}>{egr.concepto}</span>
+                                                    <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: 600 }}>{egr.categoria}</span>
+                                                </div>
+                                                <span style={{ fontSize: '14px', fontWeight: 900, color: 'var(--color-terra)' }}>-${parseFloat(egr.monto).toLocaleString()}</span>
                                             </div>
-                                            <div style={{ flex: 1, fontWeight: ganaVisita ? 800 : 600, color: ganaVisita ? '#2d8653' : empate ? '#c9a227' : 'var(--color-slate)', fontSize: '14px' }}>{partido.equipo_visitante?.nombre_mostrado}</div>
-                                        </div>
-                                    );
-                                })}
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* ── RESULTADOS DEPORTIVOS ── */}
+                            <div>
+                                <div style={{ fontSize: '11px', fontWeight: 900, color: 'var(--color-gold)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <Activity size={14} /> Marcadores Registrados
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    {(jornada.partidos || []).map(partido => {
+                                        const esJugado = ['Jugado', 'jugado', 'finalizado'].includes(partido.estado?.nombre) || partido.cerrado;
+                                        const gL = Number(partido.goles_local);
+                                        const gV = Number(partido.goles_visitante);
+                                        const ganaLocal = esJugado && gL > gV;
+                                        const ganaVisita = esJugado && gV > gL;
+                                        const empate = esJugado && gL === gV;
+                                        return (
+                                            <div key={partido.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', backgroundColor: 'var(--color-bg-surface-alt)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border-subtle)', gap: '16px' }}>
+                                                <div style={{ flex: 1, textAlign: 'right', fontWeight: ganaLocal ? 800 : 600, color: ganaLocal ? 'var(--color-sage)' : 'var(--color-slate)', fontSize: '14px' }}>{partido.equipo_local?.nombre_mostrado}</div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: '100px', justifyContent: 'center', padding: '4px 12px', background: 'white', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)' }}>
+                                                    {partido.suspendido ? (
+                                                        <span style={{ fontSize: '10px', fontWeight: 900, color: 'var(--color-terra)', textTransform: 'uppercase' }}>Suspendido</span>
+                                                    ) : (
+                                                        <>
+                                                            <span style={{ fontWeight: 900, fontSize: '20px', color: ganaLocal ? 'var(--color-sage)' : 'var(--color-slate)' }}>{partido.goles_local}</span>
+                                                            <span style={{ color: 'var(--color-border-subtle)', fontWeight: 900 }}>-</span>
+                                                            <span style={{ fontWeight: 900, fontSize: '20px', color: ganaVisita ? 'var(--color-sage)' : 'var(--color-slate)' }}>{partido.goles_visitante}</span>
+                                                        </>
+                                                    )}
+                                                </div>
+                                                <div style={{ flex: 1, fontWeight: ganaVisita ? 800 : 600, color: ganaVisita ? 'var(--color-sage)' : 'var(--color-slate)', fontSize: '14px' }}>{partido.equipo_visitante?.nombre_mostrado}</div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
 
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', paddingTop: '16px', borderTop: '1px solid var(--color-border-subtle)' }}>
-                                <button onClick={() => setIsCierreModalOpen(false)} className="btn btn-ghost">Cancelar</button>
-                                <GradientButton onClick={handleConfirmCierre} variant="primary" icon={Lock}>Cerrar Jornada Oficialmente</GradientButton>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '12px', paddingTop: '28px', borderTop: '1px solid var(--color-border-subtle)' }}>
+                                <button 
+                                    onClick={() => setIsCierreModalOpen(false)} 
+                                    style={{ padding: '12px 24px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-muted)', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', cursor: 'pointer', background: 'none' }}
+                                >
+                                    Cerrar Vista
+                                </button>
+                                {!jornada.cerrada && (
+                                    <GradientButton onClick={handleConfirmCierre} disabled={saving} isLoading={saving} variant="primary" style={{ padding: '12px 40px' }}>
+                                        Confirmar Cierre de Jornada
+                                    </GradientButton>
+                                )}
                             </div>
                         </>
                     )}
@@ -1083,86 +1299,150 @@ function JornadaDetail({
 
             {/* ── Modal: Asignar Árbitro ── */}
             <Modal isOpen={isArbitroModalOpen} onClose={() => setIsArbitroModalOpen(false)} title="Asignación de Cuerpo Arbitral">
-                <form onSubmit={handleArbitroSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label className="text-label" style={{ marginLeft: '4px' }}>Seleccionar Árbitro</label>
-                        <select
-                            style={inputStyle}
-                            value={arbitroForm.arbitro_id}
-                            onChange={e => setArbitroForm({ ...arbitroForm, arbitro_id: e.target.value })}
-                            required
-                        >
-                            <option value="">-- Seleccione un árbitro --</option>
-                            {arbitrosCatalog.map(arb => (
-                                <option key={arb.id} value={arb.id}>{arb.nombre}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <label className="text-label" style={{ marginLeft: '4px' }}>Rol en el Encuentro</label>
+                <form onSubmit={handleArbitroSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div style={{ 
+                        backgroundColor: 'var(--color-bg-surface-alt)', 
+                        padding: '24px', 
+                        borderRadius: 'var(--radius-lg)', 
+                        border: '1px solid var(--color-border-subtle)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '20px'
+                    }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                <User size={14} style={{ color: 'var(--color-gold)' }} /> Seleccionar Árbitro Oficial
+                            </label>
                             <select
-                                style={inputStyle}
-                                value={arbitroForm.rol}
-                                onChange={e => setArbitroForm({ ...arbitroForm, rol: e.target.value })}
+                                style={{ ...inputStyle, padding: '14px' }}
+                                value={arbitroForm.arbitro_id}
+                                onChange={e => setArbitroForm({ ...arbitroForm, arbitro_id: e.target.value })}
                                 required
                             >
-                                <option value="Central">Central (Principal)</option>
-                                <option value="Asistente 1">Asistente 1</option>
-                                <option value="Asistente 2">Asistente 2</option>
-                                <option value="Cuarto Árbitro">Cuarto Árbitro</option>
-                                <option value="Anotador">Anotador</option>
+                                <option value="">-- Seleccione un oficial --</option>
+                                {arbitrosCatalog.map(arb => (
+                                    <option key={arb.id} value={arb.id}>{arb.nombre}</option>
+                                ))}
                             </select>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <label className="text-label" style={{ marginLeft: '4px' }}>Pago Acordado ($)</label>
-                            <input
-                                type="number"
-                                style={inputStyle}
-                                value={arbitroForm.pago}
-                                onChange={e => setArbitroForm({ ...arbitroForm, pago: e.target.value })}
-                                required
-                                step="0.01"
-                            />
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                    <Shield size={14} style={{ color: 'var(--color-gold)' }} /> Rol en el Encuentro
+                                </label>
+                                <select 
+                                    style={inputStyle}
+                                    value={arbitroForm.rol}
+                                    onChange={e => setArbitroForm({ ...arbitroForm, rol: e.target.value })}
+                                    required
+                                >
+                                    <option value="Central">Central (Principal)</option>
+                                    <option value="Asistente 1">Asistente 1</option>
+                                    <option value="Asistente 2">Asistente 2</option>
+                                    <option value="Cuarto Árbitro">Cuarto Árbitro</option>
+                                    <option value="Anotador">Anotador</option>
+                                </select>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                    <Banknote size={14} style={{ color: 'var(--color-gold)' }} /> Pago Acordado $
+                                </label>
+                                <input 
+                                    type="number"
+                                    style={inputStyle}
+                                    value={arbitroForm.pago}
+                                    onChange={e => setArbitroForm({ ...arbitroForm, pago: e.target.value })}
+                                    required
+                                    step="0.01"
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '12px', paddingTop: '24px', borderTop: '1px solid var(--color-border-subtle)' }}>
-                        <button type="button" onClick={() => setIsArbitroModalOpen(false)} className="btn btn-ghost">Cancelar</button>
-                        <GradientButton type="submit" disabled={saving} isLoading={saving} variant="primary">Asignar al Encuentro</GradientButton>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '16px', marginTop: '12px', paddingTop: '24px', borderTop: '1px solid var(--color-border-subtle)' }}>
+                        <button 
+                            type="button" 
+                            onClick={() => setIsArbitroModalOpen(false)} 
+                            style={{ padding: '12px 24px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-muted)', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', cursor: 'pointer', background: 'none' }}
+                        >
+                            Cancelar
+                        </button>
+                        <GradientButton type="submit" disabled={saving} isLoading={saving} variant="primary">Confirmar Asignación</GradientButton>
                     </div>
                 </form>
             </Modal>
 
             {/* ── Modal: Pago de Arbitraje / Reporte ── */}
             <Modal isOpen={isPagoModalOpen} onClose={() => setIsPagoModalOpen(false)} title="Seguimiento de Pago de Arbitraje">
-                <form onSubmit={handlePaymentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div style={{ padding: '12px 16px', backgroundColor: 'var(--color-bg-surface-alt)', border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-md)' }}>
-                        <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>Estatus del Pago</div>
-                        <div style={{ display: 'flex', gap: '24px' }}>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 600, color: paymentForm.pagado ? 'var(--color-sage)' : 'var(--color-text-primary)' }}>
-                                <input type="radio" checked={paymentForm.pagado === true} onChange={() => setPaymentForm({ ...paymentForm, pagado: true })} /> Sí, se efectuó el pago
-                            </label>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 600, color: !paymentForm.pagado ? 'var(--color-terra)' : 'var(--color-text-primary)' }}>
-                                <input type="radio" checked={paymentForm.pagado === false} onChange={() => setPaymentForm({ ...paymentForm, pagado: false })} /> No se realizó pago
-                            </label>
+                <form onSubmit={handlePaymentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div style={{ backgroundColor: 'var(--color-bg-surface-alt)', padding: '20px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border-subtle)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 900, color: 'var(--color-gold)', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px' }}>
+                            <Banknote size={14} /> Estatus de la Transacción
+                        </div>
+                        
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                            <div 
+                                onClick={() => setPaymentForm({ ...paymentForm, pagado: true })}
+                                style={{ 
+                                    padding: '16px', 
+                                    borderRadius: 'var(--radius-md)', 
+                                    border: `1px solid ${paymentForm.pagado ? 'var(--color-sage)' : 'var(--color-border-subtle)'}`,
+                                    backgroundColor: paymentForm.pagado ? 'rgba(45,134,83,0.05)' : 'white',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <CheckCircle size={24} style={{ color: paymentForm.pagado ? 'var(--color-sage)' : 'var(--color-text-muted)' }} />
+                                <span style={{ fontSize: '13px', fontWeight: 800, color: paymentForm.pagado ? 'var(--color-sage)' : 'var(--color-text-primary)' }}>Pago Efectuado</span>
+                            </div>
+
+                            <div 
+                                onClick={() => setPaymentForm({ ...paymentForm, pagado: false })}
+                                style={{ 
+                                    padding: '16px', 
+                                    borderRadius: 'var(--radius-md)', 
+                                    border: `1px solid ${!paymentForm.pagado ? 'var(--color-terra)' : 'var(--color-border-subtle)'}`,
+                                    backgroundColor: !paymentForm.pagado ? 'rgba(192,68,42,0.05)' : 'white',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <XCircle size={24} style={{ color: !paymentForm.pagado ? 'var(--color-terra)' : 'var(--color-text-muted)' }} />
+                                <span style={{ fontSize: '13px', fontWeight: 800, color: !paymentForm.pagado ? 'var(--color-terra)' : 'var(--color-text-primary)' }}>Sin Pago Realizado</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label className="text-label" style={{ marginLeft: '4px' }}>Motivo / Reporte de Incidencia</label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            <FileText size={14} style={{ color: 'var(--color-gold)' }} /> Observaciones Contables
+                        </label>
                         <textarea
-                            style={{ width: '100%', minHeight: '100px', resize: 'none', backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-text-primary)', outline: 'none' }}
+                            style={{ ...inputStyle, minHeight: '120px', resize: 'none', padding: '16px' }}
                             value={paymentForm.motivo_pago}
                             onChange={e => setPaymentForm({ ...paymentForm, motivo_pago: e.target.value })}
-                            placeholder="Escribe aquí si hubo alguna situación especial, sanción o motivo por el cual no se pagó completo/nada."
+                            placeholder="Registra cualquier incidencia, deducción o motivo por el cual no se liquidó el monto completo..."
                         />
-                        <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Este reporte es interno para administración.</p>
+                        <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontStyle: 'italic', paddingLeft: '4px' }}>Este reporte quedará vinculado al historial financiero de la jornada.</p>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '4px', paddingTop: '20px', borderTop: '1px solid var(--color-border-subtle)' }}>
-                        <button type="button" onClick={() => setIsPagoModalOpen(false)} className="btn btn-ghost">Cancelar</button>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '4px', paddingTop: '24px', borderTop: '1px solid var(--color-border-subtle)' }}>
+                        <button 
+                            type="button" 
+                            onClick={() => setIsPagoModalOpen(false)} 
+                            style={{ padding: '12px 24px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-muted)', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', cursor: 'pointer', background: 'none' }}
+                        >
+                            Cancelar
+                        </button>
                         <GradientButton type="submit" disabled={saving} isLoading={saving} variant="primary">Guardar Estatus</GradientButton>
                     </div>
                 </form>
@@ -1398,45 +1678,88 @@ export default function JornadasManager({ torneo }) {
 
             {/* ── Modal: Crear Jornada ── */}
             <Modal isOpen={isJornadaModalOpen} onClose={() => setIsJornadaModalOpen(false)} title="Aperturar Nueva Jornada">
-                <form onSubmit={handleJornadaSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div style={{ padding: '16px', backgroundColor: 'var(--color-bg-surface-alt)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', textAlign: 'center' }}>
-                        <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '1px' }}>Siguiente en la secuencia</div>
-                        <div style={{ fontSize: '24px', fontWeight: 900, color: 'var(--color-gold)', fontFamily: 'var(--font-display)' }}>Jornada {jornadaForm.numero}</div>
+                <form onSubmit={handleJornadaSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+                    <div style={{ padding: '24px', backgroundColor: 'var(--color-bg-surface-alt)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border-subtle)', textAlign: 'center', position: 'relative' }}>
+                        <div style={{ position: 'absolute', top: '-10px', left: '20px', opacity: 0.1 }}><PlusCircle size={64} /></div>
+                        <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 900, textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '1.5px' }}>Siguiente Secuencia Oficial</div>
+                        <div style={{ fontSize: '32px', fontWeight: 900, color: 'var(--color-gold)', fontFamily: 'var(--font-display)' }}>Jornada No. {jornadaForm.numero}</div>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <label className="text-label" style={{ marginLeft: '4px' }}>Inicia</label>
-                            <input type="date" style={inputStyle} value={jornadaForm.fecha_inicio} onChange={e => setJornadaForm({ ...jornadaForm, fecha_inicio: e.target.value })} />
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                <Calendar size={14} style={{ color: 'var(--color-gold)' }} /> Inicio de Jornada
+                            </label>
+                            <input 
+                                type="date" 
+                                style={{ ...inputStyle, padding: '14px' }} 
+                                value={jornadaForm.fecha_inicio} 
+                                onChange={e => setJornadaForm({ ...jornadaForm, fecha_inicio: e.target.value })} 
+                                required
+                            />
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <label className="text-label" style={{ marginLeft: '4px' }}>Finaliza</label>
-                            <input type="date" style={inputStyle} value={jornadaForm.fecha_fin} onChange={e => setJornadaForm({ ...jornadaForm, fecha_fin: e.target.value })} />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                <Calendar size={14} style={{ color: 'var(--color-gold)' }} /> Cierre de Jornada
+                            </label>
+                            <input 
+                                type="date" 
+                                style={{ ...inputStyle, padding: '14px' }} 
+                                value={jornadaForm.fecha_fin} 
+                                onChange={e => setJornadaForm({ ...jornadaForm, fecha_fin: e.target.value })} 
+                                required
+                            />
                         </div>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '12px', paddingTop: '24px', borderTop: '1px solid var(--color-border-subtle)' }}>
-                        <button type="button" onClick={() => setIsJornadaModalOpen(false)} className="btn btn-ghost">Cancelar</button>
-                        <GradientButton type="submit" disabled={saving} isLoading={saving} variant="primary">Crear Jornada Oficial</GradientButton>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '4px', paddingTop: '28px', borderTop: '1px solid var(--color-border-subtle)' }}>
+                        <button 
+                            type="button" 
+                            onClick={() => setIsJornadaModalOpen(false)} 
+                            style={{ padding: '12px 24px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-muted)', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', cursor: 'pointer', background: 'none' }}
+                        >
+                            Cancelar
+                        </button>
+                        <GradientButton type="submit" disabled={saving} isLoading={saving} variant="primary" style={{ padding: '12px 32px' }}>Aperturar Jornada</GradientButton>
                     </div>
                 </form>
             </Modal>
 
             {/* ── Modal: Suspender desde lista ── */}
-            <Modal isOpen={isSuspensionModalOpen} onClose={() => setIsSuspensionModalOpen(false)} title="Suspender Jornada Oficial">
-                <form onSubmit={handleSuspenderJornada} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label className="text-label" style={{ marginLeft: '4px' }}>Motivo de la Suspensión</label>
+            <Modal isOpen={isSuspensionModalOpen} onClose={() => setIsSuspensionModalOpen(false)} title="Suspensión de Jornada Oficial">
+                <form onSubmit={handleSuspenderJornada} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div style={{ padding: '20px', backgroundColor: 'rgba(192,68,42,0.05)', border: '1px solid rgba(192,68,42,0.15)', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+                        <AlertTriangle size={24} style={{ color: 'var(--color-terra)', flexShrink: 0 }} />
+                        <div>
+                            <div style={{ fontSize: '14px', fontWeight: 900, color: 'var(--color-terra)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Acción Administrativa</div>
+                            <div style={{ fontSize: '13px', color: 'var(--color-text-primary)', lineHeight: '1.5', fontWeight: 500 }}>
+                                Estás a punto de suspender esta jornada. Esta acción afectará la programación y visibilidad de los encuentros para todos los equipos.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            <FileText size={14} style={{ color: 'var(--color-gold)' }} /> Justificación de la Suspensión
+                        </label>
                         <textarea
-                            style={{ width: '100%', minHeight: '120px', resize: 'none', backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-text-primary)', outline: 'none' }}
+                            style={{ ...inputStyle, minHeight: '120px', resize: 'none', padding: '16px' }}
                             value={suspensionData.motivo}
                             onChange={e => setSuspensionData({ ...suspensionData, motivo: e.target.value })}
-                            placeholder="Ej. Inclemencias del tiempo, falta de disponibilidad de sedes, etc."
+                            placeholder="Describe detalladamente el motivo de la suspensión (clima, logística, seguridad, etc.)..."
                             required
                         />
-                        <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Este motivo será visible para los administradores en el calendario.</p>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '12px', paddingTop: '24px', borderTop: '1px solid var(--color-border-subtle)' }}>
-                        <button type="button" onClick={() => setIsSuspensionModalOpen(false)} className="btn btn-ghost">Cancelar</button>
-                        <GradientButton type="submit" disabled={saving} isLoading={saving} variant="primary">Confirmar Suspensión</GradientButton>
+                    
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '4px', paddingTop: '28px', borderTop: '1px solid var(--color-border-subtle)' }}>
+                        <button 
+                            type="button" 
+                            onClick={() => setIsSuspensionModalOpen(false)} 
+                            style={{ padding: '12px 24px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-muted)', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', cursor: 'pointer', background: 'none' }}
+                        >
+                            Cancelar
+                        </button>
+                        <GradientButton type="submit" disabled={saving} isLoading={saving} variant="primary" style={{ padding: '12px 32px' }}>Confirmar Suspensión</GradientButton>
                     </div>
                 </form>
             </Modal>

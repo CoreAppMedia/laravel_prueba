@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
-import axios from 'axios';
+import http from '../lib/http';
 import { Printer } from 'lucide-react';
 
 const ReciboArbitrajeJornadaTemplate = ({ torneoId, jornadaId }) => {

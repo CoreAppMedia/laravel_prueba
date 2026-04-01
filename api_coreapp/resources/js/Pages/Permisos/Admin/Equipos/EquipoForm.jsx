@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import http from '../../../../lib/http';
 import GradientButton from '../../../../Components/UI/GradientButton';
+import { 
+    Shield, Users, User, MapPin, Clock, 
+    CheckCircle2, AlertCircle, Trophy, Phone, Mail 
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function EquipoForm({ equipo, onSuccess, onCancel }) {
@@ -122,217 +126,201 @@ export default function EquipoForm({ equipo, onSuccess, onCancel }) {
     };
 
     return (
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {/* Club / Organización */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label className={labelClass} style={{ marginLeft: '4px' }}>Club / Organización</label>
-                <select
-                    name="club_id"
-                    value={formData.club_id}
-                    onChange={handleChange}
-                    style={{
-                        ...inputStyle,
-                        ...(errors.club_id ? { border: '1px solid var(--color-danger)' } : {})
-                    }}
-                    onFocus={(e) => {
-                        e.target.style.borderColor = 'var(--color-gold)';
-                        e.target.style.boxShadow = '0 0 0 4px var(--color-gold-light)';
-                    }}
-                    onBlur={(e) => {
-                        e.target.style.borderColor = errors.club_id ? 'var(--color-danger)' : 'var(--color-border-subtle)';
-                        e.target.style.boxShadow = 'var(--shadow-soft)';
-                    }}
-                >
-                    <option value="">Selecciona un Club</option>
-                    {clubes.map((c) => (
-                        <option key={c.id} value={c.id}>{c.nombre}</option>
-                    ))}
-                </select>
-                {errors.club_id && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.club_id[0]}</p>}
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+            {/* ── SECCIÓN: IDENTIDAD DEL EQUIPO ── */}
+            <div style={{ backgroundColor: 'var(--color-bg-surface-alt)', padding: '24px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border-subtle)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 900, color: 'var(--color-gold)', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '1px' }}>
+                    <Shield size={14} /> Información de la Escuadra
+                </div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
+                            Club u Organización
+                        </label>
+                        <select
+                            name="club_id"
+                            value={formData.club_id}
+                            onChange={handleChange}
+                            style={{
+                                ...inputStyle,
+                                ...(errors.club_id ? { border: '1px solid var(--color-danger)' } : {})
+                            }}
+                        >
+                            <option value="">Selecciona un Club</option>
+                            {clubes.map((c) => (
+                                <option key={c.id} value={c.id}>{c.nombre}</option>
+                            ))}
+                        </select>
+                        {errors.club_id && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px' }}>{errors.club_id[0]}</p>}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
+                            Categoría de Competencia
+                        </label>
+                        <select
+                            name="categoria_id"
+                            value={formData.categoria_id}
+                            onChange={handleChange}
+                            style={{
+                                ...inputStyle,
+                                ...(errors.categoria_id ? { border: '1px solid var(--color-danger)' } : {})
+                            }}
+                        >
+                            <option value="">Selecciona una Categoría</option>
+                            {categorias.map((cat) => (
+                                <option key={cat.id} value={cat.id}>{cat.nombre}</option>
+                            ))}
+                        </select>
+                        {errors.categoria_id && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px' }}>{errors.categoria_id[0]}</p>}
+                    </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
+                        Nombre Mostrado del Equipo
+                    </label>
+                    <input
+                        type="text"
+                        name="nombre_mostrado"
+                        value={formData.nombre_mostrado}
+                        onChange={handleChange}
+                        style={{
+                            ...inputStyle,
+                            ...(errors.nombre_mostrado ? { border: '1px solid var(--color-danger)' } : {})
+                        }}
+                        placeholder="Ej. Real Madrid Sub-15 / Academia FC"
+                    />
+                    {errors.nombre_mostrado && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px' }}>{errors.nombre_mostrado[0]}</p>}
+                </div>
             </div>
 
-            {/* Categoría */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label className={labelClass} style={{ marginLeft: '4px' }}>Categoría de competencia</label>
-                <select
-                    name="categoria_id"
-                    value={formData.categoria_id}
-                    onChange={handleChange}
-                    style={{
-                        ...inputStyle,
-                        ...(errors.categoria_id ? { border: '1px solid var(--color-danger)' } : {})
-                    }}
-                    onFocus={(e) => {
-                        e.target.style.borderColor = 'var(--color-gold)';
-                        e.target.style.boxShadow = '0 0 0 4px var(--color-gold-light)';
-                    }}
-                    onBlur={(e) => {
-                        e.target.style.borderColor = errors.categoria_id ? 'var(--color-danger)' : 'var(--color-border-subtle)';
-                        e.target.style.boxShadow = 'var(--shadow-soft)';
-                    }}
-                >
-                    <option value="">Selecciona una Categoría</option>
-                    {categorias.map((cat) => (
-                        <option key={cat.id} value={cat.id}>{cat.nombre}</option>
-                    ))}
-                </select>
-                {errors.categoria_id && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.categoria_id[0]}</p>}
+            {/* ── SECCIÓN: REPRESENTACIÓN ── */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 900, color: 'var(--color-gold)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    <User size={14} /> Delegado Responsable
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <select
+                        name="directivo_id"
+                        value={formData.directivo_id}
+                        onChange={handleChange}
+                        style={{
+                            ...inputStyle,
+                            ...(errors.directivo_id ? { border: '1px solid var(--color-danger)' } : {})
+                        }}
+                    >
+                        <option value="">-- Sin delegado asignado --</option>
+                        {directivos.map((d) => (
+                            <option key={d.id} value={d.id}>{d.nombre} ({d.tipo?.nombre})</option>
+                        ))}
+                    </select>
+                    {errors.directivo_id && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px' }}>{errors.directivo_id[0]}</p>}
+                    <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontStyle: 'italic', paddingLeft: '4px' }}>
+                        El delegado asignado tendrá control sobre la cédula y roster del equipo.
+                    </p>
+                </div>
             </div>
 
-            {/* Directivo / Delegado */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label className={labelClass} style={{ marginLeft: '4px' }}>Delegado de Equipo <span className="text-xs font-normal text-slate-400">(Opcional)</span></label>
-                <select
-                    name="directivo_id"
-                    value={formData.directivo_id}
-                    onChange={handleChange}
-                    style={{
-                        ...inputStyle,
-                        ...(errors.directivo_id ? { border: '1px solid var(--color-danger)' } : {})
-                    }}
-                >
-                    <option value="">-- Sin delegado asignado --</option>
-                    {directivos.map((d) => (
-                        <option key={d.id} value={d.id}>{d.nombre} ({d.tipo?.nombre})</option>
-                    ))}
-                </select>
-                {errors.directivo_id && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.directivo_id[0]}</p>}
-            </div>
+            {/* ── SECCIÓN: LOGÍSTICA DE LOCALÍA ── */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 900, color: 'var(--color-gold)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        <MapPin size={14} /> Sede Habitual
+                    </div>
+                    <select
+                        name="cancha_id"
+                        value={formData.cancha_id}
+                        onChange={handleChange}
+                        style={inputStyle}
+                    >
+                        <option value="">Sede para sorteo libre</option>
+                        {canchas.map((c) => (
+                            <option key={c.id} value={c.id}>{c.nombre}</option>
+                        ))}
+                    </select>
+                </div>
 
-            {/* Nombre Mostrado */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label className={labelClass} style={{ marginLeft: '4px' }}>Nombre del Equipo (Ej. Chivas Sub-17)</label>
-                <input
-                    type="text"
-                    name="nombre_mostrado"
-                    value={formData.nombre_mostrado}
-                    onChange={handleChange}
-                    style={{
-                        ...inputStyle,
-                        ...(errors.nombre_mostrado ? { border: '1px solid var(--color-danger)' } : {})
-                    }}
-                    placeholder="¿Cómo se verá el equipo en las tablas?"
-                    onFocus={(e) => {
-                        e.target.style.borderColor = 'var(--color-gold)';
-                        e.target.style.boxShadow = '0 0 0 4px var(--color-gold-light)';
-                    }}
-                    onBlur={(e) => {
-                        e.target.style.borderColor = errors.nombre_mostrado ? 'var(--color-danger)' : 'var(--color-border-subtle)';
-                        e.target.style.boxShadow = 'var(--shadow-soft)';
-                    }}
-                />
-                {errors.nombre_mostrado && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.nombre_mostrado[0]}</p>}
-                <p style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '4px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    Ejemplo: Si el club es 'América' y la categoría 'Femenil', puedes poner 'América Femenil'.
-                </p>
-            </div>
-
-            {/* Cancha Local */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label className={labelClass} style={{ marginLeft: '4px' }}>Cancha Sede Oficial</label>
-                <select
-                    name="cancha_id"
-                    value={formData.cancha_id}
-                    onChange={handleChange}
-                    style={{
-                        ...inputStyle,
-                        ...(errors.cancha_id ? { border: '1px solid var(--color-danger)' } : {})
-                    }}
-                    onFocus={(e) => {
-                        e.target.style.borderColor = 'var(--color-gold)';
-                        e.target.style.boxShadow = '0 0 0 4px var(--color-gold-light)';
-                    }}
-                    onBlur={(e) => {
-                        e.target.style.borderColor = errors.cancha_id ? 'var(--color-danger)' : 'var(--color-border-subtle)';
-                        e.target.style.boxShadow = 'var(--shadow-soft)';
-                    }}
-                >
-                    <option value="">Selecciona una Cancha (Sede Libre)</option>
-                    {canchas.map((c) => (
-                        <option key={c.id} value={c.id}>{c.nombre}</option>
-                    ))}
-                </select>
-                {errors.cancha_id && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.cancha_id[0]}</p>}
-            </div>
-
-            {/* Horario Local */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label className={labelClass} style={{ marginLeft: '4px' }}>Horario Local Habitual</label>
-                <select
-                    name="cancha_horario_id"
-                    value={formData.cancha_horario_id}
-                    onChange={handleChange}
-                    disabled={!formData.cancha_id || horariosDisponibles.length === 0}
-                    style={{
-                        ...inputStyle,
-                        ...(errors.cancha_horario_id ? { border: '1px solid var(--color-danger)' } : {}),
-                        backgroundColor: (!formData.cancha_id || horariosDisponibles.length === 0) ? 'var(--color-bg-muted)' : 'var(--color-bg-surface)'
-                    }}
-                    onFocus={(e) => {
-                        e.target.style.borderColor = 'var(--color-gold)';
-                        e.target.style.boxShadow = '0 0 0 4px var(--color-gold-light)';
-                    }}
-                    onBlur={(e) => {
-                        e.target.style.borderColor = errors.cancha_horario_id ? 'var(--color-danger)' : 'var(--color-border-subtle)';
-                        e.target.style.boxShadow = 'var(--shadow-soft)';
-                    }}
-                >
-                    <option value="">
-                        {!formData.cancha_id ? 'Primero selecciona una cancha' : 
-                         horariosDisponibles.length === 0 ? 'La cancha no tiene horarios configurados' : 
-                         'Selecciona un horario...'}
-                    </option>
-                    {horariosDisponibles.filter(h => h.activo).map((h) => (
-                        <option key={h.id} value={h.id}>
-                            {diaSemanaMap[h.dia_semana]} - {formatTime(h.hora)} hrs
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 900, color: 'var(--color-gold)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        <Clock size={14} /> Horario Preferente
+                    </div>
+                    <select
+                        name="cancha_horario_id"
+                        value={formData.cancha_horario_id}
+                        onChange={handleChange}
+                        disabled={!formData.cancha_id || horariosDisponibles.length === 0}
+                        style={{
+                            ...inputStyle,
+                            backgroundColor: (!formData.cancha_id || horariosDisponibles.length === 0) ? 'var(--color-bg-muted)' : 'var(--color-bg-surface)'
+                        }}
+                    >
+                        <option value="">
+                            {!formData.cancha_id ? 'Selecciona sede primero' : 
+                             horariosDisponibles.length === 0 ? 'Sin horarios' : 
+                             'Horario habitual...'}
                         </option>
-                    ))}
-                </select>
-                {errors.cancha_horario_id && <p style={{ color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, marginTop: '4px', marginLeft: '4px' }}>{errors.cancha_horario_id[0]}</p>}
+                        {horariosDisponibles.filter(h => h.activo).map((h) => (
+                            <option key={h.id} value={h.id}>
+                                {diaSemanaMap[h.dia_semana]} - {formatTime(h.hora)} hrs
+                            </option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
-            {/* Estatus */}
+            {/* ── ESTATUS ── */}
             <div 
+                onClick={() => handleChange({ target: { name: 'activo', type: 'checkbox', checked: !formData.activo } })}
                 style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
-                    padding: '16px', 
-                    background: 'var(--color-bg-surface-alt)', 
-                    borderRadius: 'var(--radius-md)', 
-                    border: '1px solid var(--color-border-subtle)',
+                    justifyContent: 'space-between',
+                    padding: '16px 20px', 
+                    background: formData.activo ? 'var(--color-bg-surface-alt)' : 'white', 
+                    borderRadius: 'var(--radius-lg)', 
+                    border: `1px solid ${formData.activo ? 'var(--color-primary)' : 'var(--color-border-subtle)'}`,
                     cursor: 'pointer',
-                    transition: 'background 0.2s',
+                    transition: 'all 0.2s',
                     marginTop: '8px'
                 }}
-                onClick={() => handleChange({ target: { name: 'activo', type: 'checkbox', checked: !formData.activo } })}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-muted)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-bg-surface-alt)'}
             >
-                <input
-                    type="checkbox"
-                    id="activo"
-                    name="activo"
-                    checked={formData.activo}
-                    onChange={handleChange}
-                    style={{ width: '18px', height: '18px', accentColor: 'var(--color-terra)', cursor: 'pointer' }}
-                />
-                <label htmlFor="activo" style={{ marginLeft: '12px', fontSize: '13px', fontWeight: 600, color: 'var(--color-text-secondary)', cursor: 'pointer' }}>
-                    Equipo Activo para Torneos actuales
-                </label>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <CheckCircle2 size={18} style={{ color: formData.activo ? 'var(--color-primary)' : 'var(--color-text-muted)' }} />
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-slate)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Equipo Habilitado</span>
+                </div>
+                <div style={{ 
+                    width: '40px', 
+                    height: '22px', 
+                    backgroundColor: formData.activo ? 'var(--color-primary)' : 'var(--color-border-subtle)', 
+                    borderRadius: '20px',
+                    position: 'relative',
+                    transition: 'all 0.3s'
+                }}>
+                    <div style={{ 
+                        width: '16px', 
+                        height: '16px', 
+                        backgroundColor: 'white', 
+                        borderRadius: '50%', 
+                        position: 'absolute', 
+                        top: '3px', 
+                        left: formData.activo ? '21px' : '3px',
+                        transition: 'all 0.3s'
+                    }} />
+                </div>
             </div>
 
-            {/* Acciones */}
+            {/* ACCIONES */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '12px', paddingTop: '24px', borderTop: '1px solid var(--color-border-subtle)' }}>
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="btn btn-ghost"
-                    style={{ padding: '10px 20px', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}
+                    style={{ padding: '12px 24px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-muted)', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', cursor: 'pointer', background: 'none' }}
                 >
                     Cancelar
                 </button>
-                <GradientButton type="submit" disabled={loading} variant="primary">
-                    {loading ? 'Procesando...' : (equipo ? 'Guardar Cambios' : 'Registrar Equipo')}
+                <GradientButton type="submit" disabled={loading} variant="primary" style={{ padding: '12px 32px' }}>
+                    {loading ? 'Procesando...' : (equipo ? 'Actualizar Información' : 'Registrar Equipo')}
                 </GradientButton>
             </div>
         </form>

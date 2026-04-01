@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import http from '../../../../lib/http';
 import toast from 'react-hot-toast';
+import GradientButton from '../../../../Components/UI/GradientButton';
+import { User, Phone, Mail, MapPin, Briefcase, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function DirectivoForm({ directivo, onSuccess, onCancel }) {
     const [tiposDueno, setTiposDueno] = useState([]);
@@ -57,128 +59,190 @@ export default function DirectivoForm({ directivo, onSuccess, onCancel }) {
         }
     };
 
+    const inputStyle = {
+        width: '100%',
+        backgroundColor: 'var(--color-bg-surface)',
+        border: '1px solid var(--color-border-subtle)',
+        borderRadius: 'var(--radius-md)',
+        padding: '12px 16px',
+        fontFamily: 'var(--font-body)',
+        fontSize: '14px',
+        color: 'var(--color-text-primary)',
+        transition: 'all 0.2s ease',
+        outline: 'none',
+        boxShadow: 'var(--shadow-soft)',
+    };
+
+    const labelStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        fontSize: '11px',
+        fontWeight: 800,
+        color: 'var(--color-text-muted)',
+        textTransform: 'uppercase',
+        letterSpacing: '1px',
+        marginBottom: '8px',
+        marginLeft: '4px'
+    };
+
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 italic">
-                    Nombre completo <span className="text-red-500">*</span>
-                </label>
-                <input
-                    type="text"
-                    value={formData.nombre}
-                    onChange={e => setFormData({ ...formData, nombre: e.target.value })}
-                    className={`w-full bg-slate-50 border ${errors.nombre ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : 'border-slate-200 focus:border-slate-400 focus:ring-slate-100'} rounded-xl px-4 py-3 text-slate-700 font-medium font-body transition-all focus:ring-4 outline-none`}
-                    placeholder="Ej. Juan Pérez"
-                    required
-                />
-                {errors.nombre && <p className="mt-1.5 text-xs font-bold text-red-500">{errors.nombre[0]}</p>}
-            </div>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            {/* Sección: Información Principal */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div style={{ gridColumn: 'span 2' }}>
+                    <label style={labelStyle}>
+                        <User size={14} style={{ color: 'var(--color-gold)' }} /> Nombre Completo <span style={{ color: 'var(--color-terra)' }}>*</span>
+                    </label>
+                    <input
+                        type="text"
+                        value={formData.nombre}
+                        onChange={e => setFormData({ ...formData, nombre: e.target.value })}
+                        style={{ ...inputStyle, borderColor: errors.nombre ? 'var(--color-terra)' : 'var(--color-border-subtle)' }}
+                        placeholder="Ej. Juan Pérez"
+                        required
+                    />
+                    {errors.nombre && <p style={{ fontSize: '11px', color: 'var(--color-terra)', marginTop: '4px', fontWeight: 700 }}>{errors.nombre[0]}</p>}
+                </div>
 
-            <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 italic">
-                    Rol / Tipo <span className="text-red-500">*</span>
-                </label>
-                <select
-                    value={formData.catalogo_tipo_dueno_id}
-                    onChange={e => setFormData({ ...formData, catalogo_tipo_dueno_id: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-medium font-body focus:border-slate-400 focus:ring-4 focus:ring-slate-100 outline-none transition-all appearance-none"
-                    required
-                >
-                    <option value="">Selecciona rol...</option>
-                    {tiposDueno.map(tipo => (
-                        <option key={tipo.id} value={tipo.id}>
-                            {tipo.nombre}
-                        </option>
-                    ))}
-                </select>
-                {errors.catalogo_tipo_dueno_id && <p className="mt-1.5 text-xs font-bold text-red-500">{errors.catalogo_tipo_dueno_id[0]}</p>}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 italic">
-                        Teléfono
+                    <label style={labelStyle}>
+                        <Briefcase size={14} style={{ color: 'var(--color-gold)' }} /> Rol / Tipo <span style={{ color: 'var(--color-terra)' }}>*</span>
+                    </label>
+                    <select
+                        value={formData.catalogo_tipo_dueno_id}
+                        onChange={e => setFormData({ ...formData, catalogo_tipo_dueno_id: e.target.value })}
+                        style={inputStyle}
+                        required
+                    >
+                        <option value="">Selecciona rol...</option>
+                        {tiposDueno.map(tipo => (
+                            <option key={tipo.id} value={tipo.id}>
+                                {tipo.nombre}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div>
+                    <label style={labelStyle}>
+                        <Phone size={14} style={{ color: 'var(--color-gold)' }} /> Teléfono
                     </label>
                     <input
                         type="text"
                         value={formData.telefono}
                         onChange={e => setFormData({ ...formData, telefono: e.target.value })}
-                        className={`w-full bg-slate-50 border ${errors.telefono ? 'border-red-300' : 'border-slate-200'} rounded-xl px-4 py-3 text-slate-700 font-medium font-body transition-all focus:ring-4 focus:ring-slate-100 outline-none`}
+                        style={inputStyle}
                         placeholder="Ej. 555-123-4567"
                     />
-                    {errors.telefono && <p className="mt-1.5 text-xs font-bold text-red-500">{errors.telefono[0]}</p>}
                 </div>
+            </div>
+
+            {/* Sección: Contacto Adicional */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div>
-                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 italic">
-                        Correo Electrónico
+                    <label style={labelStyle}>
+                        <Mail size={14} style={{ color: 'var(--color-gold)' }} /> Correo Electrónico
                     </label>
                     <input
                         type="email"
                         value={formData.correo_electronico}
                         onChange={e => setFormData({ ...formData, correo_electronico: e.target.value })}
-                        className={`w-full bg-slate-50 border ${errors.correo_electronico ? 'border-red-300' : 'border-slate-200'} rounded-xl px-4 py-3 text-slate-700 font-medium font-body transition-all focus:ring-4 focus:ring-slate-100 outline-none`}
+                        style={inputStyle}
                         placeholder="ejemplo@correo.com"
                     />
-                    {errors.correo_electronico && <p className="mt-1.5 text-xs font-bold text-red-500">{errors.correo_electronico[0]}</p>}
+                </div>
+
+                <div>
+                    <label style={labelStyle}>
+                        <MapPin size={14} style={{ color: 'var(--color-gold)' }} /> Dirección
+                    </label>
+                    <input
+                        type="text"
+                        value={formData.direccion}
+                        onChange={e => setFormData({ ...formData, direccion: e.target.value })}
+                        style={inputStyle}
+                        placeholder="Dirección completa..."
+                    />
                 </div>
             </div>
 
-            <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 italic">
-                    Dirección
-                </label>
-                <input
-                    type="text"
-                    value={formData.direccion}
-                    onChange={e => setFormData({ ...formData, direccion: e.target.value })}
-                    className={`w-full bg-slate-50 border ${errors.direccion ? 'border-red-300' : 'border-slate-200'} rounded-xl px-4 py-3 text-slate-700 font-medium font-body transition-all focus:ring-4 focus:ring-slate-100 outline-none`}
-                    placeholder="Dirección completa..."
-                />
-            </div>
-
-            <div className="flex items-center gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
-                <div className="relative flex items-center">
+            {/* Selector de Estado */}
+            <div 
+                style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '12px', 
+                    padding: '16px', 
+                    backgroundColor: 'var(--color-bg-surface-alt)', 
+                    borderRadius: 'var(--radius-md)', 
+                    border: '1px solid var(--color-border-subtle)',
+                    transition: 'all 0.3s ease'
+                }}
+            >
+                <div style={{ position: 'relative', width: '44px', height: '24px' }}>
                     <input
                         type="checkbox"
                         checked={formData.activo}
                         onChange={e => setFormData({ ...formData, activo: e.target.checked })}
-                        className="peer sr-only"
+                        style={{ opacity: 0, width: 0, height: 0 }}
                         id="activo-toggle"
                     />
                     <label
                         htmlFor="activo-toggle"
-                        className="block w-10 h-6 bg-slate-200 rounded-full cursor-pointer transition-colors peer-checked:bg-slate-800"
-                    ></label>
-                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4 shadow-sm"></div>
+                        style={{
+                            position: 'absolute',
+                            top: 0, left: 0, right: 0, bottom: 0,
+                            backgroundColor: formData.activo ? 'var(--color-sage)' : 'var(--color-slate-light)',
+                            borderRadius: '24px',
+                            cursor: 'pointer',
+                            transition: '0.4s'
+                        }}
+                    >
+                        <span style={{
+                            position: 'absolute',
+                            content: '""',
+                            height: '18px', width: '18px',
+                            left: formData.activo ? '22px' : '3px',
+                            bottom: '3px',
+                            backgroundColor: 'white',
+                            borderRadius: '50%',
+                            transition: '0.4s',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                        }}></span>
+                    </label>
                 </div>
-                <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest flex-1">
-                    {formData.activo ? 'Directivo Activo' : 'Directivo Suspendido'}
-                </span>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 900, color: formData.activo ? 'var(--color-sage)' : 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        {formData.activo ? 'Estatus: Vigente' : 'Estatus: Suspendido'}
+                    </span>
+                    <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>
+                        {formData.activo ? 'El directivo puede gestionar clubes/equipos.' : 'El acceso y gestión están restringidos.'}
+                    </span>
+                </div>
             </div>
 
-            <div className="flex gap-3 pt-6 border-t border-slate-100 mt-8">
+            {/* Acciones */}
+            <div style={{ display: 'flex', gap: '16px', marginTop: '12px', paddingTop: '24px', borderTop: '1px solid var(--color-border-subtle)' }}>
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="flex-1 px-4 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all border border-transparent"
+                    style={{ flex: 1, padding: '12px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg-surface-alt)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-muted)', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', cursor: 'pointer' }}
                     disabled={loading}
                 >
                     Cancelar
                 </button>
-                <button
-                    type="submit"
-                    className="flex-1 px-4 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest text-white bg-slate-800 hover:bg-slate-900 transition-all shadow-premium border border-transparent flex justify-center items-center gap-2"
-                    disabled={loading}
-                >
-                    {loading ? (
-                        <>
-                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            <span>Guardando...</span>
-                        </>
-                    ) : (
-                        <span>Guardar Directivo</span>
-                    )}
-                </button>
+                <div style={{ flex: 1.5 }}>
+                    <GradientButton 
+                        type="submit" 
+                        disabled={loading} 
+                        isLoading={loading} 
+                        variant="primary"
+                        style={{ width: '100%' }}
+                    >
+                        {directivo ? 'Actualizar Información' : 'Registrar Directivo'}
+                    </GradientButton>
+                </div>
             </div>
         </form>
     );

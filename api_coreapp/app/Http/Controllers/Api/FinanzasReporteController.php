@@ -76,18 +76,18 @@ class FinanzasReporteController extends Controller
         $jornada = Jornada::findOrFail($jornadaId);
         
         // Ingresos vinculados a esta jornada (especialmente arbitrajes)
-        $ingresos = Ingreso::where('torneo_id', $torneoId)
-            ->where('jornada_id', '=', $jornadaId)
+        $ingresos = Ingreso::where('torneo_id', (string)$torneoId)
+            ->where('jornada_id', (string)$jornadaId)
             ->get();
 
         // Egresos vinculados a esta jornada (historial contable)
-        $egresos = Egreso::where('torneo_id', $torneoId)
-            ->where('jornada_id', '=', $jornadaId)
+        $egresos = Egreso::where('torneo_id', (string)$torneoId)
+            ->where('jornada_id', (string)$jornadaId)
             ->get();
 
         // Detalle de arbitraje (Audit level) basado en los partidos
         $partidos = Partido::with(['arbitros', 'equipoLocal', 'equipoVisitante'])
-            ->where('jornada_id', '=', $jornadaId)
+            ->where('jornada_id', (string)$jornadaId)
             ->get();
 
         $detalles_arbitraje = [];
@@ -132,7 +132,7 @@ class FinanzasReporteController extends Controller
         $jornada = Jornada::with(['torneo'])->findOrFail($jornadaId);
 
         $partidos = Partido::with(['equipoLocal', 'equipoVisitante', 'cancha'])
-            ->where('jornada_id', '=', $jornadaId)
+            ->where('jornada_id', (string)$jornadaId)
             ->get()
             ->map(function ($partido) {
                 return [

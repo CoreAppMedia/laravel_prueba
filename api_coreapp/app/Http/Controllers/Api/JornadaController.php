@@ -101,36 +101,44 @@ class JornadaController extends Controller
             ], 422);
         }
 
-        $jornada->cerrada = true;
-        $jornada->save();
+        return DB::transaction(function() use ($jornada) {
+            $jornada->cerrada = true;
+            $jornada->save();
 
-        // Agrupar pagos por ROL de árbitro para tener un desglose detallado en los egresos
-        $pagosPorRol = DB::table('partido_arbitro')
-            ->join('partidos', 'partido_arbitro.partido_id', '=', 'partidos.id')
-            ->where('partidos.jornada_id', $jornada->id)
-            ->where('partido_arbitro.pagado', true)
-            ->select('partido_arbitro.rol', DB::raw('SUM(partido_arbitro.pago) as total'))
-            ->groupBy('partido_arbitro.rol')
-            ->get();
-            
-        foreach ($pagosPorRol as $pago) {
-            if ($pago->total > 0) {
-                $egreso = new Egreso();
-                $egreso->id = (string) Str::uuid();
-                $egreso->torneo_id = $jornada->torneo_id;
-                $egreso->jornada_id = $jornada->id;
-                $egreso->concepto = "Pago Arbitraje (" . ($pago->rol ?: 'Central') . ") - Jornada " . $jornada->numero;
-                $egreso->categoria = 'arbitraje';
-                $egreso->monto = $pago->total;
-                $egreso->fecha = now();
-                $egreso->save();
+            // Agrupar pagos por ROL de árbitro dentro de la transacción
+            $pagosPorRol = DB::table('partido_arbitro')
+                ->join('partidos', 'partido_arbitro.partido_id', '=', 'partidos.id')
+                ->where('partidos.jornada_id', $jornada->id)
+                ->where('partido_arbitro.pagado', true)
+                ->select('partido_arbitro.rol', DB::raw('SUM(partido_arbitro.pago) as total'))
+                ->groupBy('partido_arbitro.rol')
+                ->get();
+                
+            foreach ($pagosPorRol as $pago) {
+                if ($pago->total > 0) {
+                    $egreso = new Egreso();
+                    $egreso->id = (string) Str::uuid();
+                    $egreso->torneo_id = $jornada->torneo_id;
+                    $egreso->jornada_id = $jornada->id;
+                    $egreso->concepto = "Pago Arbitraje (" . ($pago->rol ?: 'Central') . ") - Jornada " . $jornada->numero;
+                    $egreso->categoria = 'arbitraje';
+                    $egreso->monto = $pago->total;
+                    $egreso->fecha = now();
+                    
+                    // Vinculamos el egreso consolidado a la Jornada
+                    $egreso->payable_id = $jornada->id;
+                    $egreso->payable_type = Jornada::class;
+                    $egreso->metodo_pago = 'Efectivo';
+                    
+                    $egreso->save();
+                }
             }
-        }
 
-        return response()->json([
-            'message' => 'Jornada cerrada correctamente.',
-            'data' => $jornada
-        ]);
+            return response()->json([
+                'message' => 'Jornada cerrada correctamente y egresos de arbitraje generados.',
+                'data' => $jornada
+            ]);
+        });
     }
 
     /**

@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Egreso extends Model
 {
-    use HasUuids;
+    use HasUuids, SoftDeletes;
 
     protected $table = 'egresos';
 
@@ -21,6 +22,10 @@ class Egreso extends Model
         'categoria',
         'monto',
         'fecha',
+        'payable_id',
+        'payable_type',
+        'metodo_pago',
+        'comprobante_url',
     ];
 
     protected $casts = [
@@ -36,5 +41,10 @@ class Egreso extends Model
     public function jornada()
     {
         return $this->belongsTo(Jornada::class);
+    }
+
+    public function payable()
+    {
+        return $this->morphTo();
     }
 }

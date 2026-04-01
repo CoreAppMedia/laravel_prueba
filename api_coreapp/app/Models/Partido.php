@@ -30,6 +30,8 @@ class Partido extends Model
         'pago_arbitro_local',
         'pago_arbitro_visitante',
         'costo_arbitraje_total',
+        'motivo_no_pago_arbitro_local',
+        'motivo_no_pago_arbitro_visitante',
     ];
 
     protected $casts = [

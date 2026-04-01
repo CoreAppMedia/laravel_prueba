@@ -100,37 +100,57 @@ class MultaController extends Controller
     }
 
     /**
-     * Registrar el pago de la multa y generar el ingreso correspondiente.
+     * Registrar el pago de la multa y generar el ingreso correspondiente, o revertirlo.
      */
     public function registrarPago(Request $request, Multa $multa)
     {
-        if ($multa->pagada) {
-            return response()->json(['message' => 'Esta multa ya fue liquidada.'], 422);
+        $validated = $request->validate([
+            'pagada' => 'required|boolean',
+            'metodo_pago' => 'nullable|string'
+        ]);
+
+        if ($multa->pagada == $validated['pagada']) {
+            $estadoStr = $validated['pagada'] ? 'ya fue liquidada' : 'ya está marcada como pendiente';
+            return response()->json(['message' => "Esta multa {$estadoStr}."], 422);
         }
 
         try {
             DB::beginTransaction();
 
-            // 1. Marcar multa como pagada
-            $multa->pagada = true;
+            $multa->pagada = $validated['pagada'];
             $multa->save();
 
-            // 2. Generar registro de Ingreso automáticamente
-            $ingreso = new Ingreso();
-            $ingreso->id = (string) Str::uuid();
-            $ingreso->torneo_id = $multa->torneo_id;
-            $ingreso->concepto = "Pago de Multa: " . ($multa->tipoMulta->nombre ?? 'General') . " - Equipo: " . $multa->equipo->nombre_mostrado;
-            $ingreso->categoria = 'multa';
-            $ingreso->monto = $multa->monto;
-            $ingreso->fecha = now();
-            $ingreso->save();
+            if ($validated['pagada']) {
+                // 2. Generar registro de Ingreso automáticamente
+                $ingreso = new Ingreso();
+                $ingreso->id = (string) Str::uuid();
+                $ingreso->torneo_id = $multa->torneo_id;
+                $ingreso->concepto = "Pago de Multa: " . ($multa->tipoMulta->nombre ?? 'General') . " - Equipo: " . $multa->equipo->nombre_mostrado;
+                $ingreso->categoria = 'multa';
+                $ingreso->monto = $multa->monto;
+                $ingreso->fecha = now();
+                $ingreso->payable_id = $multa->id;
+                $ingreso->payable_type = Multa::class;
+                $ingreso->metodo_pago = $validated['metodo_pago'] ?? 'Efectivo';
+                $ingreso->save();
+
+                $message = 'Pago de multa registrado con éxito. Se generó un registro de ingreso automáticamente.';
+            } else {
+                // Revertir pago y anular el ingreso vinculado
+                Ingreso::where('payable_id', $multa->id)
+                    ->where('payable_type', Multa::class)
+                    ->delete();
+                
+                $message = 'Pago de multa anulado correctamente. El ingreso vinculado fue eliminado.';
+                $ingreso = null;
+            }
 
             DB::commit();
 
             return response()->json([
-                'message' => 'Pago de multa registrado con éxito. Se generó un registro de ingreso automáticamente.',
+                'message' => $message,
                 'multa' => $multa,
-                'ingreso' => $ingreso
+                'ingreso' => $ingreso ?? null
             ]);
 
         } catch (\Exception $e) {

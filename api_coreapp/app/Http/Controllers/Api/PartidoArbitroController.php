@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Partido;
 use App\Models\Arbitro;
 use App\Models\PartidoArbitro;
+use App\Models\Egreso;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class PartidoArbitroController extends Controller
 {
@@ -75,15 +77,16 @@ class PartidoArbitroController extends Controller
         
         $validated = $request->validate([
             'pagado' => 'required|boolean',
-            'motivo_pago' => 'nullable|string|max:1000'
+            'motivo_pago' => 'nullable|string|max:1000',
         ]);
 
+        // Guardamos el estado informativo (Cédula de Arbitraje)
         $assignment->pagado = $validated['pagado'];
         $assignment->motivo_pago = $validated['motivo_pago'];
         $assignment->save();
 
         return response()->json([
-            'message' => 'Estado de pago actualizado correctamente.',
+            'message' => 'Seguimiento de pago (Cédula) actualizado correctamente. El egreso contable se generará al cerrar la jornada.',
             'data' => $assignment
         ]);
     }

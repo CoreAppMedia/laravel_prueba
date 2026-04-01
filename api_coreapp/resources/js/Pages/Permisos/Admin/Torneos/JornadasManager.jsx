@@ -44,6 +44,8 @@ function JornadaDetail({
     const [targetPartidoId, setTargetPartidoId] = useState(null);
     const [paymentForm, setPaymentForm] = useState({ pivotId: null, pagado: false, motivo_pago: '' });
     const [summaryData, setSummaryData] = useState({ totalCobrado: 0, totalEgresosArbitros: 0 });
+    const [jornadaResumen, setJornadaResumen] = useState(null);
+    const [loadingResumen, setLoadingResumen] = useState(false);
     const [saving, setSaving] = useState(false);
     const [formError, setFormError] = useState(null);
 
@@ -178,23 +180,44 @@ function JornadaDetail({
 
     const handleCloseJornada = async () => {
         const pending = (jornada.partidos || []).filter(p => !p.cerrado && !p.suspendido);
-        
-        // Calcular sumas para el resumen visual en el modal
-        const totalCobrado = (jornada.partidos || []).reduce((acc, p) => {
-            let suma = 0;
-            if (p.pago_arbitro_local) suma += (torneo.costo_arbitraje_por_partido || 0);
-            if (p.pago_arbitro_visitante) suma += (torneo.costo_arbitraje_por_partido || 0);
-            return acc + suma;
-        }, 0);
-
-        const totalEgresosArbitros = (jornada.partidos || []).reduce((acc, p) => {
-            const pagosArb = (p.arbitros || []).filter(a => a.pivot.pagado).reduce((sum, a) => sum + parseFloat(a.pivot.pago || 0), 0);
-            return acc + pagosArb;
-        }, 0);
-
         setPendingList(pending);
-        setSummaryData({ totalCobrado, totalEgresosArbitros });
+        
+        if (pending.length === 0) {
+            setLoadingResumen(true);
+            try {
+                const res = await http.get(`/api/finanzas/resumen-jornada/${torneo.id}/${jornada.id}`);
+                setJornadaResumen(res.data);
+                
+                // Compatibilidad con lógica anterior
+                setSummaryData({ 
+                    totalCobrado: res.data.totales.ingresos, 
+                    totalEgresosArbitros: res.data.detalles_arbitraje.reduce((acc, curr) => acc + parseFloat(curr.monto || 0), 0) 
+                });
+            } catch (error) {
+                console.error("Error al cargar preventa de resumen:", error);
+            } finally {
+                setLoadingResumen(false);
+            }
+        }
+
         setIsCierreModalOpen(true);
+    };
+
+    const handleVerResumen = async () => {
+        setLoadingResumen(true);
+        try {
+            const res = await http.get(`/api/finanzas/resumen-jornada/${torneo.id}/${jornada.id}`);
+            setJornadaResumen(res.data);
+            setSummaryData({ 
+                totalCobrado: res.data.totales.ingresos, 
+                totalEgresosArbitros: res.data.detalles_arbitraje.reduce((acc, curr) => acc + parseFloat(curr.monto || 0), 0) 
+            });
+            setIsCierreModalOpen(true);
+        } catch (error) {
+            toast.error('Error al cargar resumen financiero');
+        } finally {
+            setLoadingResumen(false);
+        }
     };
 
     const handleConfirmCierre = async () => {
@@ -336,7 +359,7 @@ function JornadaDetail({
                 </button>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    {!jornada.cerrada && (
+                    {!jornada.cerrada ? (
                         <>
                             {!jornada.suspendida ? (
                                 <button
@@ -361,6 +384,13 @@ function JornadaDetail({
                                 <Lock size={14} /> Cerrar Jornada
                             </button>
                         </>
+                    ) : (
+                        <button
+                            onClick={handleVerResumen}
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-bg-surface-alt)', border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-md)', padding: '8px 14px', cursor: 'pointer', color: 'var(--color-text-primary)', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase' }}
+                        >
+                            <DollarSign size={14} style={{ color: 'var(--color-gold)' }} /> Ver Resumen Contable
+                        </button>
                     )}
 
                     {!jornada.cerrada && !jornada.suspendida && (
@@ -819,10 +849,10 @@ function JornadaDetail({
                                         <label className="text-label" style={{ fontSize: '12px' }}>Pago ($)</label>
                                         <input
                                             type="number"
-                                            style={{ ...inputStyle, padding: '10px 14px' }}
+                                            style={{ ...inputStyle, padding: '10px 14px', backgroundColor: 'var(--color-bg-surface-alt)', cursor: 'not-allowed' }}
                                             value={partidoForm.pago_arbitro}
                                             onChange={e => setPartidoForm({ ...partidoForm, pago_arbitro: e.target.value })}
-                                            disabled={!partidoForm.arbitro_id}
+                                            disabled={true} title="El monto de pago se define automáticamente por la configuración del torneo"
                                         />
                                     </div>
                                 </div>
@@ -948,22 +978,69 @@ function JornadaDetail({
 
                             {/* Resumen Financiero Visual */}
                             <div style={{ marginTop: '20px', padding: '16px', backgroundColor: 'var(--color-bg-surface-alt)', borderRadius: '8px', border: '1px solid var(--color-border-subtle)' }}>
-                                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-gold)', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '1px' }}>Reporte de Caja: Jornada {jornada.numero}</div>
+                                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-gold)', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '1px' }}>
+                                    {jornada.cerrada ? 'Reporte Contable Final' : 'Cierre de Caja Proyectado'} : Jornada {jornada.numero}
+                                </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                    <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>Ingresos por Cobros (Equipos):</span>
+                                    <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>Ingresos Cobrados a Equipos:</span>
                                     <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-sage)' }}>${summaryData.totalCobrado.toLocaleString()}</span>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                    <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>Pagos Efectuados (Árbitros):</span>
+                                    <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>Pagos a Cuerpo Arbitral:</span>
                                     <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-terra)' }}>${summaryData.totalEgresosArbitros.toLocaleString()}</span>
                                 </div>
-                                <div style={{ borderTop: '1px solid var(--color-border-subtle)', marginTop: '8px', paddingTop: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                                    <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-slate)' }}>Utilidad Proyectada:</span>
-                                    <span style={{ fontSize: '15px', fontWeight: 900, color: (summaryData.totalCobrado - summaryData.totalEgresosArbitros) >= 0 ? 'var(--color-gold)' : 'var(--color-terra)' }}>
-                                        ${ (summaryData.totalCobrado - summaryData.totalEgresosArbitros).toLocaleString() }
+
+                                {/* Otros Egresos */}
+                                {jornadaResumen?.egresos?.filter(e => e.categoria !== 'arbitraje').length > 0 && (
+                                    <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed var(--color-border-subtle)' }}>
+                                        <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-text-muted)', marginBottom: '8px' }}>OTROS GASTOS / DESCUENTOS</div>
+                                        {jornadaResumen.egresos.filter(e => e.categoria !== 'arbitraje').map((egr, idx) => (
+                                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '12px' }}>
+                                                <span style={{ color: 'var(--color-text-secondary)' }}>{egr.concepto}</span>
+                                                <span style={{ fontWeight: 700, color: 'var(--color-terra)' }}>-${parseFloat(egr.monto).toLocaleString()}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <div style={{ borderTop: '2px solid var(--color-border-subtle)', marginTop: '12px', paddingTop: '10px', display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-slate)' }}>Utilidad Neta:</span>
+                                    <span style={{ fontSize: '15px', fontWeight: 900, color: (summaryData.totalCobrado - (jornadaResumen?.egresos?.reduce((acc, e) => acc + parseFloat(e.monto), 0) || summaryData.totalEgresosArbitros)) >= 0 ? 'var(--color-gold)' : 'var(--color-terra)' }}>
+                                        ${ (summaryData.totalCobrado - (jornadaResumen?.egresos?.reduce((acc, e) => acc + parseFloat(e.monto), 0) || summaryData.totalEgresosArbitros)).toLocaleString() }
                                     </span>
                                 </div>
                             </div>
+
+                            {/* Detalle de Arbitraje Table */}
+                            {jornadaResumen?.detalles_arbitraje?.length > 0 && (
+                                <div style={{ marginTop: '20px' }}>
+                                    <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-slate)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>Detalle de Pagos a Árbitros</div>
+                                    <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-sm)' }}>
+                                        <table style={{ width: '100%', fontSize: '12px', textAlign: 'left', borderCollapse: 'collapse' }}>
+                                            <thead style={{ backgroundColor: 'var(--color-bg-surface-alt)', position: 'sticky', top: 0 }}>
+                                                <tr>
+                                                    <th style={{ padding: '8px 12px', borderBottom: '1px solid var(--color-border-subtle)' }}>Árbitro</th>
+                                                    <th style={{ padding: '8px 12px', borderBottom: '1px solid var(--color-border-subtle)' }}>Rol</th>
+                                                    <th style={{ padding: '8px 12px', borderBottom: '1px solid var(--color-border-subtle)' }}>Partido</th>
+                                                    <th style={{ padding: '8px 12px', borderBottom: '1px solid var(--color-border-subtle)', textAlign: 'right' }}>Monto</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {jornadaResumen.detalles_arbitraje.map((det, idx) => (
+                                                    <tr key={idx} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+                                                        <td style={{ padding: '8px 12px', fontWeight: 600 }}>{det.arbitro_nombre}</td>
+                                                        <td style={{ padding: '8px 12px' }}>
+                                                            <span style={{ fontSize: '10px', padding: '2px 6px', background: 'var(--color-gold-light)', color: 'var(--color-gold)', borderRadius: '4px', fontWeight: 700 }}>{det.rol}</span>
+                                                        </td>
+                                                        <td style={{ padding: '8px 12px', color: 'var(--color-text-muted)', fontSize: '11px' }}>{det.partido_nombre}</td>
+                                                        <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700 }}>${parseFloat(det.monto).toLocaleString()}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Score summary */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>

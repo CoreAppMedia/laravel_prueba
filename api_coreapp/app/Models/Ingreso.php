@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Ingreso extends Model
 {
-    use HasUuids;
+    use HasUuids, SoftDeletes;
 
     protected $table = 'ingresos';
 
@@ -21,6 +22,10 @@ class Ingreso extends Model
         'categoria',
         'monto',
         'fecha',
+        'payable_id',
+        'payable_type',
+        'metodo_pago',
+        'comprobante_url',
     ];
 
     protected $casts = [
@@ -31,5 +36,10 @@ class Ingreso extends Model
     public function torneo()
     {
         return $this->belongsTo(Torneo::class);
+    }
+
+    public function payable()
+    {
+        return $this->morphTo();
     }
 }

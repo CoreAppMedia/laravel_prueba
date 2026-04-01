@@ -10,6 +10,8 @@ use App\Models\EquipoTorneo;
 use App\Models\Ingreso;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class EquipoTorneoController extends Controller
 {
@@ -62,28 +64,34 @@ class EquipoTorneoController extends Controller
             ], 422);
         }
 
-        // 5. Inscribir al equipo
+        // 5. Inscribir al equipo dentro de una transacción
         $pagado = $validated['pagado_inscripcion'] ?? false;
-        
-        $torneo->equipos()->attach($equipo->id, [
-            'id' => Str::uuid()->toString(),
-            'fecha_inscripcion' => now(),
-            'pagado_inscripcion' => $pagado,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $pivotId = (string) Str::uuid();
 
-        // Registrar ingreso automático si ya está pagado
-        if ($pagado) {
-            $ingreso = new Ingreso();
-            $ingreso->id = (string) Str::uuid();
-            $ingreso->torneo_id = $torneo->id;
-            $ingreso->concepto = "Inscripción: " . $equipo->nombre_mostrado . " - " . $torneo->nombre;
-            $ingreso->categoria = 'inscripcion';
-            $ingreso->monto = $torneo->costo_inscripcion ?? 0;
-            $ingreso->fecha = now();
-            $ingreso->save();
-        }
+        DB::transaction(function () use ($torneo, $equipo, $pagado, $pivotId) {
+            $torneo->equipos()->attach($equipo->id, [
+                'id' => $pivotId,
+                'fecha_inscripcion' => now(),
+                'pagado_inscripcion' => $pagado,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // Registrar ingreso automático si ya está pagado en la inscripción
+            if ($pagado) {
+                $ingreso = new Ingreso();
+                $ingreso->id = (string) Str::uuid();
+                $ingreso->torneo_id = $torneo->id;
+                $ingreso->concepto = "Inscripción inicial: " . $equipo->nombre_mostrado . " - " . $torneo->nombre;
+                $ingreso->categoria = 'inscripcion';
+                $ingreso->monto = $torneo->costo_inscripcion ?? 0;
+                $ingreso->fecha = now();
+                $ingreso->payable_id = $pivotId;
+                $ingreso->payable_type = EquipoTorneo::class;
+                $ingreso->metodo_pago = 'Efectivo';
+                $ingreso->save();
+            }
+        });
 
         return response()->json([
             'message' => 'Equipo inscrito con éxito al torneo.',
@@ -118,21 +126,31 @@ class EquipoTorneoController extends Controller
                 'message' => "El equipo {$estadoStr} en este torneo."
             ], 422);
         }
-        
-        $equipoTorneo->pagado_inscripcion = $validated['pagado_inscripcion'];
-        $equipoTorneo->save();
+        DB::transaction(function () use ($equipoTorneo, $torneo, $equipo, $validated) {
+            $equipoTorneo->pagado_inscripcion = $validated['pagado_inscripcion'];
+            $equipoTorneo->save();
 
-        // Registrar ingreso automático si se marca como pagado
-        if ($validated['pagado_inscripcion']) {
-            $ingreso = new Ingreso();
-            $ingreso->id = (string) Str::uuid();
-            $ingreso->torneo_id = $torneo->id;
-            $ingreso->concepto = "Pago Inscripción: " . ($equipo->nombre_mostrado ?? 'Equipo') . " - " . $torneo->nombre;
-            $ingreso->categoria = 'inscripcion';
-            $ingreso->monto = $torneo->costo_inscripcion ?? 0;
-            $ingreso->fecha = now();
-            $ingreso->save();
-        }
+            // Gestionar el ingreso ligado
+            if ($validated['pagado_inscripcion']) {
+                // Generar ingreso automático
+                $ingreso = new Ingreso();
+                $ingreso->id = (string) Str::uuid();
+                $ingreso->torneo_id = $torneo->id;
+                $ingreso->concepto = "Pago Inscripción: " . ($equipo->nombre_mostrado ?? 'Equipo') . " - " . $torneo->nombre;
+                $ingreso->categoria = 'inscripcion';
+                $ingreso->monto = $torneo->costo_inscripcion ?? 0;
+                $ingreso->fecha = now();
+                $ingreso->payable_id = $equipoTorneo->id;
+                $ingreso->payable_type = EquipoTorneo::class;
+                $ingreso->metodo_pago = 'Efectivo';
+                $ingreso->save();
+            } else {
+                // Revertir: buscar el ingreso ligado y anularlo mediante soft deletes
+                Ingreso::where('payable_id', $equipoTorneo->id)
+                    ->where('payable_type', EquipoTorneo::class)
+                    ->delete();
+            }
+        });
 
         return response()->json([
             'message' => 'Estado de pago actualizado correctamente.',

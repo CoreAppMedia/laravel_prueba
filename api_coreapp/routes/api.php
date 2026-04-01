@@ -136,6 +136,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('finanzas/balance-global', [\App\Http\Controllers\Api\FinanzasReporteController::class, 'balanceGlobal'])->middleware('can:torneos.view');
             Route::get('finanzas/resumen-torneo/{torneo}', [\App\Http\Controllers\Api\FinanzasReporteController::class, 'resumenTorneo'])->middleware('can:torneos.view');
             Route::get('finanzas/resumen-jornada/{torneo}/{jornada}', [\App\Http\Controllers\Api\FinanzasReporteController::class, 'resumenJornada'])->middleware('can:torneos.view');
+            
+            Route::get('finanzas/recibo-arbitraje/{torneo}/{jornada}', [\App\Http\Controllers\Api\FinanzasReporteController::class, 'reciboArbitrajeJornada'])->middleware('can:torneos.view');
         });
 
         // Catalogos

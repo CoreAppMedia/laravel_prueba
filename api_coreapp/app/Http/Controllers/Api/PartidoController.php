@@ -338,54 +338,88 @@ class PartidoController extends Controller
     }
 
     /**
-     * Registrar el cobro de arbitraje a los equipos y generar ingresos.
+     * Registrar el cobro de arbitraje a los equipos y generar ingresos, o revertirlos.
+     * Incorpora motivos de por qué no pagaron.
      */
     public function registrarPagoArbitraje(Request $request, Partido $partido)
     {
         $validated = $request->validate([
             'pago_arbitro_local' => 'required|boolean',
             'pago_arbitro_visitante' => 'required|boolean',
+            'motivo_no_pago_arbitro_local' => 'nullable|string|max:500',
+            'motivo_no_pago_arbitro_visitante' => 'nullable|string|max:500',
+            'metodo_pago' => 'nullable|string'
         ]);
 
         $partido->load(['equipoLocal', 'equipoVisitante', 'jornada.torneo']);
         $torneo = $partido->jornada->torneo;
         
-        // El costo por equipo es lo que se definió en el torneo (fijo)
         $costoPorEquipo = ($torneo->costo_arbitraje_por_partido ?? 0);
+        $metodoPago = $validated['metodo_pago'] ?? 'Efectivo';
 
-        // Registrar ingreso local
-        if ($validated['pago_arbitro_local'] && !$partido->pago_arbitro_local) {
-            $ingreso = new Ingreso();
-            $ingreso->id = (string) Str::uuid();
-            $ingreso->torneo_id = $torneo->id;
-            $ingreso->jornada_id = $partido->jornada_id;
-            $ingreso->concepto = "Arbitraje (Local): " . ($partido->equipoLocal->nombre_mostrado ?? 'Equipo') . " - J" . $partido->jornada->numero;
-            $ingreso->categoria = 'arbitraje';
-            $ingreso->monto = $costoPorEquipo;
-            $ingreso->fecha = now();
-            $ingreso->save();
-        }
+        return \Illuminate\Support\Facades\DB::transaction(function() use ($partido, $validated, $torneo, $costoPorEquipo, $metodoPago) {
+            
+            // LOCAL
+            if ($validated['pago_arbitro_local'] && !$partido->pago_arbitro_local) {
+                // Nuevo pago: generar ingreso
+                $ingreso = new Ingreso();
+                $ingreso->id = (string) Str::uuid();
+                $ingreso->torneo_id = $torneo->id;
+                $ingreso->jornada_id = $partido->jornada_id;
+                $ingreso->concepto = "Arbitraje (Local): " . ($partido->equipoLocal->nombre_mostrado ?? 'Equipo') . " - J" . $partido->jornada->numero;
+                $ingreso->categoria = 'arbitraje';
+                $ingreso->monto = $costoPorEquipo;
+                $ingreso->fecha = now();
+                $ingreso->payable_id = $partido->id;
+                $ingreso->payable_type = Partido::class; // Lo ligamos al partido
+                $ingreso->metodo_pago = $metodoPago;
 
-        // Registrar ingreso visitante
-        if ($validated['pago_arbitro_visitante'] && !$partido->pago_arbitro_visitante) {
-            $ingreso = new Ingreso();
-            $ingreso->id = (string) Str::uuid();
-            $ingreso->torneo_id = $torneo->id;
-            $ingreso->jornada_id = $partido->jornada_id;
-            $ingreso->concepto = "Arbitraje (Visita): " . ($partido->equipoVisitante->nombre_mostrado ?? 'Equipo') . " - J" . $partido->jornada->numero;
-            $ingreso->categoria = 'arbitraje';
-            $ingreso->monto = $costoPorEquipo;
-            $ingreso->fecha = now();
-            $ingreso->save();
-        }
+                // Como es local, lo guardamos para diferenciar múltiples ingresos del mismo partido?
+                // Podemos agregar el prefijo 'Local' en el comprobante url, pero mejor usar el id del partido para ambos y saber a detalle.
+                $ingreso->save();
+            } elseif (!$validated['pago_arbitro_local'] && $partido->pago_arbitro_local) {
+                // Revertir pago local: anulamos el ingreso respectivo
+                Ingreso::where('payable_id', $partido->id)
+                    ->where('payable_type', Partido::class)
+                    ->where('concepto', 'like', 'Arbitraje (Local)%')
+                    ->delete();
+            }
 
-        $partido->pago_arbitro_local = $validated['pago_arbitro_local'];
-        $partido->pago_arbitro_visitante = $validated['pago_arbitro_visitante'];
-        $partido->save();
+            // VISITANTE
+            if ($validated['pago_arbitro_visitante'] && !$partido->pago_arbitro_visitante) {
+                $ingreso = new Ingreso();
+                $ingreso->id = (string) Str::uuid();
+                $ingreso->torneo_id = $torneo->id;
+                $ingreso->jornada_id = $partido->jornada_id;
+                $ingreso->concepto = "Arbitraje (Visita): " . ($partido->equipoVisitante->nombre_mostrado ?? 'Equipo') . " - J" . $partido->jornada->numero;
+                $ingreso->categoria = 'arbitraje';
+                $ingreso->monto = $costoPorEquipo;
+                $ingreso->fecha = now();
+                $ingreso->payable_id = $partido->id;
+                $ingreso->payable_type = Partido::class;
+                $ingreso->metodo_pago = $metodoPago;
+                $ingreso->save();
+            } elseif (!$validated['pago_arbitro_visitante'] && $partido->pago_arbitro_visitante) {
+                // Revertir pago visitante
+                Ingreso::where('payable_id', $partido->id)
+                    ->where('payable_type', Partido::class)
+                    ->where('concepto', 'like', 'Arbitraje (Visita)%')
+                    ->delete();
+            }
 
-        return response()->json([
-            'message' => 'Pagos de equipos registrados correctamente.',
-            'partido' => $partido
-        ]);
+            // Actualizar modelo partido
+            $partido->pago_arbitro_local = $validated['pago_arbitro_local'];
+            $partido->motivo_no_pago_arbitro_local = $validated['pago_arbitro_local'] ? null : ($validated['motivo_no_pago_arbitro_local'] ?? null);
+
+            $partido->pago_arbitro_visitante = $validated['pago_arbitro_visitante'];
+            $partido->motivo_no_pago_arbitro_visitante = $validated['pago_arbitro_visitante'] ? null : ($validated['motivo_no_pago_arbitro_visitante'] ?? null);
+            
+            $partido->save();
+
+            return response()->json([
+                'message' => 'Pagos de equipos registrados/actualizados correctamente.',
+                'partido' => $partido
+            ]);
+        });
     }
 }

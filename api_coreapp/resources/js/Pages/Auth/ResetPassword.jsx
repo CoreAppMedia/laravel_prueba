@@ -144,6 +144,16 @@ export default function ResetPassword() {
                 >
                     Reenviar código
                 </Link>
+                <div style={{ marginTop: 16, width: '100%', textAlign: 'center' }}>
+                    <a
+                        href="/"
+                        style={authstyles.linkMuted}
+                        onMouseEnter={e => e.currentTarget.style.color = 'var(--color-text-secondary)'}
+                        onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-muted)'}
+                    >
+                        Volver al inicio
+                    </a>
+                </div>
             </div>
         </AuthCard>
     );

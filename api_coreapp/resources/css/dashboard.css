@@ -1,0 +1,72 @@
+/* Heritage Pitch Global Styles */
+
+@import "tailwindcss";
+
+@theme {
+  --color-zapo-black: #000000;
+  --color-zapo-red: #C0442A;
+  --color-zapo-gray: #f5f5f7;
+  --color-zapo-near-black: #1d1d1f;
+  --color-zapo-green: #3A6B52;
+  --color-zapo-link: #008f45;
+  --color-zapo-link-dark: #28cd41;
+  --color-zapo-gold: #d4af37;
+  
+  --color-primary: #00a351;
+  --color-secondary: #1d1d1f;
+  --color-border-gray: rgba(0, 0, 0, 0.12);
+
+  --font-headline: "Inter", "system-ui", "sans-serif";
+  --font-body: "Inter", "system-ui", "sans-serif";
+
+  --radius-micro: 5px;
+  --radius-zapo: 8px;
+  --radius-comfortable: 11px;
+  --radius-large: 12px;
+  --radius-pill: 980px;
+
+  --shadow-zapo: 0 10px 30px rgba(0, 0, 0, 0.12);
+  --shadow-zapo-hover: 0 20px 40px rgba(0, 0, 0, 0.22);
+
+  --animate-zapo-fade: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@layer components {
+  .zapo-glass {
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+  }
+
+  .zapo-glass-light {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+  }
+
+  .display-hero {
+    font-size: 56px;
+    font-weight: 600;
+    line-height: 1.07;
+    letter-spacing: -0.02em;
+  }
+}
+
+body {
+  @apply bg-white text-secondary antialiased font-body;
+}
+
+.animate-zapo {
+  @apply animate-zapo-fade;
+}

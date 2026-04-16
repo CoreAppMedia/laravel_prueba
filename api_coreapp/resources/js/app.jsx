@@ -36,17 +36,15 @@ function App() {
         <AuthProvider>
             <BrowserRouter>
                 <Routes>
+                    {/* Rutas Públicas de Auth */}
                     <Route path="/login" element={<Login />} />
                     <Route path="/registro" element={<Register />} />
                     <Route path="/recuperar" element={<ForgotPassword />} />
                     <Route path="/restablecer" element={<ResetPassword />} />
 
-
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/guia-estilo" element={<GuiaEstilo />} />
+                    {/* Rutas Protegidas (Panel Administrativo) */}
                     <Route element={<ProtectedRoute />}>
-                        <Route path="/panel" element={<PanelGenerico />} />
-
+                        <Route path="/panel" element={<Dashboard />} />
                         <Route path="/panel/desarrollador" element={<PanelDesarrollador />} />
                         <Route path="/panel/admin" element={<PanelAdmin />} />
                         <Route path="/panel/admin/temporadas" element={<TemporadasIndex />} />
@@ -63,6 +61,8 @@ function App() {
                         <Route path="/panel/arbitro" element={<PanelArbitro />} />
                     </Route>
 
+                    {/* Otras rutas */}
+                    <Route path="/guia-estilo" element={<GuiaEstilo />} />
                     <Route path="*" element={<NotFound />} />
                 </Routes>
             </BrowserRouter>

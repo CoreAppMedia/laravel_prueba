@@ -95,14 +95,14 @@ export default function ForgotPassword() {
                 >
                     Ya tengo mi código
                 </Link>
-                <Link
-                    to="/login"
+                <a
+                    href="/"
                     style={authstyles.linkMuted}
                     onMouseEnter={e => e.currentTarget.style.color = 'var(--color-text-secondary)'}
                     onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-muted)'}
                 >
-                    Volver a login
-                </Link>
+                    Volver al inicio
+                </a>
             </div>
         </AuthCard>
     );

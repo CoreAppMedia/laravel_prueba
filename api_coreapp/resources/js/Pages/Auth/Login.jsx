@@ -107,14 +107,14 @@ export default function Login() {
                 >
                     ¿Olvidaste tu contraseña?
                 </Link>
-                <Link
-                    to="/"
+                <a
+                    href="/"
                     style={authstyles.linkMuted}
                     onMouseEnter={e => e.currentTarget.style.color = 'var(--color-text-secondary)'}
                     onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-muted)'}
                 >
                     Volver
-                </Link>
+                </a>
             </div>
         </AuthCard>
     );

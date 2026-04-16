@@ -30,7 +30,7 @@ export default function Register() {
         setIsSubmitting(true);
         try {
             await register(formData);
-            navigate('/', { replace: true });
+            window.location.href = '/';
         } catch (err) {
             if (err?.response?.status === 422) {
                 setValidationErrors(err.response.data.errors || {});
@@ -144,6 +144,16 @@ export default function Register() {
                 >
                     Inicia sesión aquí
                 </Link>
+                <div style={{ marginTop: 16 }}>
+                    <a
+                        href="/"
+                        style={authstyles.linkMuted}
+                        onMouseEnter={e => e.currentTarget.style.color = 'var(--color-text-secondary)'}
+                        onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-muted)'}
+                    >
+                        Volver al inicio
+                    </a>
+                </div>
             </div>
         </AuthCard>
     );

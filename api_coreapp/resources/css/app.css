@@ -414,6 +414,18 @@ body {
 
 }
 
+.logo-dashboard {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background-color: var(--color-bg-surface);
+
+}
+
 .brand-name {
     font-family: var(--font-display);
     font-size: 15px;
@@ -1327,7 +1339,7 @@ section>h3 {
     }
 
     /* Content area takes full width on mobile */
-    .panel-admin__layout > div:last-child {
+    .panel-admin__layout>div:last-child {
         width: 100% !important;
         min-width: 0 !important;
     }
@@ -1340,7 +1352,7 @@ section>h3 {
     }
 
     /* Ensure proper scrolling on mobile */
-    .panel-admin__layout > div:last-child {
+    .panel-admin__layout>div:last-child {
         overflow-x: auto;
     }
 
@@ -1383,25 +1395,25 @@ section>h3 {
     }
 
     /* Compact summary section */
-    .panel-admin__sidebar > div:last-child {
+    .panel-admin__sidebar>div:last-child {
         margin-top: 8px !important;
         padding: 6px !important;
     }
 
-    .panel-admin__sidebar > div:last-child > div:first-child {
+    .panel-admin__sidebar>div:last-child>div:first-child {
         font-size: 8px !important;
         margin-bottom: 4px !important;
     }
 
-    .panel-admin__sidebar > div:last-child > div:last-child > div {
+    .panel-admin__sidebar>div:last-child>div:last-child>div {
         padding: 1px 0 !important;
     }
 
-    .panel-admin__sidebar > div:last-child > div:last-child > div span:first-child {
+    .panel-admin__sidebar>div:last-child>div:last-child>div span:first-child {
         font-size: 9px !important;
     }
 
-    .panel-admin__sidebar > div:last-child > div:last-child > div span:last-child {
+    .panel-admin__sidebar>div:last-child>div:last-child>div span:last-child {
         font-size: 10px !important;
     }
 }

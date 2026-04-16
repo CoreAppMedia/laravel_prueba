@@ -57,8 +57,8 @@
     <!-- Nav -->
     <nav class="absolute top-0 w-full z-50 py-6 px-8 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
         <div class="text-white font-bold text-xl tracking-tight flex items-center gap-2">
-            <span class="material-symbols-outlined text-zapo-link-dark">stadium</span>
-            Heritage Pitch
+            <img src="{{ asset('images/logo_final.png') }}" alt="logo-dashboard" class="w-14 h-14">
+            Clúbes Unidos Zapotitlán
         </div>
         <div class="flex gap-6 items-center">
             <a href="#rol" class="text-white/80 hover:text-white transition-colors text-sm font-medium">Rol de Juego</a>
@@ -79,7 +79,7 @@
         <div class="max-w-4xl mx-auto z-10 animate-zapo">
             <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[12px] font-bold uppercase tracking-widest text-zapo-link-dark border border-white/10 mb-6">
                 <span class="w-2 h-2 bg-zapo-link-dark rounded-full animate-pulse"></span>
-                Temporada 2024 • Clausura
+                Temporada 2026 • Clausura
             </div>
             <h1 class="font-headline text-white display-hero mb-6">
                 Liga de Fútbol <span class="text-zapo-link-dark italic">Zapotitlán</span>

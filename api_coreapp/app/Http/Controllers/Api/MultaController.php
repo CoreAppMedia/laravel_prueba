@@ -18,7 +18,7 @@ class MultaController extends Controller
     public function index(Request $request)
     {
         /** @var \Illuminate\Database\Eloquent\Builder $query */
-        $query = Multa::query()->with(['equipo', 'torneo', 'tipo_multa']);
+        $query = Multa::query()->with(['equipo', 'torneo', 'tipoMulta']);
 
         if ($request->filled('equipo_id')) {
             $query->where('equipo_id', '=', $request->equipo_id);

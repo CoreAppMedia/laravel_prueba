@@ -12,17 +12,33 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('ingresos', function (Blueprint $table) {
-            $table->nullableUuidMorphs('payable');
-            $table->string('metodo_pago')->nullable()->default('Efectivo')->after('monto');
-            $table->string('comprobante_url')->nullable()->after('metodo_pago');
-            $table->softDeletesTz();
+            if (!Schema::hasColumn('ingresos', 'payable_id')) {
+                $table->nullableUuidMorphs('payable');
+            }
+            if (!Schema::hasColumn('ingresos', 'metodo_pago')) {
+                $table->string('metodo_pago')->nullable()->default('Efectivo')->after('monto');
+            }
+            if (!Schema::hasColumn('ingresos', 'comprobante_url')) {
+                $table->string('comprobante_url')->nullable()->after('metodo_pago');
+            }
+            if (!Schema::hasColumn('ingresos', 'deleted_at')) {
+                $table->softDeletesTz();
+            }
         });
 
         Schema::table('egresos', function (Blueprint $table) {
-            $table->nullableUuidMorphs('payable');
-            $table->string('metodo_pago')->nullable()->default('Efectivo')->after('monto');
-            $table->string('comprobante_url')->nullable()->after('metodo_pago');
-            $table->softDeletesTz();
+            if (!Schema::hasColumn('egresos', 'payable_id')) {
+                $table->nullableUuidMorphs('payable');
+            }
+            if (!Schema::hasColumn('egresos', 'metodo_pago')) {
+                $table->string('metodo_pago')->nullable()->default('Efectivo')->after('monto');
+            }
+            if (!Schema::hasColumn('egresos', 'comprobante_url')) {
+                $table->string('comprobante_url')->nullable()->after('metodo_pago');
+            }
+            if (!Schema::hasColumn('egresos', 'deleted_at')) {
+                $table->softDeletesTz();
+            }
         });
     }
 

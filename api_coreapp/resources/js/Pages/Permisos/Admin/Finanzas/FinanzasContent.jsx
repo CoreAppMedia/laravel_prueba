@@ -14,7 +14,9 @@ import {
     ArrowDownCircle,
     FileText,
     TrendingUp,
-    ChevronRight
+    ChevronRight,
+    Edit,
+    Trash2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -65,6 +67,7 @@ export default function FinanzasContent() {
     // Modales y Forms
     const [isMultaModalOpen, setIsMultaModalOpen] = useState(false);
     const [multaForm, setMultaForm] = useState({ equipo_id: '', tipo_multa_id: '', motivo: '', monto: '', fecha: '' });
+    const [editingMulta, setEditingMulta] = useState(null);
 
     const [isIngresoModalOpen, setIsIngresoModalOpen] = useState(false);
     const [ingresoForm, setIngresoForm] = useState({ torneo_id: '', concepto: '', categoria: '', monto: '', fecha: '' });
@@ -230,7 +233,7 @@ export default function FinanzasContent() {
 
     const handlePagoMulta = async (multaId) => {
         try {
-            await http.patch(`/api/multas/${multaId}/pago`);
+            await http.patch(`/api/multas/${multaId}/pago`, { pagada: true, metodo_pago: 'Efectivo' });
             toast.success('¡Pago registrado con éxito! Se cargó a Ingresos.');
             fetchData();
         } catch (error) {
@@ -242,15 +245,50 @@ export default function FinanzasContent() {
         e.preventDefault();
         setSaving(true);
         try {
-            await http.post('/api/multas', { ...multaForm, torneo_id: selectedTorneoId });
-            toast.success('Multa aplicada correctamente');
+            if (editingMulta) {
+                // Al editar solo enviar campos permitidos: motivo, monto, fecha
+                const updateData = {
+                    motivo: multaForm.motivo,
+                    monto: multaForm.monto,
+                    fecha: multaForm.fecha
+                };
+                await http.put(`/api/multas/${editingMulta.id}`, updateData);
+                toast.success('Multa actualizada correctamente');
+            } else {
+                await http.post('/api/multas', { ...multaForm, torneo_id: selectedTorneoId });
+                toast.success('Multa aplicada correctamente');
+            }
             setIsMultaModalOpen(false);
+            setEditingMulta(null);
             setMultaForm({ equipo_id: '', tipo_multa_id: '', motivo: '', monto: '', fecha: '' });
             fetchData();
         } catch (error) {
             toast.error(error.response?.data?.message || 'Error al guardar multa');
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleEditMulta = (multa) => {
+        setEditingMulta(multa);
+        setMultaForm({
+            equipo_id: multa.equipo_id,
+            tipo_multa_id: multa.tipo_multa_id,
+            motivo: multa.motivo,
+            monto: multa.monto,
+            fecha: multa.fecha?.split('T')[0] || ''
+        });
+        setIsMultaModalOpen(true);
+    };
+
+    const handleDeleteMulta = async (multaId) => {
+        if (!window.confirm('¿Estás seguro de eliminar esta multa? Esta acción no se puede deshacer.')) return;
+        try {
+            await http.delete(`/api/multas/${multaId}`);
+            toast.success('Multa eliminada correctamente');
+            fetchData();
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Error al eliminar multa');
         }
     };
 
@@ -481,14 +519,37 @@ export default function FinanzasContent() {
                                                         )}
                                                     </td>
                                                     <td style={{ padding: '16px 12px' }}>
-                                                        {!multa.pagada && (
-                                                            <button 
-                                                                onClick={() => handlePagoMulta(multa.id)}
-                                                                style={{ padding: '6px 12px', color: 'var(--color-gold)', background: 'transparent', border: '1px solid var(--color-gold)', borderRadius: '6px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
-                                                            >
-                                                                Liquidar Pago
-                                                            </button>
-                                                        )}
+                                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                                            {!multa.pagada && (
+                                                                <>
+                                                                    <button 
+                                                                        onClick={() => handlePagoMulta(multa.id)}
+                                                                        style={{ padding: '6px 12px', color: 'var(--color-gold)', background: 'transparent', border: '1px solid var(--color-gold)', borderRadius: '6px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+                                                                    >
+                                                                        Liquidar
+                                                                    </button>
+                                                                    <button 
+                                                                        onClick={() => handleEditMulta(multa)}
+                                                                        style={{ padding: '6px 10px', color: 'var(--color-slate)', background: 'transparent', border: '1px solid var(--color-slate)', borderRadius: '6px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+                                                                        title="Editar"
+                                                                    >
+                                                                        <Edit size={14} />
+                                                                    </button>
+                                                                    <button 
+                                                                        onClick={() => handleDeleteMulta(multa.id)}
+                                                                        style={{ padding: '6px 10px', color: 'var(--color-terra)', background: 'transparent', border: '1px solid var(--color-terra)', borderRadius: '6px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+                                                                        title="Eliminar"
+                                                                    >
+                                                                        <Trash2 size={14} />
+                                                                    </button>
+                                                                </>
+                                                            )}
+                                                            {multa.pagada && (
+                                                                <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>
+                                                                    Pagada - Sin acciones
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -770,8 +831,8 @@ export default function FinanzasContent() {
                 )}
             </div>
 
-            {/* Modal: Nueva Multa */}
-            <Modal isOpen={isMultaModalOpen} onClose={() => setIsMultaModalOpen(false)} title="Aplicar Nueva Multa">
+            {/* Modal: Nueva/Editar Multa */}
+            <Modal isOpen={isMultaModalOpen} onClose={() => { setIsMultaModalOpen(false); setEditingMulta(null); setMultaForm({ equipo_id: '', tipo_multa_id: '', motivo: '', monto: '', fecha: '' }); }} title={editingMulta ? "Editar Multa" : "Aplicar Nueva Multa"}>
                 <form onSubmit={handleMultaSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -842,8 +903,8 @@ export default function FinanzasContent() {
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '12px', paddingTop: '24px', borderTop: '1px solid var(--color-border-subtle)' }}>
-                        <button type="button" onClick={() => setIsMultaModalOpen(false)} className="btn btn-ghost">Cancelar</button>
-                        <GradientButton type="submit" isLoading={saving}>Registrar Multa</GradientButton>
+                        <button type="button" onClick={() => { setIsMultaModalOpen(false); setEditingMulta(null); setMultaForm({ equipo_id: '', tipo_multa_id: '', motivo: '', monto: '', fecha: '' }); }} className="btn btn-ghost">Cancelar</button>
+                        <GradientButton type="submit" isLoading={saving}>{editingMulta ? 'Guardar Cambios' : 'Registrar Multa'}</GradientButton>
                     </div>
                 </form>
             </Modal>

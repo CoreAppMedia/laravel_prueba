@@ -1,46 +1,40 @@
-# ========================
-# ETAPA 1: BUILD FRONTEND
-# ========================
-FROM node:20 AS frontend
+FROM php:8.2-cli
 
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-
-COPY . .
-RUN npm run build
-
-# ========================
-# ETAPA 2: PHP + NGINX
-# ========================
-FROM php:8.2-fpm
-
+# Dependencias sistema + Node + PHP extensions
 RUN apt-get update && apt-get install -y \
-    nginx \
     git unzip curl libpq-dev libzip-dev libonig-dev \
+    nodejs npm \
     && docker-php-ext-install pdo pdo_pgsql zip mbstring \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
+# Copiar proyecto
 COPY . .
 
-COPY --from=frontend /app/public/build /var/www/public/build
-
+# Instalar dependencias PHP
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
+# Instalar dependencias frontend
+RUN npm install
+
+# Build Vite producción
+RUN npm run build
+
+# Permisos Laravel
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-COPY nginx/default.conf /etc/nginx/sites-available/default
+# Puerto Render
+ENV PORT=10000
+EXPOSE 10000
 
-# 🔥 IMPORTANTE: asegurar logs visibles
-RUN ln -sf /dev/stdout /var/log/nginx/access.log \
-    && ln -sf /dev/stderr /var/log/nginx/error.log
-
-EXPOSE 80
-
-# 🔥 FIX REAL DEL PROBLEMA
-CMD ["sh", "-c", "php-fpm & nginx -g 'daemon off;'"]
+# Arranque
+CMD php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan view:cache && \
+    php artisan migrate:fresh --seed --force && \
+    php artisan serve --host=0.0.0.0 --port=$PORT

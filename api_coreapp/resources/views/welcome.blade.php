@@ -41,7 +41,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Heritage Pitch | Liga Zapotitlán</title>
+    <title>Clúbes Unidos | Liga Zapotitlán</title>
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -259,8 +259,8 @@
         <div class="max-w-screen-xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
             <div class="md:col-span-2">
                 <div class="text-white font-bold text-2xl tracking-tight mb-6 flex items-center gap-2">
-                    <span class="material-symbols-outlined text-zapo-link-dark">stadium</span>
-                    Heritage Pitch
+                    <img src="{{ asset('images/logo_final.png') }}" alt="logo-dashboard" class="w-14 h-14">
+                   Clúbes Unidos Zapotitlán
                 </div>
                 <p class="text-white/40 max-w-sm mb-6 leading-relaxed">
                     Elevando el estándar del fútbol local. Proporcionamos transparencia y profesionalismo a través de tecnología dedicada al deporte.
@@ -294,7 +294,7 @@
         </div>
         <div class="max-w-screen-xl mx-auto pt-20 mt-20 border-t border-white/5 text-center">
             <p class="text-[11px] font-bold text-white/20 tracking-widest uppercase">
-                Copyright © 2024 Heritage Pitch Zapotitlán. Desarrollado con pasión por el fútbol.
+                Copyright © 2026 Clúbes Unidos Zapotitlán. Desarrollado con pasión por el fútbol.
             </p>
         </div>
     </footer>

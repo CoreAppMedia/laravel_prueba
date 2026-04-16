@@ -35,6 +35,8 @@ class ClubController extends Controller
 
             $club = Club::create($validated);
 
+            $this->logCreate($club, 'crear');
+
             return response()->json($club, 201);
         } catch (ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
@@ -69,7 +71,11 @@ class ClubController extends Controller
                 'directivo_id.unique' => 'El Dueño seleccionado ya se encuentra dirigiendo otro Club.'
             ]);
 
+            $oldValues = $club->toArray();
             $club->update($validated);
+            $club->refresh();
+
+            $this->logUpdate($club, $oldValues, $club->toArray(), 'actualizar');
 
             return response()->json($club);
         } catch (ValidationException $e) {
@@ -83,6 +89,9 @@ class ClubController extends Controller
     public function destroy(string $id)
     {
         $club = Club::findOrFail($id);
+        
+        $this->logDelete($club, 'eliminar');
+        
         $club->delete();
 
         return response()->json(['message' => 'Club eliminado correctamente']);

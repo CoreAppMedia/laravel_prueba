@@ -48,6 +48,8 @@ class TorneoController extends Controller
 
             $torneo = Torneo::create($validated);
 
+            $this->logCreate($torneo, 'crear');
+
             return response()->json($torneo, 201);
         } catch (ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
@@ -94,7 +96,11 @@ class TorneoController extends Controller
                 'dias_juego.*' => 'integer|min:1|max:7',
             ]);
 
+            $oldValues = $torneo->toArray();
             $torneo->update($validated);
+            $torneo->refresh();
+
+            $this->logUpdate($torneo, $oldValues, $torneo->toArray(), 'actualizar');
 
             return response()->json($torneo);
         } catch (ValidationException $e) {
@@ -108,6 +114,9 @@ class TorneoController extends Controller
     public function destroy(string $id)
     {
         $torneo = Torneo::findOrFail($id);
+        
+        $this->logDelete($torneo, 'eliminar');
+        
         $torneo->delete();
 
         return response()->json(['message' => 'Torneo eliminado correctamente']);

@@ -51,6 +51,8 @@ class EgresoController extends Controller
         $egreso->fecha = $validated['fecha'] ?? now();
         $egreso->save();
 
+        $this->logCreate($egreso, 'crear');
+
         return response()->json([
             'message' => 'Gasto registrado correctamente.',
             'data' => $egreso
@@ -62,6 +64,8 @@ class EgresoController extends Controller
      */
     public function destroy(Egreso $egreso)
     {
+        $this->logDelete($egreso, 'eliminar');
+        
         $egreso->delete();
         return response()->json(['message' => 'Registro de egreso eliminado.']);
     }

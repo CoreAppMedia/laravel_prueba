@@ -45,6 +45,8 @@ class EquipoController extends Controller
 
             $equipo = Equipo::create($validated);
 
+            $this->logCreate($equipo, 'crear');
+
             return response()->json($equipo, 201);
         } catch (ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
@@ -88,7 +90,11 @@ class EquipoController extends Controller
                 'directivo_id.unique' => 'El Delegado/Dueño seleccionado ya tiene un Equipo asignado.',
             ]);
 
+            $oldValues = $equipo->toArray();
             $equipo->update($validated);
+            $equipo->refresh();
+
+            $this->logUpdate($equipo, $oldValues, $equipo->toArray(), 'actualizar');
 
             return response()->json($equipo);
         } catch (ValidationException $e) {
@@ -102,8 +108,13 @@ class EquipoController extends Controller
     public function toggleStatus(string $id)
     {
         $equipo = Equipo::findOrFail($id);
+        $oldValues = $equipo->toArray();
         $equipo->activo = !$equipo->activo;
         $equipo->save();
+        $equipo->refresh();
+
+        $accion = $equipo->activo ? 'activar' : 'desactivar';
+        $this->logUpdate($equipo, $oldValues, $equipo->toArray(), $accion);
 
         return response()->json([
             'message' => 'Estado del equipo actualizado correctamente',
@@ -117,6 +128,9 @@ class EquipoController extends Controller
     public function destroy(string $id)
     {
         $equipo = Equipo::findOrFail($id);
+        
+        $this->logDelete($equipo, 'eliminar');
+        
         $equipo->delete();
 
         return response()->json(['message' => 'Equipo eliminado correctamente']);

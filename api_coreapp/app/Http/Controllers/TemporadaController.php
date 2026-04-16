@@ -31,6 +31,8 @@ class TemporadaController extends Controller
 
             $temporada = Temporada::create($validated);
 
+            $this->logCreate($temporada, 'crear');
+
             return response()->json($temporada, 201);
         } catch (ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
@@ -61,7 +63,11 @@ class TemporadaController extends Controller
                 'activa' => 'boolean',
             ]);
 
+            $oldValues = $temporada->toArray();
             $temporada->update($validated);
+            $temporada->refresh();
+
+            $this->logUpdate($temporada, $oldValues, $temporada->toArray(), 'actualizar');
 
             return response()->json($temporada);
         } catch (ValidationException $e) {
@@ -75,6 +81,9 @@ class TemporadaController extends Controller
     public function destroy(string $id)
     {
         $temporada = Temporada::findOrFail($id);
+        
+        $this->logDelete($temporada, 'eliminar');
+        
         $temporada->delete();
 
         return response()->json(['message' => 'Temporada eliminada correctamente']);

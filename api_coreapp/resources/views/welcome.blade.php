@@ -75,23 +75,38 @@
     </nav>
 
     <!-- Hero -->
-    <header class="relative pt-40 pb-48 px-8 bg-zapo-black overflow-hidden flex flex-col items-center justify-center text-center">
-        <div class="max-w-4xl mx-auto z-10 animate-zapo">
-            <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[12px] font-bold uppercase tracking-widest text-zapo-link-dark border border-white/10 mb-6">
+    <header class="relative pt-40 pb-48 px-8 overflow-hidden flex flex-col items-center justify-center text-center">
+        <!-- Video Background -->
+        <video 
+            autoplay 
+            muted 
+            loop 
+            playsinline
+            class="absolute inset-0 w-full h-full object-cover z-0"
+        >
+            <source src="{{ asset('videos/dashbord.mov') }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        
+        <!-- Overlay for text readability -->
+        <div class="absolute inset-0 bg-black/40 z-10"></div>
+        
+        <div class="max-w-4xl mx-auto z-20 animate-zapo">
+            <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[12px] font-bold uppercase tracking-widest text-zapo-link-dark border border-white/10 mb-6 drop-shadow-lg">
                 <span class="w-2 h-2 bg-zapo-link-dark rounded-full animate-pulse"></span>
                 Temporada 2026 • Clausura
             </div>
-            <h1 class="font-headline text-white display-hero mb-6">
+            <h1 class="font-headline text-white display-hero mb-6 drop-shadow-2xl">
                 Liga de Fútbol <span class="text-zapo-link-dark italic">Zapotitlán</span>
             </h1>
-            <p class="text-[21px] text-white/70 max-w-2xl mx-auto mb-10 font-normal leading-tight">
+            <p class="text-[21px] text-white/70 max-w-2xl mx-auto mb-10 font-normal leading-tight drop-shadow-lg">
                 El corazón del fútbol amateur en Tláhuac. Consulta resultados, estadísticas y la programación semanal de todas nuestras categorías.
             </p>
             <div class="flex flex-wrap justify-center gap-6">
-                <a href="#rol" class="bg-zapo-green text-white px-8 py-3 rounded-pill font-semibold text-[17px] hover:shadow-zapo-hover shadow-lg transition-all">
+                <a href="#rol" class="bg-zapo-green text-white px-8 py-3 rounded-pill font-semibold text-[17px] hover:shadow-zapo-hover shadow-lg transition-all drop-shadow-lg">
                     Ver Rol de Juego
                 </a>
-                <button class="text-white text-[17px] font-medium hover:text-zapo-link-dark transition-colors flex items-center gap-2">
+                <button class="text-white text-[17px] font-medium hover:text-zapo-link-dark transition-colors flex items-center gap-2 drop-shadow-lg">
                     <span class="material-symbols-outlined">download</span>
                     Reglamento (PDF)
                 </button>
@@ -99,7 +114,7 @@
         </div>
         
         <!-- Abstract Decoration -->
-        <div class="absolute inset-0 opacity-20 pointer-events-none">
+        <div class="absolute inset-0 opacity-20 pointer-events-none z-10">
             <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-zapo-green blur-[120px] rounded-full"></div>
             <div class="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-zapo-link-dark blur-[100px] rounded-full"></div>
         </div>

@@ -16,7 +16,8 @@ import {
     TrendingUp,
     ChevronRight,
     Edit,
-    Trash2
+    Trash2,
+    RefreshCw
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -236,6 +237,7 @@ export default function FinanzasContent() {
             await http.patch(`/api/multas/${multaId}/pago`, { pagada: true, metodo_pago: 'Efectivo' });
             toast.success('¡Pago registrado con éxito! Se cargó a Ingresos.');
             fetchData();
+            fetchBalanceGlobal();
         } catch (error) {
             toast.error(error.response?.data?.message || 'Error al procesar el pago');
         }
@@ -262,6 +264,7 @@ export default function FinanzasContent() {
             setEditingMulta(null);
             setMultaForm({ equipo_id: '', tipo_multa_id: '', motivo: '', monto: '', fecha: '' });
             fetchData();
+            fetchBalanceGlobal();
         } catch (error) {
             toast.error(error.response?.data?.message || 'Error al guardar multa');
         } finally {
@@ -287,6 +290,7 @@ export default function FinanzasContent() {
             await http.delete(`/api/multas/${multaId}`);
             toast.success('Multa eliminada correctamente');
             fetchData();
+            fetchBalanceGlobal();
         } catch (error) {
             toast.error(error.response?.data?.message || 'Error al eliminar multa');
         }
@@ -326,42 +330,85 @@ export default function FinanzasContent() {
         }
     };
 
-    const SummaryCards = () => (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '8px' }}>
-            <div style={{ ...cardStyle, background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', color: 'white' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 600, opacity: 0.8 }}>Caja General (Balance)</span>
-                    <DollarSign size={20} color="var(--color-gold)" />
-                </div>
-                <div style={{ fontSize: '28px', fontWeight: 800, fontFamily: 'var(--font-display)' }}>
-                    ${balanceGlobal.totales.balance.toLocaleString('es-MX')}
-                </div>
-                <div style={{ fontSize: '12px', marginTop: '8px', opacity: 0.6 }}>Efectivo real disponible en la liga</div>
-            </div>
-            
-            <div style={cardStyle}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-muted)' }}>Ingresos Totales</span>
-                    <ArrowUpCircle size={20} color="var(--color-sage)" />
-                </div>
-                <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-sage)' }}>
-                    +${balanceGlobal.totales.ingresos.toLocaleString('es-MX')}
-                </div>
-                <div style={{ fontSize: '12px', marginTop: '8px', color: 'var(--color-text-muted)' }}>Monto acumulado histórico</div>
-            </div>
+    const handleRefresh = async () => {
+        setLoading(true);
+        try {
+            await Promise.all([
+                fetchBalanceGlobal(),
+                fetchData(),
+                selectedTorneoId ? fetchResumenTorneo() : Promise.resolve(),
+                (selectedTorneoId && selectedJornadaId) ? fetchResumenJornada() : Promise.resolve()
+            ]);
+            toast.success('Datos actualizados');
+        } catch (error) {
+            console.error('Error al refrescar:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-            <div style={cardStyle}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-muted)' }}>Egresos Totales</span>
-                    <ArrowDownCircle size={20} color="var(--color-terra)" />
+    const SummaryCards = () => {
+        const balance = balanceGlobal.totales.balance || 0;
+        const isNegative = balance < 0;
+        
+        return (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '8px' }}>
+                {/* Caja General (Balance) - Azul o Rojo si es negativo */}
+                <div style={{ 
+                    ...cardStyle, 
+                    background: isNegative ? '#ff3b30' : '#0071e3', 
+                    color: 'white',
+                    border: 'none',
+                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)'
+                }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 600, opacity: 0.9 }}>Caja General (Balance)</span>
+                        <DollarSign size={20} color="white" />
+                    </div>
+                    <div style={{ fontSize: '28px', fontWeight: 800, fontFamily: 'var(--font-display)' }}>
+                        ${balance.toLocaleString('es-MX')}
+                    </div>
+                    <div style={{ fontSize: '12px', marginTop: '8px', opacity: 0.8 }}>Efectivo real disponible en la liga</div>
                 </div>
-                <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-terra)' }}>
-                    -${balanceGlobal.totales.egresos.toLocaleString('es-MX')}
+                
+                {/* Ingresos Totales - Verde */}
+                <div style={{ 
+                    ...cardStyle, 
+                    background: '#34c759', 
+                    color: 'white',
+                    border: 'none',
+                    boxShadow: '0 10px 25px -5px rgba(52,199,89,0.2)'
+                }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 600, opacity: 0.9 }}>Ingresos Totales</span>
+                        <ArrowUpCircle size={20} color="white" />
+                    </div>
+                    <div style={{ fontSize: '24px', fontWeight: 800 }}>
+                        +${(balanceGlobal.totales.ingresos || 0).toLocaleString('es-MX')}
+                    </div>
+                    <div style={{ fontSize: '12px', marginTop: '8px', opacity: 0.8 }}>Monto acumulado histórico</div>
                 </div>
-                <div style={{ fontSize: '12px', marginTop: '8px', color: 'var(--color-text-muted)' }}>Gastos operativos y premios</div>
+
+                {/* Egresos Totales - Rojo */}
+                <div style={{ 
+                    ...cardStyle, 
+                    background: '#ff3b30', 
+                    color: 'white',
+                    border: 'none',
+                    boxShadow: '0 10px 25px -5px rgba(255,59,48,0.2)'
+                }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 600, opacity: 0.9 }}>Egresos Totales</span>
+                        <ArrowDownCircle size={20} color="white" />
+                    </div>
+                    <div style={{ fontSize: '24px', fontWeight: 800 }}>
+                        -${(balanceGlobal.totales.egresos || 0).toLocaleString('es-MX')}
+                    </div>
+                    <div style={{ fontSize: '12px', marginTop: '8px', opacity: 0.8 }}>Gastos operativos y premios</div>
+                </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', animation: 'fadeIn 0.5s ease' }}>
@@ -378,6 +425,29 @@ export default function FinanzasContent() {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <button 
+                        onClick={handleRefresh}
+                        disabled={loading}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '10px 16px',
+                            backgroundColor: 'white',
+                            border: '1px solid var(--color-border-subtle)',
+                            borderRadius: 'var(--radius-md)',
+                            color: '#0071e3',
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            boxShadow: 'var(--shadow-sm)'
+                        }}
+                    >
+                        <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+                        Actualizar
+                    </button>
+
                     <select 
                         value={selectedJornadaId}
                         onChange={(e) => setSelectedJornadaId(e.target.value)}

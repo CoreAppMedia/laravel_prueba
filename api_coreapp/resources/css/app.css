@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+/* Typography changed to Helvetica uniformly */
 
 @import 'tailwindcss';
 
@@ -46,8 +46,8 @@
     /* Rojo descenso                */
 
     /* ── Tipografía ── */
-    --font-display: 'Playfair Display', Georgia, serif;
-    --font-body: 'DM Sans', system-ui, sans-serif;
+    --font-display: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --font-body: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
     /* ── Sombras ── */
     --shadow-soft: 0 2px 12px rgba(0, 0, 0, 0.06);

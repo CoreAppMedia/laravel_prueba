@@ -16,8 +16,8 @@
   --color-secondary: #1d1d1f;
   --color-border-gray: rgba(0, 0, 0, 0.12);
 
-  --font-headline: "Inter", "system-ui", "sans-serif";
-  --font-body: "Inter", "system-ui", "sans-serif";
+  --font-headline: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body: "Helvetica Neue", Helvetica, Arial, sans-serif;
 
   --radius-micro: 5px;
   --radius-zapo: 8px;

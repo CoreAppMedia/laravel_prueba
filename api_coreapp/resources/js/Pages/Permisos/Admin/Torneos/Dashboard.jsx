@@ -65,6 +65,16 @@ export default function TorneoDashboard() {
         { id: 'configuracion', name: 'Preferencias', icon: Settings },
     ];
 
+    const formatDate = (dateString) => {
+        if (!dateString) return '---';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        }).replace('.', '');
+    };
+
     return (
         <BasePanel titulo={`${torneo.nombre}`} backUrl="/panel/admin/torneos">
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 14 }}>
@@ -226,7 +236,7 @@ export default function TorneoDashboard() {
                                         boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.02)',
                                     }}>
                                         <div style={{ fontSize: 10, textTransform: 'uppercase', fontWeight: 800, color: 'var(--color-text-muted)', letterSpacing: '1px' }}>Inicio</div>
-                                        <div style={{ marginTop: 4, fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--color-slate)' }}>{torneo.fecha_inicio}</div>
+                                        <div style={{ marginTop: 4, fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--color-slate)' }}>{formatDate(torneo.fecha_inicio)}</div>
                                     </div>
                                     <div style={{
                                         padding: '12px 12px',
@@ -236,7 +246,7 @@ export default function TorneoDashboard() {
                                         boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.02)',
                                     }}>
                                         <div style={{ fontSize: 10, textTransform: 'uppercase', fontWeight: 800, color: 'var(--color-text-muted)', letterSpacing: '1px' }}>Fin</div>
-                                        <div style={{ marginTop: 4, fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--color-slate)' }}>{torneo.fecha_fin}</div>
+                                        <div style={{ marginTop: 4, fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--color-slate)' }}>{formatDate(torneo.fecha_fin)}</div>
                                     </div>
                                 </div>
                             </div>

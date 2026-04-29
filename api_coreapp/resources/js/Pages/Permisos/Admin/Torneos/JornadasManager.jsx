@@ -7,10 +7,12 @@ import {
     Plus, Check, Calendar, Trophy, Trash2, Pause, Play, AlertCircle, 
     ArrowLeft, Lock, Shield, User, DollarSign, X, MapPin, Clock, Mail, 
     Banknote, FileText, XCircle, TrendingUp, TrendingDown, Activity,
-    AlertTriangle, PlusCircle, Users, CheckCircle
+    AlertTriangle, PlusCircle, Users, CheckCircle, Printer
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ReciboArbitrajeJornadaTemplate from '../../../../Components/ReciboArbitrajeJornadaTemplate';
+import { useReactToPrint } from 'react-to-print';
+import JornadaPDFExport from '../../../../Components/JornadaPDFExport';
 
 // ────────────────────────────────────────────────
 // Sub‑view: Detail of a single Jornada
@@ -29,8 +31,15 @@ function JornadaDetail({
     const [isCierreModalOpen, setIsCierreModalOpen] = useState(false);
     const [isArbitroModalOpen, setIsArbitroModalOpen] = useState(false);
     const [isPagoModalOpen, setIsPagoModalOpen] = useState(false);
+    const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
     const [pendingList, setPendingList] = useState([]);
     const [arbitrosCatalog, setArbitrosCatalog] = useState([]);
+    
+    const pdfRef = React.useRef();
+    const handlePrint = useReactToPrint({
+        content: () => pdfRef.current,
+        documentTitle: `Jornada_${jornada.numero}_Rol_de_Juego`,
+    });
 
     const [partidoForm, setPartidoForm] = useState({
         equipo_local_id: '',
@@ -410,6 +419,13 @@ function JornadaDetail({
                             <DollarSign size={14} style={{ color: 'var(--color-gold)' }} /> Ver Resumen Contable
                         </button>
                     )}
+
+                    <button
+                        onClick={() => setIsPreviewModalOpen(true)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-md)', padding: '8px 14px', cursor: 'pointer', color: 'var(--color-slate)', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase' }}
+                    >
+                        <Printer size={14} /> Exportar / Imprimir
+                    </button>
 
                     {!jornada.cerrada && !jornada.suspendida && (
                         <GradientButton
@@ -1446,6 +1462,29 @@ function JornadaDetail({
                         <GradientButton type="submit" disabled={saving} isLoading={saving} variant="primary">Guardar Estatus</GradientButton>
                     </div>
                 </form>
+            </Modal>
+
+            {/* ── Modal: Preview & Export PDF ── */}
+            <Modal isOpen={isPreviewModalOpen} onClose={() => setIsPreviewModalOpen(false)} title="Vista Previa - PDF Rol de Juego" maxWidth="max-w-5xl">
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+                    <GradientButton onClick={handlePrint} icon={Printer} variant="primary">
+                        Imprimir / Guardar como PDF
+                    </GradientButton>
+                </div>
+                <div style={{ 
+                    maxHeight: '65vh', 
+                    overflowY: 'auto', 
+                    border: '1px solid var(--color-border-subtle)', 
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: '#e9ecef', /* Background for preview area */
+                    padding: '24px',
+                    display: 'flex',
+                    justifyContent: 'center'
+                }}>
+                    <div style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.1)', background: 'white' }}>
+                        <JornadaPDFExport ref={pdfRef} jornada={jornada} torneo={torneo} />
+                    </div>
+                </div>
             </Modal>
 
         </div>

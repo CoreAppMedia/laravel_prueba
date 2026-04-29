@@ -138,6 +138,11 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('finanzas/resumen-jornada/{torneo}/{jornada}', [\App\Http\Controllers\Api\FinanzasReporteController::class, 'resumenJornada'])->middleware('can:torneos.view');
             
             Route::get('finanzas/recibo-arbitraje/{torneo}/{jornada}', [\App\Http\Controllers\Api\FinanzasReporteController::class, 'reciboArbitrajeJornada'])->middleware('can:torneos.view');
+            
+            // Programación Global (Rol de Juego)
+            Route::get('rol-de-juego/canchas-activas', [\App\Http\Controllers\Api\RolDeJuegoController::class, 'getCanchasActivas'])->middleware('can:torneos.view');
+            Route::get('rol-de-juego/partidos', [\App\Http\Controllers\Api\RolDeJuegoController::class, 'getPartidosPorFecha'])->middleware('can:torneos.view');
+            Route::post('rol-de-juego/generar-jornadas', [\App\Http\Controllers\Api\RolDeJuegoController::class, 'generarJornadasGlobales'])->middleware('can:torneos.create');
         });
 
         // Catalogos

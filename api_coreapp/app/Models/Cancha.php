@@ -24,4 +24,12 @@ class Cancha extends Model
     {
         return $this->hasMany(CanchaHorario::class);
     }
+
+    /**
+     * Get the equipos associated with the cancha.
+     */
+    public function equipos()
+    {
+        return $this->hasMany(Equipo::class);
+    }
 }

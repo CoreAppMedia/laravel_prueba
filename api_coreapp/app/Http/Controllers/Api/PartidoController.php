@@ -141,7 +141,7 @@ class PartidoController extends Controller
 
         if ($conflictVenue) {
             return response()->json([
-                'message' => 'Esta sede y horario ya se encuentran ocupados por otro encuentro programado en esta fecha exacta.'
+                'message' => 'Horario ocupado por otro torneo u otro encuentro en esta misma cancha.'
             ], 422);
         }
 

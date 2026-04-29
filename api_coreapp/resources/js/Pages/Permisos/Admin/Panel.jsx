@@ -13,7 +13,8 @@ import ArbitrosContent from './Torneos/ArbitrosContent';
 import UsersContent from './Users/UsersContent';
 import FinanzasContent from './Finanzas/FinanzasContent';
 import DirectivosContent from './Directivos/DirectivosContent';
-import { MapPin, ShieldCheck, Banknote, Briefcase } from 'lucide-react';
+import RolDeJuegoContent from './RolDeJuego/RolDeJuegoContent';
+import { MapPin, ShieldCheck, Banknote, Briefcase, CalendarDays } from 'lucide-react';
 import { useAuth } from '../../../Auth/AuthContext';
 
 export default function PanelAdmin() {
@@ -155,6 +156,16 @@ export default function PanelAdmin() {
             desc: 'Directorio de Dueños y Delegados de los equipos.',
             count: stats.directivos
         },
+        {
+            id: 'rol-de-juego',
+            title: 'Programación (Rol)',
+            path: '/panel/admin/rol-de-juego',
+            icon: CalendarDays,
+            color: '#2563EB', // Blue 600
+            bg: '#DBEAFE', // Blue 100
+            desc: 'Gestor global de partidos para todas las canchas.',
+            count: '-' // No es un count estático de BD
+        },
         ...(canManageUsers
             ? [
                 {
@@ -190,6 +201,8 @@ export default function PanelAdmin() {
                 return <FinanzasContent />;
             case 'directivos':
                 return <DirectivosContent />;
+            case 'rol-de-juego':
+                return <RolDeJuegoContent />;
             case 'users':
                 return <UsersContent />;
             default:

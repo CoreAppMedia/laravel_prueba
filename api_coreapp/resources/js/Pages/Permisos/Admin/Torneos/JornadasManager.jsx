@@ -591,7 +591,7 @@ function JornadaDetail({
                                                         <div style={{ fontSize: '11px', color: 'var(--color-gold)', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '3px', marginBottom: '4px' }}>VS</div>
                                                         {partido.fecha && (
                                                             <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-secondary)' }}>
-                                                                {new Date(partido.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} HRS
+                                                                {partido.fecha.substring(11, 16)} HRS
                                                             </div>
                                                         )}
                                                     </>

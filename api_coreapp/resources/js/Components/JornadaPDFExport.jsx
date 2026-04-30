@@ -192,8 +192,8 @@ const JornadaPDFExport = forwardRef(({ jornada, torneo }, ref) => {
                         </thead>
                         <tbody>
                             {partidosPorCancha[canchaNombre].map((partido, pIdx) => {
-                                const horaDisplay = partido.canchaHorario ? 
-                                    `${diaSemanaMap[partido.canchaHorario.dia_semana]} - ${formatHora(partido.canchaHorario.hora)}` : 
+                                const horaDisplay = partido.cancha_horario ? 
+                                    `${diaSemanaMap[partido.cancha_horario.dia_semana]} - ${formatHora(partido.cancha_horario.hora)}` : 
                                     'Por definir';
 
                                 const isSuspendido = partido.suspendido;

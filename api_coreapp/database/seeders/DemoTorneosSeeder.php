@@ -46,48 +46,57 @@ class DemoTorneosSeeder extends Seeder
 
         foreach ($ligas as $ligaData) {
             // 1. Crear Torneo
-            $torneo = Torneo::create([
-                'id' => Str::uuid()->toString(),
-                'temporada_id' => $temporada->id,
-                'categoria_id' => $categoria->id,
-                'tipo_torneo_id' => $tipoTorneo->id,
-                'nombre' => $ligaData['nombre'],
-                'estatus' => 'activo',
-                'fecha_inicio' => now()->toDateString(),
-                'fecha_fin' => now()->addMonths(6)->toDateString(),
-            ]);
+            $torneo = Torneo::firstOrCreate(
+                [
+                    'temporada_id' => $temporada->id,
+                    'nombre' => $ligaData['nombre'],
+                ],
+                [
+                    'id' => Str::uuid()->toString(),
+                    'categoria_id' => $categoria->id,
+                    'tipo_torneo_id' => $tipoTorneo->id,
+                    'estatus' => 'activo',
+                    'fecha_inicio' => now()->toDateString(),
+                    'fecha_fin' => now()->addMonths(6)->toDateString(),
+                ]
+            );
 
             $this->command->info("Torneo creado: {$torneo->nombre}");
 
             foreach ($ligaData['equipos'] as $index => $equipoNombre) {
                 // 2. Crear Directivo (Presidente/Delegado)
-                $directivo = Directivo::create([
-                    'id' => Str::uuid()->toString(),
-                    'nombre' => 'Presidente ' . $equipoNombre,
-                    'telefono' => '5551234' . rand(100, 999),
-                    'catalogo_tipo_dueno_id' => $tipoDueno->id,
-                ]);
+                $directivo = Directivo::firstOrCreate(
+                    ['nombre' => 'Presidente ' . $equipoNombre],
+                    [
+                        'id' => Str::uuid()->toString(),
+                        'telefono' => '5551234' . rand(100, 999),
+                        'catalogo_tipo_dueno_id' => $tipoDueno->id,
+                    ]
+                );
 
                 // 3. Crear Club
-                $club = Club::create([
-                    'id' => Str::uuid()->toString(),
-                    'nombre' => $equipoNombre . ' FC',
-                    'directivo_id' => $directivo->id,
-                ]);
+                $club = Club::firstOrCreate(
+                    ['nombre' => $equipoNombre . ' FC'],
+                    [
+                        'id' => Str::uuid()->toString(),
+                        'directivo_id' => $directivo->id,
+                    ]
+                );
 
                 // Asignar una cancha de las existentes de forma rotativa
                 $canchaAsignada = $canchas[$index % $canchas->count()];
 
                 // 4. Crear Equipo
-                $equipo = Equipo::create([
-                    'id' => Str::uuid()->toString(),
-                    'club_id' => $club->id,
-                    'categoria_id' => $categoria->id,
-                    'nombre_mostrado' => $equipoNombre,
-                    'directivo_id' => $directivo->id,
-                    'cancha_id' => $canchaAsignada->id,
-                    'activo' => true,
-                ]);
+                $equipo = Equipo::firstOrCreate(
+                    ['nombre_mostrado' => $equipoNombre, 'club_id' => $club->id],
+                    [
+                        'id' => Str::uuid()->toString(),
+                        'categoria_id' => $categoria->id,
+                        'directivo_id' => $directivo->id,
+                        'cancha_id' => $canchaAsignada->id,
+                        'activo' => true,
+                    ]
+                );
 
                 // 5. Inscribir al torneo
                 $equipo->torneos()->attach($torneo->id, [

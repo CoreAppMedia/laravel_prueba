@@ -878,6 +878,7 @@ function JornadaDetail({
                                             value={partidoForm.cancha_horario_id}
                                             onChange={e => setPartidoForm({ ...partidoForm, cancha_horario_id: e.target.value })}
                                             disabled={!partidoForm.cancha_id}
+                                            required
                                         >
                                             <option value="">-- Seleccione un horario --</option>
                                             {filtered.map(h => (

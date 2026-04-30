@@ -32,4 +32,12 @@ class Cancha extends Model
     {
         return $this->hasMany(Equipo::class);
     }
+
+    /**
+     * Get the partidos associated with the cancha.
+     */
+    public function partidos()
+    {
+        return $this->hasMany(Partido::class);
+    }
 }

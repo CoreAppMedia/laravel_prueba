@@ -38,4 +38,9 @@ class Jornada extends Model
     {
         return $this->hasMany(Partido::class);
     }
+
+    public function jornadasGlobales()
+    {
+        return $this->belongsToMany(JornadaGlobal::class, 'jornada_global_jornada', 'jornada_id', 'jornada_global_id');
+    }
 }

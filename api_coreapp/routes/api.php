@@ -113,6 +113,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::patch('partidos/{partido}/suspender', [\App\Http\Controllers\Api\PartidoController::class, 'suspenderPartido']);
             Route::patch('partidos/{partido}/reactivar', [\App\Http\Controllers\Api\PartidoController::class, 'reactivarPartido']);
             Route::patch('partidos/{partido}/pago-arbitraje', [\App\Http\Controllers\Api\PartidoController::class, 'registrarPagoArbitraje']);
+            Route::delete('partidos/{partido}', [\App\Http\Controllers\Api\PartidoController::class, 'destroy'])->middleware('can:torneos.create');
 
             // Phase 3: Árbitros y Pagos
             Route::apiResource('arbitros', \App\Http\Controllers\Api\ArbitroController::class)->middleware('can:torneos.view');
@@ -140,6 +141,12 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('finanzas/recibo-arbitraje/{torneo}/{jornada}', [\App\Http\Controllers\Api\FinanzasReporteController::class, 'reciboArbitrajeJornada'])->middleware('can:torneos.view');
             
             // Programación Global (Rol de Juego)
+            Route::get('jornadas-globales', [\App\Http\Controllers\Api\JornadaGlobalController::class, 'index'])->middleware('can:torneos.view');
+            Route::post('jornadas-globales', [\App\Http\Controllers\Api\JornadaGlobalController::class, 'store'])->middleware('can:torneos.create');
+            Route::get('jornadas-globales/{jornadaGlobal}/partidos', [\App\Http\Controllers\Api\JornadaGlobalController::class, 'getPartidos'])->middleware('can:torneos.view');
+            Route::patch('jornadas-globales/{jornadaGlobal}/suspender', [\App\Http\Controllers\Api\JornadaGlobalController::class, 'suspender'])->middleware('can:torneos.create');
+
+            Route::get('rol-de-juego/fechas-disponibles', [\App\Http\Controllers\Api\RolDeJuegoController::class, 'getFechasDisponibles'])->middleware('can:torneos.view');
             Route::get('rol-de-juego/canchas-activas', [\App\Http\Controllers\Api\RolDeJuegoController::class, 'getCanchasActivas'])->middleware('can:torneos.view');
             Route::get('rol-de-juego/partidos', [\App\Http\Controllers\Api\RolDeJuegoController::class, 'getPartidosPorFecha'])->middleware('can:torneos.view');
             Route::post('rol-de-juego/generar-jornadas', [\App\Http\Controllers\Api\RolDeJuegoController::class, 'generarJornadasGlobales'])->middleware('can:torneos.create');

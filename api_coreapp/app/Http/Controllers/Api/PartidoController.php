@@ -422,4 +422,28 @@ class PartidoController extends Controller
             ]);
         });
     }
+
+    /**
+     * Eliminar un partido (solo si no está cerrado y no tiene resultado).
+     */
+    public function destroy(Partido $partido)
+    {
+        if ($partido->cerrado) {
+            return response()->json([
+                'message' => 'No se puede eliminar un partido que ya está cerrado.'
+            ], 422);
+        }
+
+        if (!is_null($partido->goles_local) || !is_null($partido->goles_visitante)) {
+            return response()->json([
+                'message' => 'No se puede eliminar un partido que ya tiene resultado registrado.'
+            ], 422);
+        }
+
+        $partido->delete();
+
+        return response()->json([
+            'message' => 'Partido eliminado correctamente.'
+        ]);
+    }
 }

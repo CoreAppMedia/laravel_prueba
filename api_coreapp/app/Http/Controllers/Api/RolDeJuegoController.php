@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Partido;
 use App\Models\Torneo;
 use App\Models\Jornada;
+use App\Models\Cancha;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -101,19 +102,55 @@ class RolDeJuegoController extends Controller
      * Obtiene solo las canchas que están activas y tienen al menos un equipo activo
      * que participa en un torneo no finalizado.
      */
-    public function getCanchasActivas()
+    public function getCanchasActivas(Request $request)
     {
-        $canchas = \App\Models\Cancha::with('horarios')
-            ->where('activa', true)
-            ->whereHas('equipos', function($q) {
-                $q->where('activo', true)
-                  ->whereHas('torneos', function($q2) {
-                      $q2->where('estatus', '!=', 'finalizado');
-                  });
-            })
-            ->orderBy('nombre')
-            ->get();
-            
+        $fecha = $request->query('fecha');
+
+        // 1. Canchas que tienen equipos inscritos en torneos no finalizados
+        $query = Cancha::whereHas('equipos.torneos', function($q) {
+            $q->where('torneos.estatus', '!=', 'finalizado');
+        });
+
+        // 2. O canchas que ya tengan un partido programado para la fecha solicitada
+        if ($fecha) {
+            $query->orWhereHas('partidos', function($q) use ($fecha) {
+                $q->whereDate('fecha', $fecha);
+            });
+        }
+
+        $canchas = $query->with(['horarios' => function($q) {
+            $q->where('activo', true);
+        }])->get();
+
         return response()->json($canchas);
+    }
+
+    /**
+     * Obtiene una lista de todas las fechas únicas cubiertas por las jornadas activas.
+     */
+    public function getFechasDisponibles()
+    {
+        $jornadas = Jornada::where('cerrada', false)
+            ->whereHas('torneo', function($q) {
+                $q->where('estatus', 'activo');
+            })
+            ->get(['fecha_inicio', 'fecha_fin']);
+
+        $fechasSet = [];
+        foreach ($jornadas as $jornada) {
+            $inicio = Carbon::parse($jornada->fecha_inicio);
+            $fin = Carbon::parse($jornada->fecha_fin);
+            
+            $actual = $inicio->copy();
+            while ($actual->lte($fin)) {
+                $fechasSet[] = $actual->toDateString();
+                $actual->addDay();
+            }
+        }
+
+        $fechasUnicas = array_unique($fechasSet);
+        sort($fechasUnicas);
+
+        return response()->json(array_values($fechasUnicas));
     }
 }

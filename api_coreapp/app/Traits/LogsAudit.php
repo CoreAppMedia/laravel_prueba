@@ -38,7 +38,23 @@ trait LogsAudit
     protected function logUpdate(Model $model, array $oldValues, array $newValues, string $accion = 'actualizar'): void
     {
         // Solo registrar los campos que cambiaron
-        $changes = array_diff_assoc($newValues, $oldValues);
+        $changes = [];
+        foreach ($newValues as $key => $value) {
+            if (!array_key_exists($key, $oldValues)) {
+                $changes[$key] = $value;
+            } else {
+                $oldValue = $oldValues[$key];
+                if (is_array($value) || is_array($oldValue)) {
+                    if (json_encode($value) !== json_encode($oldValue)) {
+                        $changes[$key] = $value;
+                    }
+                } else {
+                    if ($value !== $oldValue) {
+                        $changes[$key] = $value;
+                    }
+                }
+            }
+        }
         $oldValuesFiltered = array_intersect_key($oldValues, $changes);
 
         if (empty($changes)) {

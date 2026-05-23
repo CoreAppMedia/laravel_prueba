@@ -34,11 +34,11 @@ export default function EquipoForm({ equipo, onSuccess, onCancel }) {
                     http.get('/api/canchas'),
                     http.get('/api/directivos/disponibles-para-equipo')
                 ]);
-                setClubes(resClubes.data);
-                setCategorias(resCats.data);
-                setCanchas(resCanchas.data);
+                setClubes(resClubes.data?.data || resClubes.data || []);
+                setCategorias(resCats.data?.data || resCats.data || []);
+                setCanchas(resCanchas.data?.data || resCanchas.data || []);
                 
-                let disponibles = resDirectivos.data;
+                let disponibles = resDirectivos.data?.data || resDirectivos.data || [];
                 if (equipo?.directivo_id) {
                     const currentRes = await http.get(`/api/directivos/${equipo.directivo_id}`);
                     const exists = disponibles.find(d => d.id === equipo.directivo_id);

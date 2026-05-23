@@ -183,34 +183,131 @@ export default function TorneosContent() {
     );
 
     return (
-        <>
-            <Card title="Calendario y Organización de Torneos">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div className="animate-fade-in-up">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div>
+                    <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 800, color: 'var(--color-text-primary)', marginBottom: '4px', letterSpacing: '-0.5px' }}>
+                        Mis Torneos
+                    </h2>
+                    <p style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-secondary)', fontSize: '15px' }}>
+                        Gestiona los torneos activos o crea una nueva competencia.
+                    </p>
+                </div>
+                <div className="flex gap-4 w-full md:w-auto">
                     <SearchBar
                         value={searchTerm}
                         onChange={setSearchTerm}
                         placeholder="Buscar torneos..."
-                        className="w-full md:w-80 shadow-sm"
+                        className="w-full md:w-64 shadow-sm"
                     />
                     <GradientButton onClick={handleCreate} icon={Plus}>
                         Nuevo Torneo
                     </GradientButton>
                 </div>
-                <br />
+            </div>
 
-                {loading ? (
-                    <div className="text-center py-12 text-slate-400 animate-pulse font-bold italic">
-                        Cargando torneos...
-                    </div>
-                ) : (
-                    <DataTable
-                        columns={columns}
-                        data={filteredTorneos}
-                        actions={actions}
-                        onRowClick={handleRowClick}
-                    />
-                )}
-            </Card>
+            {loading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
+                    <div className="animate-spin" style={{ width: '40px', height: '40px', border: '3px solid var(--color-gold-light)', borderTopColor: 'var(--color-gold)', borderRadius: '50%' }}></div>
+                </div>
+            ) : filteredTorneos.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '60px 0', background: 'var(--color-bg-surface)', borderRadius: 'var(--radius-xl)', border: '1px dashed var(--color-border-strong)' }}>
+                    <Trophy size={48} className="mx-auto text-slate-300 mb-4" />
+                    <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-secondary)' }}>No hay torneos registrados</h3>
+                    <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', marginTop: '8px' }}>Crea el primer torneo para comenzar.</p>
+                </div>
+            ) : (
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                    gap: '24px'
+                }}>
+                    {filteredTorneos.map(torneo => (
+                        <div key={torneo.id} style={{
+                            background: 'var(--color-bg-surface)',
+                            border: '1px solid var(--color-border-subtle)',
+                            borderRadius: 'var(--radius-xl)',
+                            padding: '24px',
+                            position: 'relative',
+                            boxShadow: 'var(--shadow-soft)',
+                            transition: 'all 0.3s ease',
+                            display: 'flex',
+                            flexDirection: 'column'
+                        }} className="hover:-translate-y-1 hover:shadow-premium group">
+                            
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                                <div style={{
+                                    backgroundColor: torneo.estatus === 'En Curso' ? 'var(--color-sage-light)' : 'var(--color-bg-surface-alt)',
+                                    color: torneo.estatus === 'En Curso' ? 'var(--color-sage)' : 'var(--color-text-muted)',
+                                    padding: '6px 12px',
+                                    borderRadius: 'var(--radius-full)',
+                                    fontSize: '11px',
+                                    fontWeight: 800,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '1px',
+                                    border: '1px solid var(--color-border-subtle)'
+                                }}>
+                                    {torneo.estatus}
+                                </div>
+                                
+                                <div style={{ display: 'flex', gap: '4px' }}>
+                                    <button onClick={(e) => { e.preventDefault(); handleEdit(torneo); }} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+                                        <Edit size={16} />
+                                    </button>
+                                    <button onClick={(e) => { e.preventDefault(); handleDelete(torneo.id); }} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                                        <Trash2 size={16} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div style={{ flex: 1, marginBottom: '24px' }}>
+                                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-terra)', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '8px' }}>
+                                    {torneo.temporada?.nombre || 'General'}
+                                </div>
+                                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 800, color: 'var(--color-text-primary)', lineHeight: 1.2, marginBottom: '16px' }}>
+                                    {torneo.nombre}
+                                </h3>
+                                
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
+                                        <Trophy size={14} className="text-orange-400" />
+                                        <span className="truncate">{torneo.tipo?.nombre || 'General'}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
+                                        <Calendar size={14} className="text-slate-400" />
+                                        <span className="truncate">{torneo.fecha_inicio?.split('T')[0] || 'Por definir'}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <Link 
+                                to={`/panel/admin/torneos/${torneo.id}`}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                    backgroundColor: 'var(--color-slate)',
+                                    color: 'white',
+                                    padding: '14px',
+                                    borderRadius: '12px',
+                                    fontSize: '13px',
+                                    fontWeight: 800,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '1.5px',
+                                    textDecoration: 'none',
+                                    transition: 'all 0.2s',
+                                    width: '100%'
+                                }}
+                                className="hover:bg-[#2A394E] shadow-sm hover:shadow-md"
+                            >
+                                Entrar al Torneo
+                                <ArrowRight size={16} />
+                            </Link>
+                        </div>
+                    ))}
+                </div>
+            )}
 
             <Modal
                 isOpen={isModalOpen}
@@ -226,79 +323,6 @@ export default function TorneosContent() {
                     onCancel={() => setIsModalOpen(false)}
                 />
             </Modal>
-
-            <Modal
-                isOpen={isDetailModalOpen}
-                onClose={() => setIsDetailModalOpen(false)}
-                title="Detalles del Torneo"
-            >
-                {selectedTorneo && (
-                    <div className="space-y-6">
-                        <div className="bg-slate-50 rounded-3xl p-6 border border-slate-200">
-                            <div className="flex items-start justify-between mb-8">
-                                <div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1 italic">Nombre oficial</p>
-                                    <h3 className="text-2xl font-black text-slate-800 leading-tight">{selectedTorneo.nombre}</h3>
-                                </div>
-                                <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
-                                    <Trophy size={28} className="text-orange-400" />
-                                </div>
-                            </div>
-
-                            <div className="space-y-4">
-                                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Edición</p>
-                                    <p className="font-black text-green-600 uppercase tracking-tight">{selectedTorneo.temporada?.nombre || 'General'}</p>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Fecha Inicio</p>
-                                        <p className="font-black text-slate-700">{selectedTorneo.fecha_inicio?.split('T')[0]}</p>
-                                    </div>
-                                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Fecha Fin</p>
-                                        <p className="font-black text-slate-700">{selectedTorneo.fecha_fin?.split('T')[0]}</p>
-                                    </div>
-                                </div>
-
-                                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 italic">Días de juego</p>
-                                    <div className="flex gap-2 flex-wrap">
-                                        {selectedTorneo.dias_juego && selectedTorneo.dias_juego.length > 0 ? (
-                                            selectedTorneo.dias_juego.map(diaId => (
-                                                <span key={diaId} className="px-3 py-1 bg-slate-800 text-white rounded-lg text-[10px] font-black uppercase tracking-widest">{diaSemanaMap[diaId]}</span>
-                                            ))
-                                        ) : (
-                                            <span className="font-black text-slate-400 uppercase text-[11px]">Toda la semana</span>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Estado del torneo</p>
-                                    <span className="font-black text-blue-600 uppercase tracking-widest text-[11px]">{selectedTorneo.estatus}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <Link
-                                to={`/panel/admin/torneos/${selectedTorneo.id}`}
-                                className="flex-1 bg-slate-800 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-center hover:bg-slate-900 transition-all shadow-premium"
-                            >
-                                Gestionar
-                            </Link>
-                            <button
-                                onClick={() => { setIsDetailModalOpen(false); handleEdit(selectedTorneo); }}
-                                className="flex-1 bg-white border border-slate-200 text-slate-600 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all"
-                            >
-                                Editar
-                            </button>
-                        </div>
-                    </div>
-                )}
-            </Modal>
-        </>
+        </div>
     );
 }

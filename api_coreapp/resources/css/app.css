@@ -910,8 +910,8 @@ main {
 
 @media (min-width: 1024px) {
     main {
-        padding-top: 4rem;
-        /* py-16 */
+        padding-top: 1.5rem;
+        /* py-6 */
         padding-left: 3rem;
         /* px-12 */
         padding-right: 3rem;

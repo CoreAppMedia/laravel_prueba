@@ -69,6 +69,42 @@ export default function AdminLayout() {
 
     const menuItems = [
         {
+            id: 'finanzas',
+            title: 'Finanzas',
+            path: '/panel/admin/finanzas',
+            icon: Banknote,
+            color: '#059669',
+            bg: '#D1FAE5',
+            count: stats.finanzas
+        },
+        {
+            id: 'rol-de-juego',
+            title: 'Programación',
+            path: '/panel/admin/rol-de-juego',
+            icon: CalendarDays,
+            color: '#2563EB',
+            bg: '#DBEAFE',
+            count: '-'
+        },
+        {
+            id: 'equipos',
+            title: 'Equipos',
+            path: '/panel/admin/equipos',
+            icon: Users,
+            color: 'var(--color-sage)',
+            bg: 'var(--color-sage-light)',
+            count: stats.equipos
+        },
+        {
+            id: 'directivos',
+            title: 'Directivos',
+            path: '/panel/admin/directivos',
+            icon: Briefcase,
+            color: '#DB2777',
+            bg: '#FCE7F3',
+            count: stats.directivos
+        },
+        {
             id: 'temporadas',
             title: 'Temporadas',
             path: '/panel/admin/temporadas',
@@ -96,15 +132,6 @@ export default function AdminLayout() {
             count: stats.clubes
         },
         {
-            id: 'equipos',
-            title: 'Equipos',
-            path: '/panel/admin/equipos',
-            icon: Users,
-            color: 'var(--color-sage)',
-            bg: 'var(--color-sage-light)',
-            count: stats.equipos
-        },
-        {
             id: 'canchas',
             title: 'Sedes',
             path: '/panel/admin/canchas',
@@ -121,33 +148,6 @@ export default function AdminLayout() {
             color: '#10B981',
             bg: '#ECFDF5',
             count: stats.arbitros
-        },
-        {
-            id: 'finanzas',
-            title: 'Finanzas',
-            path: '/panel/admin/finanzas',
-            icon: Banknote,
-            color: '#059669',
-            bg: '#D1FAE5',
-            count: stats.finanzas
-        },
-        {
-            id: 'directivos',
-            title: 'Directivos',
-            path: '/panel/admin/directivos',
-            icon: Briefcase,
-            color: '#DB2777',
-            bg: '#FCE7F3',
-            count: stats.directivos
-        },
-        {
-            id: 'rol-de-juego',
-            title: 'Programación',
-            path: '/panel/admin/rol-de-juego',
-            icon: CalendarDays,
-            color: '#2563EB',
-            bg: '#DBEAFE',
-            count: '-'
         },
         ...(canManageUsers
             ? [
@@ -251,8 +251,8 @@ export default function AdminLayout() {
         <BasePanel titulo="Administración de Liga">
             {portalContainer && createPortal(subNavbarContent, portalContainer)}
 
-            <div style={{ minHeight: '600px', paddingTop: '24px' }}>
-                <Outlet />
+            <div style={{ minHeight: '600px', paddingTop: '0px' }}>
+                <Outlet context={{ stats, loading, menuItems }} />
             </div>
         </BasePanel>
     );

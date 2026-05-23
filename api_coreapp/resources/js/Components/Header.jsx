@@ -22,18 +22,18 @@ export default function Header() {
             <div className="brand-bar-thick" />
 
             {/* Menú de usuario - Siempre pegado a la derecha de la pantalla */}
-            <div 
-                style={{ 
-                    position: 'absolute', 
-                    top: '20px', 
-                    right: '24px', 
+            <div
+                style={{
+                    position: 'absolute',
+                    top: '20px',
+                    right: '24px',
                     zIndex: 50,
                     display: 'flex',
                     alignItems: 'center',
                     gap: '16px'
                 }}
             >
- 
+
 
                 {/* Menú desplegable del usuario - Solo si está logueado */}
                 {user && (
@@ -56,8 +56,8 @@ export default function Header() {
                                     {user?.rol?.nombre || 'Administrador'}
                                 </div>
                             </div>
-                            <ChevronDown 
-                                size={16} 
+                            <ChevronDown
+                                size={16}
                                 className={`text-slate-400 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`}
                             />
                         </button>
@@ -79,9 +79,9 @@ export default function Header() {
 
                                 {/* Opciones del menú */}
                                 <div className="p-4 space-y-3">
-                                    <div 
+                                    <div
                                         className="px-4 py-3 flex items-center gap-4 text-sm text-slate-600 rounded-full border border-slate-100 transition-all cursor-pointer group"
-                                        style={{'--tw-hover-bg': 'var(--color-terra-light)'}}
+                                        style={{ '--tw-hover-bg': 'var(--color-terra-light)' }}
                                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-terra-light)'}
                                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                                     >
@@ -93,8 +93,8 @@ export default function Header() {
                                             <div className="text-xs text-slate-500">Rol actual</div>
                                         </div>
                                     </div>
-                                    
-                                    <div 
+
+                                    <div
                                         className="px-4 py-3 flex items-center gap-4 text-sm text-slate-600 rounded-full border border-slate-100 transition-all cursor-pointer group"
                                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-terra-light)'}
                                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
@@ -111,7 +111,7 @@ export default function Header() {
 
                                 {/* Botón Panel Admin/Desarrollador */}
                                 <div className="px-4 pb-2">
-                                    <button 
+                                    <button
                                         onClick={() => {
                                             navigate(panelPath);
                                             setIsUserMenuOpen(false);
@@ -140,7 +140,7 @@ export default function Header() {
 
                                 {/* Footer con logout */}
                                 <div className="border-t border-slate-100 bg-slate-50/50 p-4">
-                                    <button 
+                                    <button
                                         onClick={signOut}
                                         className="w-full px-4 py-3 flex items-center justify-center gap-3 text-sm font-medium text-red-600 rounded-full border border-red-100 transition-all group"
                                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-terra-light)'}
@@ -179,7 +179,7 @@ export default function Header() {
                 <div className="app-header-inner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 
                     {/* Identidad - Clickable para ir al dashboard */}
-                    <Link to="/" className="flex items-center gap-3 flex-shrink-0 cursor-pointer" style={{ width: '200px' }}>
+                    <Link to="/panel/admin" className="flex items-center gap-3 flex-shrink-0 cursor-pointer" style={{ width: '200px' }}>
                         <div className="brand-logo">
                             <img src="/images/logo.png" alt="Logo" />
                         </div>

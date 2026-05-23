@@ -60,9 +60,9 @@ function TorneoForm({ torneo, onSuccess, onCancel }) {
                     http.get("/api/catalogos/tipos-torneo"),
                     http.get("/api/catalogos/categorias"),
                 ]);
-                setTemporadas(resTemp.data);
-                setTiposTorneo(resTipos.data);
-                setCategorias(resCats.data);
+                setTemporadas(resTemp.data?.data || resTemp.data || []);
+                setTiposTorneo(resTipos.data?.data || resTipos.data || []);
+                setCategorias(resCats.data?.data || resCats.data || []);
             } catch (error) {
                 toast.error("Error al cargar datos necesarios");
             }

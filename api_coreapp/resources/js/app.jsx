@@ -17,12 +17,19 @@ import NotFound from './Pages/NotFound';
 
 import PanelGenerico from './Pages/PanelGenerico';
 import PanelDesarrollador from './Pages/Permisos/Desarrollador/Panel';
-import PanelAdmin from './Pages/Permisos/Admin/Panel';
+import PanelAdminOverview from './Pages/Permisos/Admin/Panel';
+import AdminLayout from './Layouts/AdminLayout';
 import TemporadasIndex from './Pages/Permisos/Admin/Temporadas/Index';
 import ClubesIndex from './Pages/Permisos/Admin/Clubes/Index';
 import TorneosIndex from './Pages/Permisos/Admin/Torneos/Index';
 import TorneoDashboard from './Pages/Permisos/Admin/Torneos/Dashboard';
 import EquiposIndex from './Pages/Permisos/Admin/Equipos/Index';
+import CanchasContent from './Pages/Permisos/Admin/Canchas/CanchasContent';
+import ArbitrosContent from './Pages/Permisos/Admin/Torneos/ArbitrosContent';
+import UsersContent from './Pages/Permisos/Admin/Users/UsersContent';
+import FinanzasContent from './Pages/Permisos/Admin/Finanzas/FinanzasContent';
+import DirectivosContent from './Pages/Permisos/Admin/Directivos/DirectivosContent';
+import RolDeJuegoContent from './Pages/Permisos/Admin/RolDeJuego/RolDeJuegoContent';
 import PanelPresidente from './Pages/Permisos/Presidente/Panel';
 import PanelDelegado from './Pages/Permisos/Delegado/Panel';
 import PanelTesorero from './Pages/Permisos/Tesorero/Panel';
@@ -46,12 +53,20 @@ function App() {
                     <Route element={<ProtectedRoute />}>
                         <Route path="/panel" element={<Dashboard />} />
                         <Route path="/panel/desarrollador" element={<PanelDesarrollador />} />
-                        <Route path="/panel/admin" element={<PanelAdmin />} />
-                        <Route path="/panel/admin/temporadas" element={<TemporadasIndex />} />
-                        <Route path="/panel/admin/clubes" element={<ClubesIndex />} />
-                        <Route path="/panel/admin/torneos" element={<TorneosIndex />} />
-                        <Route path="/panel/admin/torneos/:id" element={<TorneoDashboard />} />
-                        <Route path="/panel/admin/equipos" element={<EquiposIndex />} />
+                        <Route path="/panel/admin" element={<AdminLayout />}>
+                            <Route index element={<PanelAdminOverview />} />
+                            <Route path="temporadas" element={<TemporadasIndex />} />
+                            <Route path="clubes" element={<ClubesIndex />} />
+                            <Route path="torneos" element={<TorneosIndex />} />
+                            <Route path="equipos" element={<EquiposIndex />} />
+                            <Route path="canchas" element={<CanchasContent />} />
+                            <Route path="arbitros" element={<ArbitrosContent />} />
+                            <Route path="finanzas" element={<FinanzasContent />} />
+                            <Route path="directivos" element={<DirectivosContent />} />
+                            <Route path="rol-de-juego" element={<RolDeJuegoContent />} />
+                            <Route path="users" element={<UsersContent />} />
+                            <Route path="torneos/:id" element={<TorneoDashboard />} />
+                        </Route>
                         <Route path="/panel/presidente" element={<PanelPresidente />} />
                         <Route path="/panel/delegado" element={<PanelDelegado />} />
                         <Route path="/panel/tesorero" element={<PanelTesorero />} />

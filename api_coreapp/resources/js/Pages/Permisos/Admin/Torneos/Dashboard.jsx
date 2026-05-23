@@ -36,24 +36,24 @@ export default function TorneoDashboard() {
 
     if (loading) {
         return (
-            <BasePanel titulo="Cargando Torneo..." backUrl="/panel/admin/torneos">
+            <>
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '80px 0', flexDirection: 'column', gap: '20px' }}>
                     <div className="animate-spin" style={{ width: '40px', height: '40px', border: '3px solid var(--color-gold-light)', borderTopColor: 'var(--color-gold)', borderRadius: '50%' }}></div>
                     <span style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-muted)', fontSize: '14px', fontStyle: 'italic' }}>Consultando base de datos oficial...</span>
                 </div>
-            </BasePanel>
+            </>
         );
     }
 
     if (!torneo) {
         return (
-            <BasePanel titulo="Torneo no encontrado" backUrl="/panel/admin/torneos">
+            <>
                 <Card>
                     <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--color-text-muted)', fontFamily: 'var(--font-body)' }}>
                         No se pudo cargar la información de este torneo. Por favor, verifica el ID.
                     </div>
                 </Card>
-            </BasePanel>
+            </>
         );
     }
 
@@ -76,7 +76,7 @@ export default function TorneoDashboard() {
     };
 
     return (
-        <BasePanel titulo={`${torneo.nombre}`} backUrl="/panel/admin/torneos">
+        <>
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 14 }}>
                 <Link
                     to={getHomePathForUser(user)}
@@ -314,6 +314,6 @@ export default function TorneoDashboard() {
                     </Card>
                 )}
             </div>
-        </BasePanel>
+        </>
     );
 }

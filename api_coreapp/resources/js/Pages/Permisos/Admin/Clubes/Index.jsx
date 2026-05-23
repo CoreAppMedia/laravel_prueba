@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import http from '../../../../lib/http';
-import BasePanel from '../../BasePanel';
+// Removed BasePanel
 import Card from '../../../../Components/UI/Card';
 import DataTable from '../../../../Components/UI/DataTable';
 import GradientButton from '../../../../Components/UI/GradientButton';
@@ -139,8 +139,8 @@ export default function ClubesIndex() {
     );
 
     return (
-        <BasePanel titulo="Gestión de Clubes" backUrl="/panel/admin">
-            <Card title="Directorio de Clubes">
+        <>
+            <Card title="Organizaciones Deportivas">
                 <div className="flex justify-end mb-6">
                     <GradientButton onClick={handleCreate} icon={Plus}>
                         Registrar Club / Equipo
@@ -235,6 +235,6 @@ export default function ClubesIndex() {
                     </div>
                 )}
             </Modal>
-        </BasePanel>
+        </>
     );
 }

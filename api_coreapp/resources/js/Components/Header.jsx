@@ -259,6 +259,8 @@ export default function Header() {
                     </div>
                 </div>
             )}
+            {/* Portal target for Subnavbars (e.g. AdminLayout) */}
+            <div id="header-subbar-portal"></div>
         </header>
     );
 }

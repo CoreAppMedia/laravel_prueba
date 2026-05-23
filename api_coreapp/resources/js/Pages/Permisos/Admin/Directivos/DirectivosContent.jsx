@@ -22,7 +22,7 @@ export default function DirectivosContent() {
         setLoading(true);
         try {
             const response = await http.get('/api/directivos');
-            setDirectivos(response.data);
+            setDirectivos(response.data?.data || response.data);
         } catch (error) {
             toast.error('Error al cargar la lista de directivos');
         } finally {

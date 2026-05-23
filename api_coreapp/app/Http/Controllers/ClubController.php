@@ -13,34 +13,19 @@ class ClubController extends Controller
      */
     public function index()
     {
-        return response()->json(Club::with('dueno')->get());
+        return response()->json(Club::with('dueno')->paginate(15));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\Club\StoreClubRequest $request)
     {
-        try {
-            $validated = $request->validate([
-                'nombre' => 'required|string|max:255|unique:clubs',
-                'es_club' => 'boolean',
-                'telefono' => 'nullable|string|max:20',
-                'correo' => 'nullable|email|max:255',
-                'activo' => 'boolean',
-                'directivo_id' => 'nullable|uuid|exists:directivos,id|unique:clubs,directivo_id',
-            ], [
-                'directivo_id.unique' => 'El Dueño seleccionado ya se encuentra dirigiendo otro Club.'
-            ]);
+        $validated = $request->validated();
 
-            $club = Club::create($validated);
+        $club = Club::create($validated);
 
-            $this->logCreate($club, 'crear');
-
-            return response()->json($club, 201);
-        } catch (ValidationException $e) {
-            return response()->json(['errors' => $e->errors()], 422);
-        }
+        return response()->json($club, 201);
     }
 
     /**
@@ -55,32 +40,15 @@ class ClubController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(\App\Http\Requests\Club\UpdateClubRequest $request, string $id)
     {
         $club = Club::findOrFail($id);
 
-        try {
-            $validated = $request->validate([
-                'nombre' => 'string|max:255|unique:clubs,nombre,' . $club->id,
-                'es_club' => 'boolean',
-                'telefono' => 'nullable|string|max:20',
-                'correo' => 'nullable|email|max:255',
-                'activo' => 'boolean',
-                'directivo_id' => 'nullable|uuid|exists:directivos,id|unique:clubs,directivo_id,' . $club->id,
-            ], [
-                'directivo_id.unique' => 'El Dueño seleccionado ya se encuentra dirigiendo otro Club.'
-            ]);
+        $validated = $request->validated();
 
-            $oldValues = $club->toArray();
-            $club->update($validated);
-            $club->refresh();
+        $club->update($validated);
 
-            $this->logUpdate($club, $oldValues, $club->toArray(), 'actualizar');
-
-            return response()->json($club);
-        } catch (ValidationException $e) {
-            return response()->json(['errors' => $e->errors()], 422);
-        }
+        return response()->json($club);
     }
 
     /**
@@ -89,8 +57,6 @@ class ClubController extends Controller
     public function destroy(string $id)
     {
         $club = Club::findOrFail($id);
-        
-        $this->logDelete($club, 'eliminar');
         
         $club->delete();
 

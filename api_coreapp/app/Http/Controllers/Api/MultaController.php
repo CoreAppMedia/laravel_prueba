@@ -60,8 +60,6 @@ class MultaController extends Controller
         $multa->fecha = $validated['fecha'] ?? now();
         $multa->save();
 
-        $this->logCreate($multa, 'crear');
-
         return response()->json([
             'message' => 'Multa registrada correctamente.',
             'data' => $multa->load(['equipo', 'tipoMulta'])
@@ -93,11 +91,7 @@ class MultaController extends Controller
             'fecha' => 'nullable|date',
         ]);
 
-        $oldValues = $multa->toArray();
         $multa->update($validated);
-        $multa->refresh();
-
-        $this->logUpdate($multa, $oldValues, $multa->toArray(), 'actualizar');
 
         return response()->json([
             'message' => 'Multa actualizada correctamente.',
@@ -123,14 +117,8 @@ class MultaController extends Controller
         try {
             DB::beginTransaction();
 
-            $oldValues = $multa->toArray();
             $multa->pagada = $validated['pagada'];
             $multa->save();
-            $multa->refresh();
-
-            // Registrar auditoría del pago
-            $accionPago = $validated['pagada'] ? 'pagar' : 'revertir_pago';
-            $this->logUpdate($multa, $oldValues, $multa->toArray(), $accionPago);
 
             if ($validated['pagada']) {
                 // 2. Generar registro de Ingreso automáticamente
@@ -184,8 +172,6 @@ class MultaController extends Controller
                 'message' => 'No puedes borrar una multa que ya se pagó. ¡Haya orden!'
             ], 422);
         }
-
-        $this->logDelete($multa, 'eliminar');
 
         $multa->delete();
 

@@ -14,7 +14,7 @@ class DirectivoController extends Controller
      */
     public function index()
     {
-        return response()->json(Directivo::with('tipo')->get());
+        return response()->json(Directivo::with('tipo')->paginate(15));
     }
 
     /**
@@ -53,26 +53,15 @@ class DirectivoController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\Directivo\StoreDirectivoRequest $request)
     {
-        try {
-            $validated = $request->validate([
-                'nombre' => 'required|string|max:255',
-                'telefono' => 'nullable|string|max:20',
-                'direccion' => 'nullable|string|max:255',
-                'correo_electronico' => 'nullable|email|max:255',
-                'catalogo_tipo_dueno_id' => 'required|uuid|exists:catalogo_tipo_duenos,id',
-                'activo' => 'boolean',
-            ]);
+        $validated = $request->validated();
 
-            $directivo = Directivo::create($validated);
-            // Load the type for immediate frontend use
-            $directivo->load('tipo');
+        $directivo = Directivo::create($validated);
+        // Load the type for immediate frontend use
+        $directivo->load('tipo');
 
-            return response()->json($directivo, 201);
-        } catch (ValidationException $e) {
-            return response()->json(['errors' => $e->errors()], 422);
-        }
+        return response()->json($directivo, 201);
     }
 
     /**
@@ -87,27 +76,16 @@ class DirectivoController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(\App\Http\Requests\Directivo\UpdateDirectivoRequest $request, string $id)
     {
         $directivo = Directivo::findOrFail($id);
 
-        try {
-            $validated = $request->validate([
-                'nombre' => 'required|string|max:255',
-                'telefono' => 'nullable|string|max:20',
-                'direccion' => 'nullable|string|max:255',
-                'correo_electronico' => 'nullable|email|max:255',
-                'catalogo_tipo_dueno_id' => 'required|uuid|exists:catalogo_tipo_duenos,id',
-                'activo' => 'boolean',
-            ]);
+        $validated = $request->validated();
 
-            $directivo->update($validated);
-            $directivo->load('tipo');
+        $directivo->update($validated);
+        $directivo->load('tipo');
 
-            return response()->json($directivo);
-        } catch (ValidationException $e) {
-            return response()->json(['errors' => $e->errors()], 422);
-        }
+        return response()->json($directivo);
     }
 
     /**

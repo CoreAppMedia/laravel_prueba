@@ -14,43 +14,19 @@ class EquipoController extends Controller
      */
     public function index()
     {
-        return response()->json(Equipo::with(['club', 'categoria', 'cancha', 'canchaHorario', 'delegado'])->get());
+        return response()->json(Equipo::with(['club', 'categoria', 'cancha', 'canchaHorario', 'delegado'])->paginate(15));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\Equipo\StoreEquipoRequest $request)
     {
-        try {
-            $validated = $request->validate([
-                'club_id' => [
-                    'required',
-                    'uuid',
-                    'exists:clubs,id',
-                    Rule::unique('equipos')->where(function ($query) use ($request) {
-                        return $query->where('categoria_id', $request->categoria_id);
-                    })
-                ],
-                'categoria_id' => 'required|uuid|exists:catalogo_categorias,id',
-                'nombre_mostrado' => 'required|string|max:255',
-                'cancha_id' => 'nullable|uuid|exists:canchas,id',
-                'cancha_horario_id' => 'nullable|uuid|exists:cancha_horarios,id',
-                'activo' => 'boolean',
-                'directivo_id' => 'nullable|uuid|exists:directivos,id|unique:equipos,directivo_id',
-            ], [
-                'club_id.unique' => 'Ya existe un equipo registrado para este club en la categoría seleccionada.',
-                'directivo_id.unique' => 'El Delegado/Dueño seleccionado ya tiene un Equipo asignado.',
-            ]);
+        $validated = $request->validated();
 
-            $equipo = Equipo::create($validated);
+        $equipo = Equipo::create($validated);
 
-            $this->logCreate($equipo, 'crear');
-
-            return response()->json($equipo, 201);
-        } catch (ValidationException $e) {
-            return response()->json(['errors' => $e->errors()], 422);
-        }
+        return response()->json($equipo, 201);
     }
 
     /**
@@ -65,41 +41,15 @@ class EquipoController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(\App\Http\Requests\Equipo\UpdateEquipoRequest $request, string $id)
     {
         $equipo = Equipo::findOrFail($id);
 
-        try {
-            $validated = $request->validate([
-                'club_id' => [
-                    'uuid',
-                    'exists:clubs,id',
-                    Rule::unique('equipos')->where(function ($query) use ($request, $equipo) {
-                        $categoriaId = $request->categoria_id ?? $equipo->categoria_id;
-                        return $query->where('categoria_id', $categoriaId);
-                    })->ignore($equipo->id)
-                ],
-                'categoria_id' => 'uuid|exists:catalogo_categorias,id',
-                'nombre_mostrado' => 'string|max:255',
-                'cancha_id' => 'nullable|uuid|exists:canchas,id',
-                'cancha_horario_id' => 'nullable|uuid|exists:cancha_horarios,id',
-                'activo' => 'boolean',
-                'directivo_id' => 'nullable|uuid|exists:directivos,id|unique:equipos,directivo_id,' . $equipo->id,
-            ], [
-                'club_id.unique' => 'Ya existe un equipo registrado para este club en la categoría seleccionada.',
-                'directivo_id.unique' => 'El Delegado/Dueño seleccionado ya tiene un Equipo asignado.',
-            ]);
+        $validated = $request->validated();
 
-            $oldValues = $equipo->toArray();
-            $equipo->update($validated);
-            $equipo->refresh();
+        $equipo->update($validated);
 
-            $this->logUpdate($equipo, $oldValues, $equipo->toArray(), 'actualizar');
-
-            return response()->json($equipo);
-        } catch (ValidationException $e) {
-            return response()->json(['errors' => $e->errors()], 422);
-        }
+        return response()->json($equipo);
     }
 
     /**
@@ -108,13 +58,8 @@ class EquipoController extends Controller
     public function toggleStatus(string $id)
     {
         $equipo = Equipo::findOrFail($id);
-        $oldValues = $equipo->toArray();
         $equipo->activo = !$equipo->activo;
         $equipo->save();
-        $equipo->refresh();
-
-        $accion = $equipo->activo ? 'activar' : 'desactivar';
-        $this->logUpdate($equipo, $oldValues, $equipo->toArray(), $accion);
 
         return response()->json([
             'message' => 'Estado del equipo actualizado correctamente',
@@ -128,8 +73,6 @@ class EquipoController extends Controller
     public function destroy(string $id)
     {
         $equipo = Equipo::findOrFail($id);
-        
-        $this->logDelete($equipo, 'eliminar');
         
         $equipo->delete();
 

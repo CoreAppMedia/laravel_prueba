@@ -45,87 +45,46 @@ class AuthController extends Controller
     /**
      * Registrar un nuevo usuario. (Register a new user.)           
      */
-    public function register(Request $request)
+    public function register(\App\Http\Requests\Auth\RegisterRequest $request)
     {
-        // 1. Check if the user to be registered is duplicated (verificar si el usuario a registrar esta duplicado)
-        $existingUser = User::where('email', $request->email)
-            ->orWhere('name', $request->name)
-            ->orWhere(function ($query) use ($request) {
-                $query->where('nombre', $request->nombre)
-                      ->where('apellido_paterno', $request->apellido_paterno)
-                      ->where('apellido_materno', $request->apellido_materno);
-            })
-            ->first();
+        $validated = $request->validated();
 
-        if ($existingUser) {
-            return response()->json([
-                'message' => 'Usuario ya existe',
-                'reason' => 'Duplicado detectado (Email, Username, o Nombre Completo)'
-            ], 409);
-        }
+        $user = new User([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'nombre' => $validated['nombre'],
+            'apellido_paterno' => $validated['apellido_paterno'],
+            'apellido_materno' => $validated['apellido_materno'],
+        ]);
+        
+        $user->permiso_id = $validated['permiso_id'] ?? null;
+        $user->rol_id = $validated['rol_id'] ?? null;
+        $user->asignado = $validated['asignado'] ?? null;
+        $user->save();
 
-        // 2. Validate the password with a strong policy (Validar la contraseña con una politica fuerte)
         try {
-            $validated = $request->validate([
-                'name' => 'required|string|max:255|unique:users',
-                'email' => 'required|string|email|max:255|unique:users',
-                'password' => [
-                    'required',
-                    'confirmed',
-                    Password::min(8)
-                        ->mixedCase()
-                        ->numbers()
-                        ->symbols()
-                ],
-                'nombre' => 'required|string|max:255',
-                'apellido_paterno' => 'required|string|max:255',
-                'apellido_materno' => 'required|string|max:255',
-                'permiso_id' => 'nullable|exists:permisos,id',
-                'rol_id' => 'nullable|exists:roles,id',
-                'asignado' => 'nullable|array',
-            ]);
-
-            $user = User::create([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'password' => Hash::make($validated['password']),
-                'nombre' => $validated['nombre'],
-                'apellido_paterno' => $validated['apellido_paterno'],
-                'apellido_materno' => $validated['apellido_materno'],
-                'permiso_id' => $validated['permiso_id'] ?? null,
-                'rol_id' => $validated['rol_id'] ?? null,
-                'asignado' => $validated['asignado'] ?? null,
-            ]);
-
-            try {
-                Mail::to($user)->send(new RegistrationSuccess($user));
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Error al enviar correo de registro: ' . $e->getMessage());
-            }
-
-            $token = $user->createToken('auth_token')->plainTextToken;
-            $this->enforceTokenLimit($user);
-
-            return response()->json([
-                'access_token' => $token,
-                'token_type' => 'Bearer',
-                'user' => $user,
-            ], 201);
-
-        } catch (ValidationException $e) {
-            return response()->json(['errors' => $e->errors()], 422);
+            Mail::to($user)->send(new RegistrationSuccess($user));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error al enviar correo de registro: ' . $e->getMessage());
         }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+        $this->enforceTokenLimit($user);
+
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'user' => $user,
+        ], 201);
     }
 
     /**
      * Inicia sesión a un usuario y devuelve un token. (Login a a user and return a token.)
      */
-    public function login(Request $request)
+    public function login(\App\Http\Requests\Auth\LoginRequest $request)
     {
-        $validated = $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
+        $validated = $request->validated();
 
         if (!Auth::attempt($validated)) {
             return response()->json([

@@ -24,7 +24,7 @@ export default function UsersContent() {
         setLoading(true);
         try {
             const res = await http.get('/api/users');
-            setUsers(res.data);
+            setUsers(res.data?.data || res.data);
         } catch (e) {
             toast.error('Error al cargar usuarios');
         } finally {

@@ -13,30 +13,19 @@ class TemporadaController extends Controller
      */
     public function index()
     {
-        return response()->json(Temporada::all());
+        return response()->json(Temporada::paginate(15));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\Temporada\StoreTemporadaRequest $request)
     {
-        try {
-            $validated = $request->validate([
-                'nombre' => 'required|string|max:255|unique:temporadas',
-                'fecha_inicio' => 'required|date',
-                'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
-                'activa' => 'boolean',
-            ]);
+        $validated = $request->validated();
 
-            $temporada = Temporada::create($validated);
+        $temporada = Temporada::create($validated);
 
-            $this->logCreate($temporada, 'crear');
-
-            return response()->json($temporada, 201);
-        } catch (ValidationException $e) {
-            return response()->json(['errors' => $e->errors()], 422);
-        }
+        return response()->json($temporada, 201);
     }
 
     /**
@@ -51,28 +40,15 @@ class TemporadaController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(\App\Http\Requests\Temporada\UpdateTemporadaRequest $request, string $id)
     {
         $temporada = Temporada::findOrFail($id);
 
-        try {
-            $validated = $request->validate([
-                'nombre' => 'string|max:255|unique:temporadas,nombre,' . $temporada->id,
-                'fecha_inicio' => 'date',
-                'fecha_fin' => 'date|after_or_equal:fecha_inicio',
-                'activa' => 'boolean',
-            ]);
+        $validated = $request->validated();
 
-            $oldValues = $temporada->toArray();
-            $temporada->update($validated);
-            $temporada->refresh();
+        $temporada->update($validated);
 
-            $this->logUpdate($temporada, $oldValues, $temporada->toArray(), 'actualizar');
-
-            return response()->json($temporada);
-        } catch (ValidationException $e) {
-            return response()->json(['errors' => $e->errors()], 422);
-        }
+        return response()->json($temporada);
     }
 
     /**
@@ -81,8 +57,6 @@ class TemporadaController extends Controller
     public function destroy(string $id)
     {
         $temporada = Temporada::findOrFail($id);
-        
-        $this->logDelete($temporada, 'eliminar');
         
         $temporada->delete();
 

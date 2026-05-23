@@ -54,16 +54,18 @@ export default function PanelAdmin() {
                     canManageUsers ? http.get('/api/users').catch(() => ({ data: [] })) : Promise.resolve({ data: [] }),
                 ]);
 
+                const getCount = (res) => res?.data?.total !== undefined ? res.data.total : (res?.data?.length || 0);
+
                 setStats({
-                    temporadas: resTemp.data?.length || 0,
-                    torneos: resTor.data?.length || 0,
-                    clubes: resClub.data?.length || 0,
-                    equipos: resEqui.data?.length || 0,
-                    canchas: resCanchas.data?.length || 0,
-                    arbitros: resArbitros.data?.length || 0,
-                    finanzas: resMultas.data?.length || 0,
-                    directivos: resDirectivos.data?.length || 0,
-                    users: resUsers.data?.length || 0,
+                    temporadas: getCount(resTemp),
+                    torneos: getCount(resTor),
+                    clubes: getCount(resClub),
+                    equipos: getCount(resEqui),
+                    canchas: getCount(resCanchas),
+                    arbitros: getCount(resArbitros),
+                    finanzas: getCount(resMultas),
+                    directivos: getCount(resDirectivos),
+                    users: getCount(resUsers),
                 });
             } catch (error) {
                 console.error("Error al cargar estadísticas:", error);

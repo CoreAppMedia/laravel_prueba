@@ -38,7 +38,7 @@ export default function EquiposInscritos({ torneo }) {
             const response = await http.get('/api/equipos');
             // Filter out teams that don't match the tournament category visually (although API will validate it)
             // Or just load them all and let the user see visually if they match
-            setEquiposDisponibles(response.data);
+            setEquiposDisponibles(response.data?.data || response.data);
         } catch (error) {
             toast.error('Error al cargar equipos disponibles');
         }

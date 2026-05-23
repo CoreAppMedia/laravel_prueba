@@ -14,7 +14,7 @@ use Illuminate\Queue\SerializesModels;
  * Este correo electrónico se envía cuando un usuario se registra exitosamente.
  * (This email is sent when a user registers successfully.)
  */
-class RegistrationSuccess extends Mailable
+class RegistrationSuccess extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 

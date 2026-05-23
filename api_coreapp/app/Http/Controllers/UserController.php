@@ -52,11 +52,7 @@ class UserController extends Controller
             $validated['password'] = Hash::make($validated['password']);
         }
 
-        $oldValues = $user->toArray();
         $user->update($validated);
-        $user->refresh();
-
-        $this->logUpdate($user, $oldValues, $user->toArray(), 'actualizar');
 
         return response()->json(['message' => 'Usuario actualizado con éxito', 'user' => $user]);
     }
@@ -68,7 +64,6 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
         
-        $this->logDelete($user, 'eliminar');
         
         $user->delete();
 
@@ -86,14 +81,9 @@ class UserController extends Controller
             'active' => 'required|boolean',
         ]);
 
-        $oldValues = $user->toArray();
         $user->forceFill([
             'active' => $request->active
         ])->save();
-        $user->refresh();
-
-        $accion = $request->active ? 'activar' : 'desactivar';
-        $this->logUpdate($user, $oldValues, $user->toArray(), $accion);
 
         $status = $request->active ? 'activado' : 'desactivado';
         return response()->json(['message' => "Usuario {$status} con éxito", 'active' => $user->active]);
@@ -114,14 +104,9 @@ class UserController extends Controller
             ],
         ]);
 
-        $oldValues = $user->toArray();
         $user->forceFill([
             'password' => Hash::make($request->password)
         ])->save();
-        $user->refresh();
-
-        // No loguear la contraseña, solo el hecho de que se cambió
-        $this->logCustom('cambiar_password', User::class, $user->id, null, ['password_changed' => true]);
 
         return response()->json(['message' => 'Contraseña actualizada con éxito']);
     }

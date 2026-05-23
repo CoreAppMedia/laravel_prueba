@@ -21,7 +21,7 @@ export default function ClubesIndex() {
         setLoading(true);
         try {
             const response = await http.get('/api/clubs');
-            setClubes(response.data);
+            setClubes(response.data?.data || response.data);
         } catch (error) {
             toast.error('Error al cargar la lista de clubes');
         } finally {

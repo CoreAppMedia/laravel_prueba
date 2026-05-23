@@ -22,7 +22,7 @@ export default function TorneosIndex() {
         setLoading(true);
         try {
             const response = await http.get('/api/torneos');
-            setTorneos(response.data);
+            setTorneos(response.data?.data || response.data);
         } catch (error) {
             toast.error('Error al cargar la lista de torneos');
         } finally {

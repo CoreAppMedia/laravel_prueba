@@ -46,8 +46,6 @@ class IngresoController extends Controller
         $ingreso->fecha = $validated['fecha'] ?? now();
         $ingreso->save();
 
-        $this->logCreate($ingreso, 'crear');
-
         return response()->json([
             'message' => 'Ingreso registrado correctamente.',
             'data' => $ingreso
@@ -59,7 +57,6 @@ class IngresoController extends Controller
      */
     public function destroy(Ingreso $ingreso)
     {
-        $this->logDelete($ingreso, 'eliminar');
         
         $ingreso->delete();
         return response()->json(['message' => 'Registro de ingreso borrado.']);

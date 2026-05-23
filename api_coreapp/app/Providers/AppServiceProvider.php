@@ -40,5 +40,16 @@ class AppServiceProvider extends ServiceProvider
             $email = (string) $request->input('email');
             return Limit::perMinute(5)->by($email.$request->ip());
         });
+
+        // Registrar Observers para Auditoría
+        \App\Models\User::observe(\App\Observers\AuditObserver::class);
+        \App\Models\Temporada::observe(\App\Observers\AuditObserver::class);
+        \App\Models\Club::observe(\App\Observers\AuditObserver::class);
+        \App\Models\Torneo::observe(\App\Observers\AuditObserver::class);
+        \App\Models\Equipo::observe(\App\Observers\AuditObserver::class);
+        \App\Models\Directivo::observe(\App\Observers\AuditObserver::class);
+        \App\Models\Egreso::observe(\App\Observers\AuditObserver::class);
+        \App\Models\Ingreso::observe(\App\Observers\AuditObserver::class);
+        \App\Models\Multa::observe(\App\Observers\AuditObserver::class);
     }
 }

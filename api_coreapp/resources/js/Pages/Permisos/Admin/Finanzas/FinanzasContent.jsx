@@ -171,9 +171,10 @@ export default function FinanzasContent() {
     const fetchTorneos = async () => {
         try {
             const res = await http.get('/api/torneos');
-            setTorneos(res.data);
-            if (res.data.length > 0 && !selectedTorneoId) {
-                setSelectedTorneoId(res.data[0].id);
+            const data = res.data?.data || res.data;
+            setTorneos(data);
+            if (data.length > 0 && !selectedTorneoId) {
+                setSelectedTorneoId(data[0].id);
             }
         } catch (error) {
             toast.error('Error al cargar torneos');

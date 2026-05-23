@@ -21,7 +21,7 @@ export default function EquiposIndex() {
         setLoading(true);
         try {
             const response = await http.get('/api/equipos');
-            setEquipos(response.data);
+            setEquipos(response.data?.data || response.data);
         } catch (error) {
             toast.error('Error al cargar la lista de equipos');
         } finally {

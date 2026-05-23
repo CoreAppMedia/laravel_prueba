@@ -22,7 +22,7 @@ export default function TemporadasContent() {
         setLoading(true);
         try {
             const response = await http.get('/api/temporadas');
-            setTemporadas(response.data);
+            setTemporadas(response.data?.data || response.data);
         } catch (error) {
             toast.error('Error al cargar temporadas');
         } finally {

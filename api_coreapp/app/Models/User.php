@@ -25,13 +25,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'permiso_id',
-        'rol_id',
         'active',
         'nombre',
         'apellido_paterno',
         'apellido_materno',
-        'asignado',
     ];
 
     public function permiso()

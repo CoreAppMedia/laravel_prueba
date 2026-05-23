@@ -125,7 +125,8 @@ export default function RolDeJuegoContent() {
     const fetchTorneos = async () => {
         try {
             const res = await http.get('/api/torneos');
-            setTorneos(res.data);
+            const data = res.data?.data || res.data;
+            setTorneos(data);
         } catch (error) {
             console.error(error);
         }
